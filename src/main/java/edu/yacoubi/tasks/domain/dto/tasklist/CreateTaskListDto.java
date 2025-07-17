@@ -1,6 +1,8 @@
 package edu.yacoubi.tasks.domain.dto.tasklist;
 
+import jakarta.validation.constraints.NotBlank;
+
 public record CreateTaskListDto(
-        String title,
+        @NotBlank String title,
         String description
 ) {}

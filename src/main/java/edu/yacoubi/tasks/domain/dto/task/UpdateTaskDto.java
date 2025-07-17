@@ -1,13 +1,19 @@
 package edu.yacoubi.tasks.domain.dto.task;
 
-import java.util.UUID;
+import edu.yacoubi.tasks.domain.entities.TaskPriority;
+import edu.yacoubi.tasks.domain.entities.TaskStatus;
+import jakarta.validation.constraints.FutureOrPresent;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 public record UpdateTaskDto(
-        UUID id,
-        String title,
+        @NotNull UUID id,
+        @NotBlank String title,
         String description,
-        LocalDateTime dueDate,
-        String status,
-        String priority
+        @FutureOrPresent LocalDateTime dueDate,
+        @NotNull TaskStatus status,
+        @NotNull TaskPriority priority
 ) {}
