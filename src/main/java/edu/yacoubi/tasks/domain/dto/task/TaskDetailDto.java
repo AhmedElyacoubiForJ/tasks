@@ -6,7 +6,6 @@ import edu.yacoubi.tasks.domain.entities.TaskStatus;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-// Komplette Ansicht
 public record TaskDetailDto(
         UUID id,
         String title,
