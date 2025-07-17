@@ -1,4 +1,4 @@
-package edu.yacoubi.tasks.domain.dto.task;
+package edu.yacoubi.tasks.domain.dto.request.task;
 
 import edu.yacoubi.tasks.domain.entities.TaskPriority;
 import edu.yacoubi.tasks.domain.entities.TaskStatus;

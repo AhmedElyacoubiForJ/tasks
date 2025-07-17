@@ -1,4 +1,4 @@
-package edu.yacoubi.tasks.domain.dto.tasklist;
+package edu.yacoubi.tasks.domain.dto.request.tasklist;
 
 import jakarta.validation.constraints.NotBlank;
 

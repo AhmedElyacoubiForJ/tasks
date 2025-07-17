@@ -1,4 +1,4 @@
-package edu.yacoubi.tasks.domain.dto.tasklist;
+package edu.yacoubi.tasks.domain.dto.response.tasklist;
 
 import java.time.LocalDateTime;
 import java.util.UUID;

@@ -1,6 +1,6 @@
-package edu.yacoubi.tasks.domain.dto.tasklist;
+package edu.yacoubi.tasks.domain.dto.response.tasklist;
 
-import edu.yacoubi.tasks.domain.dto.task.TaskSummaryDto;
+import edu.yacoubi.tasks.domain.dto.response.task.TaskSummaryDto;
 
 import java.util.List;
 import java.util.UUID;

@@ -1,4 +1,4 @@
-package edu.yacoubi.tasks.domain.dto.task;
+package edu.yacoubi.tasks.domain.dto.response.task;
 
 import edu.yacoubi.tasks.domain.entities.TaskPriority;
 import edu.yacoubi.tasks.domain.entities.TaskStatus;
@@ -6,11 +6,14 @@ import edu.yacoubi.tasks.domain.entities.TaskStatus;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-public record TaskSummaryDto(
+public record TaskDetailDto(
         UUID id,
         String title,
         String description,
         LocalDateTime dueDate,
+        TaskStatus status,
         TaskPriority priority,
-        TaskStatus status
+        LocalDateTime created,
+        LocalDateTime updated,
+        UUID taskListId
 ) {}
