@@ -9,7 +9,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -67,9 +66,19 @@ public class TaskListController {
             content = @Content(schema = @Schema(implementation = ApiErrorResponse.class))
     )
     @GetMapping("/summary")
-    public List<TaskListWithTaskSummaryDto> getSummarizedLists() {
-        return taskListService.listTaskLists().stream()
+    public ResponseEntity<APIResponse<List<TaskListWithTaskSummaryDto>>> getSummarizedLists() {
+        List<TaskListWithTaskSummaryDto> result = taskListService.listTaskLists().stream()
                 .map(taskListMapper::toWithTaskSummaryDto)
                 .toList();
+
+        APIResponse<List<TaskListWithTaskSummaryDto>> response = APIResponse.<List<TaskListWithTaskSummaryDto>>builder()
+                .status("success")
+                .statusCode(HttpStatus.OK.value())
+                .message("Zusammenfassung erfolgreich zurückgegeben")
+                .data(result)
+                .build();
+
+        return ResponseEntity.ok(response);
     }
+
 }
