@@ -12,6 +12,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -38,11 +40,21 @@ public class TaskListController {
             )
     )
     @GetMapping("/details")
-    public List<TaskListWithTaskDetailDto> getDetailedLists() {
-        return taskListService.listTaskLists().stream()
+    public ResponseEntity<APIResponse<List<TaskListWithTaskDetailDto>>> getDetailedLists() {
+        List<TaskListWithTaskDetailDto> result = taskListService.listTaskLists().stream()
                 .map(taskListMapper::toWithTaskDetailDto)
                 .toList();
+
+        APIResponse<List<TaskListWithTaskDetailDto>> response = APIResponse.<List<TaskListWithTaskDetailDto>>builder()
+                .status("success")
+                .statusCode(HttpStatus.OK.value())
+                .message("Liste erfolgreich zurückgegeben")
+                .data(result)
+                .build();
+
+        return ResponseEntity.ok(response);
     }
+
 
     @Operation(
             summary = "Alle TaskLists mit Zusammenfassung",
