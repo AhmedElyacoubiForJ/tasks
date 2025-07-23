@@ -29,9 +29,11 @@ public class Task {
     @Column(name = "due_date")
     private LocalDateTime dueDate; // Fälligkeitsdatum
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private TaskStatus status;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "priority", nullable = false)
     private TaskPriority priority;
 
@@ -44,6 +46,17 @@ public class Task {
 
     @Column(name = "updated", nullable = false)
     private LocalDateTime updated;
+
+    @PrePersist
+    public void onCreate() {
+        created = LocalDateTime.now();
+        updated = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    public void onUpdate() {
+        updated = LocalDateTime.now();
+    }
 
     @Override
     public String toString() {
