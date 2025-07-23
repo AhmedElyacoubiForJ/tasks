@@ -5,6 +5,7 @@ import edu.yacoubi.tasks.domain.dto.response.tasklist.TaskListWithTaskSummaryDto
 import edu.yacoubi.tasks.mappers.TaskListMapper;
 import edu.yacoubi.tasks.servcies.ITaskListService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,6 +17,7 @@ import java.util.List;
 @RestController
 @RequestMapping(path = "/task-lists")
 @RequiredArgsConstructor
+@Slf4j
 public class TaskListController implements TaskListControllerSwaggerDocs {
 
     private final ITaskListService taskListService;
@@ -23,33 +25,41 @@ public class TaskListController implements TaskListControllerSwaggerDocs {
 
     @GetMapping("/details")
     public ResponseEntity<APIResponse<List<TaskListWithTaskDetailDto>>> getDetailedLists() {
+        log.info("GET /task-lists/details angefragt");
         List<TaskListWithTaskDetailDto> result = taskListService.listTaskLists().stream()
                 .map(taskListMapper::toWithTaskDetailDto)
                 .toList();
 
-        APIResponse<List<TaskListWithTaskDetailDto>> response = APIResponse.<List<TaskListWithTaskDetailDto>>builder()
+        log.debug("Gefundene TaskLists: {}", result.size());
+        APIResponse<List<TaskListWithTaskDetailDto>> response =
+                APIResponse.<List<TaskListWithTaskDetailDto>>builder()
                 .status("success")
                 .statusCode(HttpStatus.OK.value())
                 .message("Liste erfolgreich zurückgegeben")
                 .data(result)
                 .build();
 
+        log.info("GET /task-lists/details erfolgreich abgeschlossen");
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/summary")
     public ResponseEntity<APIResponse<List<TaskListWithTaskSummaryDto>>> getSummarizedLists() {
+        log.info("GET /task-lists/summary angefragt");
         List<TaskListWithTaskSummaryDto> result = taskListService.listTaskLists().stream()
                 .map(taskListMapper::toWithTaskSummaryDto)
                 .toList();
 
-        APIResponse<List<TaskListWithTaskSummaryDto>> response = APIResponse.<List<TaskListWithTaskSummaryDto>>builder()
+        log.debug("Gefundene TaskLists: {}", result.size());
+        APIResponse<List<TaskListWithTaskSummaryDto>> response =
+                APIResponse.<List<TaskListWithTaskSummaryDto>>builder()
                 .status("success")
                 .statusCode(HttpStatus.OK.value())
                 .message("Zusammenfassung erfolgreich zurückgegeben")
                 .data(result)
                 .build();
 
+        log.info("GET /task-lists/summary erfolgreich abgeschlossen");
         return ResponseEntity.ok(response);
     }
 
