@@ -7,11 +7,11 @@
     <!-- einbiden eigene CSS-Datei -->
     <link rel="stylesheet" href="/css/styles.css"/>
 </head>
-<body class="container mt-4">
+<body class="container">
 
 <h1>📋 Deine Task-Listen</h1>
 
-<ul class="list-group mt-3">
+<ul class="list-group">
     <li th:each="list : ${taskLists}" class="list-group-item d-flex justify-content-between align-items-center">
         <div>
             <strong th:text="${list.title}">Titel</strong><br/>

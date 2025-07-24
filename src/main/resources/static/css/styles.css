@@ -1,0 +1,47 @@
+<style>
+body {
+    background-color: #141517; /* dunkler Hintergrund für die ganze Seite */
+    color: #e4e6eb;
+    font-family: 'Segoe UI', sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+/* Container für Inhalte */
+.container {
+    background-color: #1e1f21;
+    padding: 2rem;
+    min-height: 100vh;
+}
+
+/* Überschrift */
+h1 {
+    color: #d3d6da;
+    margin-bottom: 1.5rem;
+}
+
+/* Task-Einträge */
+.list-group-item {
+    background-color: #2c2f33;
+    color: #f0f2f5;
+    border: none;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    padding: 1rem 1.5rem;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+    transition: background-color 0.3s ease;
+}
+
+.list-group-item:hover {
+    background-color: #3a3d41;
+}
+
+/* Fortschritts-Badge */
+.badge.bg-success {
+    background-color: #5cb85c;
+    color: #fff;
+    font-size: 0.85rem;
+    padding: 6px 12px;
+    border-radius: 20px;
+}
+</style>

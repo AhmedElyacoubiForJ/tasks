@@ -24,46 +24,40 @@ public class DatabaseInitializerService {
     public void init() {
         log.info("🚀 Datenbank-Initialisierung gestartet");
 
-        // Prüfe ob schon Daten vorhanden sind
         if (taskListRepository.count() > 0) {
             log.info("📦 Daten bereits vorhanden — Initialisierung wird übersprungen");
             return;
         }
 
-        // Timestamps generieren
         LocalDateTime now = LocalDateTime.now();
 
-        // TaskList erstellen
-        TaskList list = new TaskList();
-        list.setTitle("🏁 Demo-Liste");
-        list.setDescription("Beispielhafte Aufgaben für Swagger & Seeding");
-        list.setCreated(now);
-        list.setUpdated(now);
+        for (int i = 1; i <= 5; i++) {
+            TaskList list = new TaskList();
+            list.setTitle("📋 Demo-Liste #" + i);
+            list.setDescription("Dies ist die " + i + ". generierte TaskList");
+            list.setCreated(now);
+            list.setUpdated(now);
 
-        // Tasks zuweisen
-        Task task1 = new Task();
-        task1.setTitle("Swagger konfigurieren");
-        task1.setDescription("Swagger-Dokumentation für Task-Endpunkte erstellen");
-        task1.setPriority(TaskPriority.HIGH);
-        task1.setStatus(TaskStatus.OPEN);
-        task1.setDueDate(LocalDateTime.now().plusDays(5));
-        task1.setTaskList(list); // Beziehung setzen
+            Task task1 = new Task();
+            task1.setTitle("Aufgabe " + i + ".1");
+            task1.setDescription("Beschreibung zur Aufgabe 1 in Liste " + i);
+            task1.setPriority(TaskPriority.HIGH);
+            task1.setStatus(i % 2 == 0 ? TaskStatus.CLOSED : TaskStatus.OPEN);
+            task1.setDueDate(now.plusDays(3));
+            task1.setTaskList(list);
 
-        Task task2 = new Task();
-        task2.setTitle("Seed-Daten initialisieren");
-        task2.setDescription("Initiale Tasks beim App-Start in die Datenbank schreiben");
-        task2.setPriority(TaskPriority.MEDIUM);
-        task2.setStatus(TaskStatus.CLOSED);
-        task2.setDueDate(LocalDateTime.now().plusDays(2));
-        task2.setTaskList(list);
+            Task task2 = new Task();
+            task2.setTitle("Aufgabe " + i + ".2");
+            task2.setDescription("Beschreibung zur Aufgabe 2 in Liste " + i);
+            task2.setPriority(TaskPriority.LOW);
+            task2.setStatus(TaskStatus.OPEN);
+            task2.setDueDate(now.plusDays(5));
+            task2.setTaskList(list);
 
+            list.setTasks(List.of(task1, task2));
+            taskListRepository.save(list);
+        }
 
-        // Liste mit Tasks verknüpfen
-        list.setTasks(List.of(task1, task2));
-
-        // Speichern
-        taskListRepository.save(list);
-
-        log.info("✅ Demo-Daten erfolgreich eingefügt");
+        log.info("✅ Mehrere Demo-Listen erfolgreich eingefügt");
     }
 }
