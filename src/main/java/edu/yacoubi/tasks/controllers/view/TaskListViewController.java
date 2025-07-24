@@ -2,6 +2,7 @@ package edu.yacoubi.tasks.controllers.view;
 
 import edu.yacoubi.tasks.domain.dto.response.tasklist.TaskListDto;
 import edu.yacoubi.tasks.domain.entities.TaskList;
+import edu.yacoubi.tasks.mappers.TaskListMapper;
 import edu.yacoubi.tasks.services.ITaskListService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -15,11 +16,17 @@ import java.util.List;
 public class TaskListViewController {
 
     private final ITaskListService taskListService;
+    private final TaskListMapper taskListMapper;
 
     @GetMapping("/tasklists")
     public String showTaskLists(Model model) {
         List<TaskList> lists = taskListService.listTaskLists();
-        model.addAttribute("taskLists", lists);
+        List<TaskListDto> dtos = lists.stream()
+                .map(taskListMapper::toTaskListDto)
+                .toList();
+
+        model.addAttribute("taskLists", dtos);
+
         return "views/tasklists"; // verweist auf src/main/resources/templates/views/tasklists.html
     }
 }
