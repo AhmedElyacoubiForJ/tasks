@@ -30,8 +30,6 @@ public class TaskListController implements TaskListControllerSwaggerDocs {
     private final TaskListMapper taskListMapper;
 
     @GetMapping
-    @Operation(summary = "Task-Listen abrufen mit optionaler Paginierung und Filterung")
-    @ApiResponse(responseCode = "200", description = "Task-Listen erfolgreich zurückgegeben")
     public ResponseEntity<APIResponse<Page<TaskListDto>>> getTaskLists(
             @ParameterObject TaskListFilterDto filterParams
     ) {
