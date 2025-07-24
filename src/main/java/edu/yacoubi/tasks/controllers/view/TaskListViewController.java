@@ -3,7 +3,7 @@ package edu.yacoubi.tasks.controllers.view;
 import edu.yacoubi.tasks.domain.dto.response.tasklist.TaskListDto;
 import edu.yacoubi.tasks.domain.entities.TaskList;
 import edu.yacoubi.tasks.mappers.TaskListMapper;
-import edu.yacoubi.tasks.services.ITaskListService;
+import edu.yacoubi.tasks.services.app.ITaskListService;
 import edu.yacoubi.tasks.services.ui.IProgressColorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;

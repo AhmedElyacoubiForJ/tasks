@@ -5,7 +5,7 @@ import edu.yacoubi.tasks.domain.dto.response.tasklist.TaskListDto;
 import edu.yacoubi.tasks.domain.dto.response.tasklist.TaskListWithTaskDetailDto;
 import edu.yacoubi.tasks.domain.dto.response.tasklist.TaskListWithTaskSummaryDto;
 import edu.yacoubi.tasks.mappers.TaskListMapper;
-import edu.yacoubi.tasks.services.ITaskListService;
+import edu.yacoubi.tasks.services.app.ITaskListService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.annotations.ParameterObject;

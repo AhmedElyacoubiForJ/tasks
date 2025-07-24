@@ -1,4 +1,4 @@
-package edu.yacoubi.tasks.services;
+package edu.yacoubi.tasks.services.app;
 
 import edu.yacoubi.tasks.domain.dto.request.tasklist.TaskListFilterDto;
 import edu.yacoubi.tasks.domain.dto.response.tasklist.TaskListDto;
