@@ -65,6 +65,41 @@ public class DatabaseInitializerService {
             taskListRepository.save(list);
         }
 
+        // Liste mit 100 % erledigten Tasks
+        TaskList completeList = new TaskList();
+        completeList.setTitle("✅ Abgeschlossene Liste");
+        completeList.setDescription("Alle Aufgaben sind erledigt — ideal für bg-success Balken");
+        completeList.setCreated(now.minusDays(4));
+        completeList.setUpdated(now);
+
+        Task completedTask1 = new Task();
+        completedTask1.setTitle("Dokumentation finalisieren");
+        completedTask1.setDescription("Task wurde abgeschlossen");
+        completedTask1.setPriority(TaskPriority.MEDIUM);
+        completedTask1.setStatus(TaskStatus.CLOSED);
+        completedTask1.setDueDate(now.minusDays(1));
+        completedTask1.setTaskList(completeList);
+
+        Task completedTask2 = new Task();
+        completedTask2.setTitle("UI-Tests abschließen");
+        completedTask2.setDescription("Task wurde abgeschlossen");
+        completedTask2.setPriority(TaskPriority.HIGH);
+        completedTask2.setStatus(TaskStatus.CLOSED);
+        completedTask2.setDueDate(now.minusDays(2));
+        completedTask2.setTaskList(completeList);
+
+        Task completedTask3 = new Task();
+        completedTask3.setTitle("Swagger veröffentlichen");
+        completedTask3.setDescription("Task wurde abgeschlossen");
+        completedTask3.setPriority(TaskPriority.LOW);
+        completedTask3.setStatus(TaskStatus.CLOSED);
+        completedTask3.setDueDate(null); // bewusst ohne Fälligkeit
+        completedTask3.setTaskList(completeList);
+
+        completeList.setTasks(List.of(completedTask1, completedTask2, completedTask3));
+        taskListRepository.save(completeList);
+
+
         log.info("✅ Demo-Listen erfolgreich gespeichert");
     }
 
