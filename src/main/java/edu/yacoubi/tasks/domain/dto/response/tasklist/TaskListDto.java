@@ -21,6 +21,12 @@ public record TaskListDto(
         LocalDateTime created,
 
         @Schema(description = "Zeitpunkt der letzten Aktualisierung", example = "2025-07-24T09:18:44.310112")
-        LocalDateTime updated
+        LocalDateTime updated,
+
+        @Schema(description = "Anzahl der enthaltenen TaskList", example = "2")
+        Integer count,
+
+        @Schema(description = "Fortschritt in Prozent", example = "50.0")
+        Double progress
 ) {
 }
