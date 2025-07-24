@@ -2,6 +2,7 @@ package edu.yacoubi.tasks.mappers;
 
 import edu.yacoubi.tasks.domain.dto.response.task.TaskDetailDto;
 import edu.yacoubi.tasks.domain.dto.response.task.TaskSummaryDto;
+import edu.yacoubi.tasks.domain.dto.response.tasklist.TaskListDto;
 import edu.yacoubi.tasks.domain.dto.response.tasklist.TaskListWithTaskDetailDto;
 import edu.yacoubi.tasks.domain.dto.response.tasklist.TaskListWithTaskSummaryDto;
 import edu.yacoubi.tasks.domain.entities.Task;
@@ -25,6 +26,9 @@ public interface TaskListMapper {
     @Mapping(target = "tasks", expression = "java(mapToSummaryList(taskList.getTasks()))")
     TaskListWithTaskSummaryDto toWithTaskSummaryDto(TaskList taskList);
 
+    @Mapping(target = "count", expression = "java(taskCount(taskList.getTasks()))")
+    @Mapping(target = "progress", expression = "java(calculateProgress(taskList.getTasks()))")
+    TaskListDto toTaskListDto(TaskList taskList);
 
     default Integer taskCount(List<Task> tasks) {
         return tasks != null ? tasks.size() : 0;

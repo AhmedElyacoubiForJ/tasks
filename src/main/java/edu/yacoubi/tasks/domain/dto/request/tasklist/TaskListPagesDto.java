@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Min;
 
 @Schema(description = "Parameter zur Paginierung einer Anfrage")
-public record PaginationRequestDto(
+public record TaskListPagesDto(
 
         @Schema(description = "Seitenzahl (beginnend bei 0)", example = "0")
         @Min(0)
