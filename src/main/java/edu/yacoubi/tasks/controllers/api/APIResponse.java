@@ -1,4 +1,4 @@
-package edu.yacoubi.tasks.controllers;
+package edu.yacoubi.tasks.controllers.api;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import edu.yacoubi.tasks.exceptions.ApiErrorResponse;

@@ -1,4 +1,4 @@
-package edu.yacoubi.tasks.controllers;
+package edu.yacoubi.tasks.controllers.api;
 
 import edu.yacoubi.tasks.domain.dto.request.tasklist.TaskListFilterDto;
 import edu.yacoubi.tasks.domain.dto.response.tasklist.TaskListDto;

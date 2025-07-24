@@ -1,11 +1,11 @@
-package edu.yacoubi.tasks.servcies.impl;
+package edu.yacoubi.tasks.services.impl;
 
 import edu.yacoubi.tasks.domain.dto.request.tasklist.TaskListFilterDto;
 import edu.yacoubi.tasks.domain.dto.response.tasklist.TaskListDto;
 import edu.yacoubi.tasks.domain.entities.TaskList;
 import edu.yacoubi.tasks.mappers.TaskListMapper;
 import edu.yacoubi.tasks.repositories.TaskListRepository;
-import edu.yacoubi.tasks.servcies.ITaskListService;
+import edu.yacoubi.tasks.services.ITaskListService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;

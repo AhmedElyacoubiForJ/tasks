@@ -1,13 +1,11 @@
-package edu.yacoubi.tasks.controllers;
+package edu.yacoubi.tasks.controllers.api;
 
 import edu.yacoubi.tasks.domain.dto.request.tasklist.TaskListFilterDto;
 import edu.yacoubi.tasks.domain.dto.response.tasklist.TaskListDto;
 import edu.yacoubi.tasks.domain.dto.response.tasklist.TaskListWithTaskDetailDto;
 import edu.yacoubi.tasks.domain.dto.response.tasklist.TaskListWithTaskSummaryDto;
 import edu.yacoubi.tasks.mappers.TaskListMapper;
-import edu.yacoubi.tasks.servcies.ITaskListService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import edu.yacoubi.tasks.services.ITaskListService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.annotations.ParameterObject;

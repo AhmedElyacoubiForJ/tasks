@@ -1,6 +1,6 @@
 package edu.yacoubi.tasks.exceptions;
 
-import edu.yacoubi.tasks.controllers.APIResponse;
+import edu.yacoubi.tasks.controllers.api.APIResponse;
 import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

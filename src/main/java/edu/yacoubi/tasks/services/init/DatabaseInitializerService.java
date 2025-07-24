@@ -1,4 +1,4 @@
-package edu.yacoubi.tasks.servcies.init;
+package edu.yacoubi.tasks.services.init;
 
 import edu.yacoubi.tasks.domain.entities.Task;
 import edu.yacoubi.tasks.domain.entities.TaskList;
