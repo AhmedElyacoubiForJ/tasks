@@ -24,10 +24,12 @@
                  role="progressbar"
                  th:style="'width:' + ${list.roundedProgress()} + '%'"
                  th:attr="aria-valuenow=${list.roundedProgress()}"
-                 th:classappend="
+                 th:classappend="${progressColorService.getColorClass(list.roundedProgress())}"
+            >
+            <!--th:classappend="
          ${list.roundedProgress()} == 0 ? 'bg-secondary' :
          (${list.roundedProgress()} < 50 ? 'bg-warning' :
-         (${list.roundedProgress()} < 100 ? 'bg-info' : 'bg-success'))">
+         (${list.roundedProgress()} < 100 ? 'bg-info' : 'bg-success'))"-->
             </div>
         </div>
         <!-- small th:text="'Fortschritt: ' + ${T(java.lang.Math).round(list.progress)} + '%'"></small -->
