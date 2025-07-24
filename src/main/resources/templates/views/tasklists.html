@@ -12,14 +12,26 @@
 <h1>📋 Deine Task-Listen</h1>
 
 <ul class="list-group">
-    <li th:each="list : ${taskLists}" class="list-group-item d-flex justify-content-between align-items-center">
-        <div>
+    <li th:each="list : ${taskLists}" class="list-group-item">
+        <div class="mb-2">
             <strong th:text="${list.title}">Titel</strong><br/>
             <small th:text="${list.description}">Beschreibung</small>
         </div>
-        <span class="badge bg-success" th:text="${list.progress} + '%'">Progress</span>
+
+        <!-- Fortschrittsbalken -->
+        <div class="progress" style="height: 8px;">
+            <div class="progress-bar bg-success"
+                 role="progressbar"
+                 th:style="'width:' + ${list.progress} + '%'"
+                 th:attr="aria-valuenow=${list.progress}"
+                 aria-valuemin="0" aria-valuemax="100">
+            </div>
+        </div>
+        <!-- small th:text="'Fortschritt: ' + ${T(java.lang.Math).round(list.progress)} + '%'"></small -->
+        <small th:text="'Fortschritt: ' + ${list.roundedProgress()} + '%'"></small>
     </li>
 </ul>
+
 
 </body>
 </html>

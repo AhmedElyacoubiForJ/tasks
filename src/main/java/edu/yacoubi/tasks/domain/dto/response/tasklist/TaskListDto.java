@@ -29,4 +29,7 @@ public record TaskListDto(
         @Schema(description = "Fortschritt in Prozent", example = "50.0")
         Double progress
 ) {
+    public Integer roundedProgress() {
+        return progress == null ? 0 : (int) Math.round(progress);
+    }
 }

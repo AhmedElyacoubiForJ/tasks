@@ -44,4 +44,24 @@ h1 {
     padding: 6px 12px;
     border-radius: 20px;
 }
+
+.progress {
+    background-color: #333;
+}
+
+.progress-bar {
+    background-color: #28a745; /* intensives Grün */
+    transition: width 0.6s ease;
+}
+
+.text-muted {
+    color: #ffffff !important;
+    opacity: 0.85; /* sanftes Weiß statt volle Härte */
+}
+
+.progress-text {
+    color: #ffffff;
+    font-size: 0.85rem;
+}
+
 </style>
