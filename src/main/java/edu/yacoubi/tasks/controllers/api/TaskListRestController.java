@@ -12,17 +12,16 @@ import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping(path = "/task-lists")
 @RequiredArgsConstructor
 @Slf4j
-public class TaskListController implements TaskListControllerSwaggerDocs {
+public class TaskListRestController implements TaskListControllerSwaggerDocs {
 
     private final ITaskListService taskListService;
     private final TaskListMapper taskListMapper;
@@ -39,6 +38,17 @@ public class TaskListController implements TaskListControllerSwaggerDocs {
                 .data(result)
                 .build()
         );
+    }
+
+    @Override
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteTaskList(@PathVariable UUID id) {
+        boolean deleted = taskListService.deleteTaskList(id);
+        if (deleted) {
+            return ResponseEntity.noContent().build(); // 204
+        } else {
+            return ResponseEntity.notFound().build(); // 404
+        }
     }
 
     @GetMapping("/details")

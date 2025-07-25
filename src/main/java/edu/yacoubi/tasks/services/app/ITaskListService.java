@@ -1,5 +1,6 @@
 package edu.yacoubi.tasks.services.app;
 
+import edu.yacoubi.tasks.domain.dto.request.tasklist.CreateTaskListDto;
 import edu.yacoubi.tasks.domain.dto.request.tasklist.TaskListFilterDto;
 import edu.yacoubi.tasks.domain.dto.response.tasklist.TaskListDto;
 import edu.yacoubi.tasks.domain.entities.TaskList;
@@ -16,7 +17,7 @@ public interface ITaskListService {
 
     Optional<TaskList> getTaskListById(UUID id);
 
-    TaskList createTaskList(TaskList taskList);
+    TaskList createTaskList(CreateTaskListDto taskListDto);
 
-    void deleteTaskList(UUID id);
+    boolean deleteTaskList(UUID id);
 }

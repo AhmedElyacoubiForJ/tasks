@@ -6,12 +6,16 @@ import edu.yacoubi.tasks.domain.dto.response.tasklist.TaskListWithTaskDetailDto;
 import edu.yacoubi.tasks.domain.dto.response.tasklist.TaskListWithTaskSummaryDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.List;
+import java.util.UUID;
 
 @Tag(name = "TaskLists", description = "Verwaltung von Task-Listen")
 public interface TaskListControllerSwaggerDocs {
@@ -33,5 +37,12 @@ public interface TaskListControllerSwaggerDocs {
     @ApiResponse(responseCode = "400", description = "Ungültige Anfrageparameter")
     @ApiResponse(responseCode = "500", description = "Interner Serverfehler")
     ResponseEntity<APIResponse<Page<TaskListDto>>> getTaskLists(@ParameterObject TaskListFilterDto filterParams);
+
+    @Operation(summary = "Löscht eine Task-Liste anhand der UUID")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Erfolgreich gelöscht"),
+            @ApiResponse(responseCode = "404", description = "Liste nicht gefunden")
+    })
+    public ResponseEntity<Void> deleteTaskList(@PathVariable UUID id);
 
 }

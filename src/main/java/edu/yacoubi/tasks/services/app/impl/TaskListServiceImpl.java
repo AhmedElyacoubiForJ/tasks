@@ -1,5 +1,6 @@
 package edu.yacoubi.tasks.services.app.impl;
 
+import edu.yacoubi.tasks.domain.dto.request.tasklist.CreateTaskListDto;
 import edu.yacoubi.tasks.domain.dto.request.tasklist.TaskListFilterDto;
 import edu.yacoubi.tasks.domain.dto.response.tasklist.TaskListDto;
 import edu.yacoubi.tasks.domain.entities.TaskList;
@@ -46,12 +47,20 @@ public class TaskListServiceImpl implements ITaskListService {
     }
 
     @Override
-    public TaskList createTaskList(TaskList taskList) {
-        return null;
+    public TaskList createTaskList(CreateTaskListDto taskListDto) {
+        TaskList taskList = new TaskList();
+        taskList.setTitle(taskListDto.title());
+        taskList.setDescription(taskListDto.description());
+
+        return taskListRepository.save(taskList);
     }
 
     @Override
-    public void deleteTaskList(UUID id) {
-
+    public boolean deleteTaskList(UUID id) {
+        if (taskListRepository.existsById(id)) {
+            taskListRepository.deleteById(id);
+            return true;
+        }
+        return false;
     }
 }

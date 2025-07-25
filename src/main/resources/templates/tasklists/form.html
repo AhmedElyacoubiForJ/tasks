@@ -1,0 +1,15 @@
+<!-- tasklists/form.html -->
+<div th:fragment="formFragment" xmlns:th="http://www.w3.org/1999/xhtml">
+    <form th:action="@{/tasklists}" method="post" th:object="${createTaskListDto}">
+        <div class="mb-3">
+            <label for="title">Titel</label>
+            <input th:field="*{title}" class="form-control" id="title" required />
+        </div>
+        <div class="mb-3">
+            <label for="description">Beschreibung</label>
+            <textarea th:field="*{description}" class="form-control" id="description"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Speichern</button>
+    </form>
+</div>
+
