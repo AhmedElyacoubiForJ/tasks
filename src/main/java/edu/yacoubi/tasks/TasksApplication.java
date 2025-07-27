@@ -1,5 +1,6 @@
 package edu.yacoubi.tasks;
 
+import com.github.javafaker.Faker;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -45,5 +46,10 @@ public class TasksApplication {
         messageSource.setBasename("classpath:messages");
         messageSource.setDefaultEncoding("UTF-8");
         return messageSource;
+    }
+
+    @Bean
+    public Faker faker() {
+        return new Faker();
     }
 }

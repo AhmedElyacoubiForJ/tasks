@@ -50,13 +50,22 @@
                         hx-swap="innerHTML">
                     ✏️ Bearbeiten
                 </button>
-                <!-- Delete -->
+                <!-- Delete outerHTML -->
+
                 <button class="btn btn-sm btn-danger"
-                        th:attr="hx-delete=@{'/tasklists/delete/' + ${list.id}}"
+                        th:attr="hx-get=@{'/tasklists/delete/' + ${list.id}}"
                         hx-confirm="Möchtest du diese Liste wirklich löschen?"
-                        hx-swap="outerHTML">
+                        hx-swap="none">
                     🗑️ Löschen
                 </button>
+                <!--<button class="btn btn-sm btn-danger"
+                        th:attr="hx-delete=@{'/tasklists/delete/' + ${list.id}}"
+                        hx-confirm="Möchtest du diese Liste wirklich löschen?"
+                        hx-swap="none"
+                        hx-on="htmx:afterRequest: window.location='/tasklists'">
+                    🗑️ Löschen
+                </button>-->
+
             </div>
         </li>
     </ul>

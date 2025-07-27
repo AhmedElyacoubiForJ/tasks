@@ -48,7 +48,10 @@ public class TaskListViewController {
     }
 
     @PostMapping("/tasklists")
-    public String createTaskList(@Valid CreateTaskListDto dto, BindingResult result, Model model) {
+    public String createTaskList(
+            @Valid CreateTaskListDto dto,
+            BindingResult result,
+            Model model) {
         if (result.hasErrors()) {
             model.addAttribute("createTaskListDto", dto);
             return "tasklists/form";
@@ -59,10 +62,10 @@ public class TaskListViewController {
         return "redirect:/tasklists";
     }
 
-    @DeleteMapping("/tasklists/delete/{id}")
+    @GetMapping("/tasklists/delete/{id}")
     public String deleteTaskList(@PathVariable UUID id) {
-        System.out.println("Deleting TaskList with ID: " + id);
         taskListService.deleteTaskList(id);
-        return "redirect:/tasklists"; // Navigiert zu HTML-Seite
+        // refresch findet statt, da die Seite neu geladen wird
+        return "redirect:/tasklists";
     }
 }
