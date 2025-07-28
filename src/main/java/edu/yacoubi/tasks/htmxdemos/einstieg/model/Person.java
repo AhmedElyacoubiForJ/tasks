@@ -1,4 +1,4 @@
-package edu.yacoubi.tasks.htmxdemo.model;
+package edu.yacoubi.tasks.htmxdemos.model;
 
 public record Person(
         String name,

@@ -1,7 +1,7 @@
-package edu.yacoubi.tasks.htmxdemo.controllers;
+package edu.yacoubi.tasks.htmxdemos.controllers;
 
 import com.github.javafaker.Faker;
-import edu.yacoubi.tasks.htmxdemo.model.Person;
+import edu.yacoubi.tasks.htmxdemos.model.Person;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
