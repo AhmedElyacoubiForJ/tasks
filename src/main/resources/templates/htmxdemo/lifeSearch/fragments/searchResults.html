@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+<div th:fragment="results">
+    <ul>
+        <li th:each="person : ${results}">
+            <strong th:text="${person.name()}"></strong>
+            <span th:text="${person.email()}"></span>
+        </li>
+    </ul>
+
+    <div th:if="${#lists.isEmpty(results)}">
+        <em>Keine Treffer gefunden.</em>
+    </div>
+</div>
+</body>
+</html>

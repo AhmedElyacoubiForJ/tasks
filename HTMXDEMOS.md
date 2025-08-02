@@ -1,5 +1,4 @@
 # HTMX Demos
----
 
 ### 🔥 3 Demo-Vorschläge mit HTMX
 
