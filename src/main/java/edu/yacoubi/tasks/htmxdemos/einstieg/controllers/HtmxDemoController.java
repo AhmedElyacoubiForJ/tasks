@@ -1,7 +1,8 @@
-package edu.yacoubi.tasks.htmxdemos.controllers;
+package edu.yacoubi.tasks.htmxdemos.einstieg.controllers;
 
 import com.github.javafaker.Faker;
-import edu.yacoubi.tasks.htmxdemos.model.Person;
+import edu.yacoubi.tasks.htmxdemos.einstieg.model.Person;
+import edu.yacoubi.tasks.htmxdemos.fake.FakerProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,20 +19,20 @@ import java.util.List;
 @RequiredArgsConstructor
 public class HtmxDemoController {
 
-    private final Faker faker;
+    private final FakerProvider fakerProvider;
 
     @GetMapping("")
     public String index() {
-        return "htmxdemo/index";
+        return "htmxdemo/einstieg/index";
     }
 
     @GetMapping("/frag-info")
     public String getInfoFragment(Model model) {
-        model.addAttribute("name", faker.name().fullName());
-        model.addAttribute("email", faker.internet().emailAddress());
-        model.addAttribute("city", faker.address().cityName());
+        model.addAttribute("name", fakerProvider.getFaker().name().fullName());
+        model.addAttribute("email", fakerProvider.getFaker().internet().emailAddress());
+        model.addAttribute("city", fakerProvider.getFaker().address().cityName());
 
-        return "htmxdemo/fragments/frag-info";
+        return "htmxdemo/einstieg/fragments/frag-info";
     }
 
     @GetMapping("/list-items")
@@ -44,13 +45,13 @@ public class HtmxDemoController {
         }
 
         model.addAttribute("items", items);
-        return "htmxdemo/fragments/list-items"; // Template kommt jetzt!
+        return "htmxdemo/einstieg/fragments/list-items"; // Template kommt jetzt!
     }
 
     @GetMapping("/demo-form")
     public String showDemoForm(Model model) {
         model.addAttribute("person", new Person()); // Dummy-Objekt für das Formular
-        return "htmxdemo/fragments/demo-form"; // Fragment kommt gleich!
+        return "htmxdemo/einstieg/fragments/demo-form"; // Fragment kommt gleich!
     }
 
     @PostMapping("/submit-form")
@@ -58,7 +59,7 @@ public class HtmxDemoController {
         model.addAttribute("name", person.name());
         model.addAttribute("email", person.email());
 
-        return "htmxdemo/fragments/form-success";
+        return "htmxdemo/einstieg/fragments/form-success";
     }
 }
 

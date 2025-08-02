@@ -1,6 +1,7 @@
 # Ignore files and directories that should not be tracked by Git
 HELP.md
 NOTES.md
+LAYOUT_DEMO.md
 target/
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
