@@ -1,0 +1,26 @@
+<tr th:fragment="rowEdit(kunde)"
+    xmlns:th="http://www.w3.org/1999/xhtml">
+    <td th:text="${kunde.id}">ID</td>
+    <td>
+        <input name="name" th:value="${kunde.name}" type="text"/>
+    </td>
+    <td>
+        <input name="email" th:value="${kunde.email}" type="email"/>
+    </td>
+    <td>
+        <form
+                hx-post="/inlineEdit/update/${kunde.id}"
+                hx-swap="outerHTML"
+                hx-target="closest tr"
+                th:object="${kunde}">
+            <button type="submit">💾 Speichern</button>
+            <button
+                    hx-get="/inlineEdit"
+                    hx-swap="outerHTML"
+                    hx-target="closest tr"
+                    type="button">
+                ❌ Abbrechen
+            </button>
+        </form>
+    </td>
+</tr>

@@ -28,14 +28,14 @@ public class TasksApplication {
 
             try {
                 Properties props = PropertiesLoaderUtils.loadProperties(resource);
-                props.forEach((k, v) -> System.out.println(k + ": " + v));
+                //props.forEach((k, v) -> System.out.println(k + ": " + v));
             } catch (IOException e) {
                 System.err.println("Fehler beim Laden der Properties-Datei: " + e.getMessage());
             }
 
             // 🔍 Test mit MessageSource
-            String title = messageSource.getMessage("export.pdf.title", null, "Kein Titel gefunden", Locale.GERMAN);
-            System.out.println("📄 Titel via MessageSource: " + title);
+            //String title = messageSource.getMessage("export.pdf.title", null, "Kein Titel gefunden", Locale.GERMAN);
+            //System.out.println("📄 Titel via MessageSource: " + title);
         };
     }
 

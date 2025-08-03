@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Kundenübersicht</title>
+    <script src="https://unpkg.com/htmx.org@1.9.2"></script>
+    <link href="https://cdn.simplecss.org/simple.min.css" rel="stylesheet">
+</head>
+<body>
+<h1>Kundenliste 🧾</h1>
+
+<table>
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Aktion</th>
+    </tr>
+    </thead>
+    <tbody>
+    <th:block th:each="kunde : ${kunden}">
+        <tr th:replace="~{htmxdemo/inlineEdit/fragments/tableRow :: row(kunde=${kunde})}"></tr>
+    </th:block>
+
+    </tbody>
+</table>
+</body>
+</html>

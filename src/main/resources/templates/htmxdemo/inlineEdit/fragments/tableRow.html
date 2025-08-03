@@ -1,0 +1,8 @@
+<th:block th:fragment="row(kunde)"
+          xmlns:th="http://www.w3.org/1999/xhtml">
+    <tr>
+        <td th:text="${kunde != null ? kunde.id : '–'}">ID</td>
+        <td th:text="${kunde != null ? kunde.name : '–'}">Name</td>
+        <td th:text="${kunde != null ? kunde.email : '–'}">Email</td>
+    </tr>
+</th:block>

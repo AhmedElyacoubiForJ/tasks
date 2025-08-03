@@ -33,10 +33,3 @@ Wenn du magst, können wir den Einstieg noch abrunden mit:
 🌐 Internationalisierung mit messages.properties
 
 📈 Logging für Demo-Zwecke
-
-
-
-
-- Was sind die besten Praktiken für Layout-Design?
-- Welche häufigen Fehler sollte ich beim Layout vermeiden?
-- Wie kann ich die Leistung meines Layouts verbessern?
