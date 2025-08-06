@@ -6,9 +6,20 @@
         <td th:text="${kunde.email}"></td>
         <td>
             <button
-                    th:attr="hx-get='/inlineEdit/edit/' + ${kunde.id}, hx-target='#kunde-' + ${kunde.id}"
-                    hx-swap="outerHTML">
+                    hx-swap="outerHTML"
+                    th:attr="hx-get='/inlineEdit/edit/' + ${kunde.id}, hx-target='#kunde-' + ${kunde.id}">
                 ✏️ Bearbeiten
+            </button>
+            <!-- hx-delete="'/inlineEdit/delete/' + ${kunde.id}"           -->
+            <button
+                    th:attr="hx-delete='/inlineEdit/delete/' + ${kunde.id}"
+                    th:data-row-id="'kunde-' + ${kunde.id}"
+                    hx-trigger="click"
+                    hx-target="this"
+                    hx-swap="none"
+                    class="delete-btn"
+            >
+                🗑️ Löschen
             </button>
         </td>
     </tr>

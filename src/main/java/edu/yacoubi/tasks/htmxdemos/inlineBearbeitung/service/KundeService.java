@@ -24,4 +24,12 @@ public class KundeService {
     public Kunde update(Long id, Kunde kunde) {
         return repo.update(id, kunde);
     }
+
+    public boolean delete(Long id) {
+        System.out.println(
+                "KundeService: delete called for ID: " + id + ", current repository state: " + repo.findAll()
+        );
+
+        return repo.delete(id);
+    }
 }

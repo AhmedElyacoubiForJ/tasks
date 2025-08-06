@@ -3,6 +3,7 @@ package edu.yacoubi.tasks.htmxdemos.inlineBearbeitung.controllers;
 import edu.yacoubi.tasks.htmxdemos.inlineBearbeitung.model.Kunde;
 import edu.yacoubi.tasks.htmxdemos.inlineBearbeitung.service.KundeService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -58,5 +59,17 @@ public class KundeController {
         model.addAttribute("kunde", kunde);
         return "htmxdemo/inlineEdit/fragments/tableRow :: row";
     }
+
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<Void> deleteKunde(@PathVariable Long id) {
+        System.out.println("Delete request for Kunde with ID: " + id);
+        if (!kundeService.delete(id)) {
+            return ResponseEntity.notFound().build(); // 404 Not Found
+        }
+        System.out.println("Kunde with ID " + id + " deleted successfully.");
+
+        return ResponseEntity.noContent().build(); // 204 No Content
+    }
+
 }
 

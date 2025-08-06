@@ -51,6 +51,8 @@ public class KundeRepository {
 //        return null;
 //    }
 
-
+    public boolean delete(Long id) {
+        return kunden.removeIf(k -> k.getId().equals(id));
+    }
 }
 
