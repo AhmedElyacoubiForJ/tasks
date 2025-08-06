@@ -1,17 +1,15 @@
 package edu.yacoubi.tasks.htmxdemos.inlineBearbeitung.service;
 
 import edu.yacoubi.tasks.htmxdemos.inlineBearbeitung.model.Kunde;
+import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
-@Component
+//@Component
+@RequiredArgsConstructor
 public class ListAndEditRunner implements CommandLineRunner {
 
     private final KundeService kundeService;
-
-    public ListAndEditRunner(KundeService kundeService) {
-        this.kundeService = kundeService;
-    }
 
     @Override
     public void run(String... args) {
@@ -27,6 +25,10 @@ public class ListAndEditRunner implements CommandLineRunner {
         Kunde aktualisiert = kundeService.findById(3L);
         System.out.printf("✅ Aktualisiert: %d | %s | %s%n",
                 aktualisiert.getId(), aktualisiert.getName(), aktualisiert.getEmail());
+
+        /*kundeService.findAll().forEach(k ->
+                System.out.printf("➡️  %d | %s | %s%n", k.getId(), k.getName(), k.getEmail())
+        );*/
     }
 }
 

@@ -1,0 +1,38 @@
+/* 🧾 Formular wie Tabellenzeile gestalten */
+form {
+  display: table;
+  width: 100%;
+  border-collapse: collapse;
+}
+
+form > * {
+  display: table-cell;
+  padding: 0.4rem 0.6rem;
+  vertical-align: middle;
+  border: 1px solid #ddd;
+}
+
+/* ✍️ Eingabefelder */
+form input[type="text"],
+form input[type="email"] {
+  width: 100%;
+  padding: 0.3rem 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 0;
+  font-size: inherit;
+  background: white;
+}
+
+/* ✅ Button wie Tabellenzelle */
+form button {
+  padding: 0.3rem 0.7rem;
+  background: transparent;
+  border: 1px solid #ccc;
+  border-radius: 0;
+  font-size: inherit;
+  cursor: pointer;
+}
+
+form button:hover {
+  background-color: #eee;
+}

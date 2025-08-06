@@ -30,11 +30,27 @@ public class KundeRepository {
     }
 
     public Kunde update(Long id, Kunde updatedKunde) {
-        return findById(id).map(existing -> {
-            existing.setName(updatedKunde.getName());
-            existing.setEmail(updatedKunde.getEmail());
-            return existing;
-        }).orElse(null);
+        Optional<Kunde> existingKunde = findById(id);
+        if (existingKunde.isPresent()) {
+            Kunde kunde = existingKunde.get();
+            kunde.setName(updatedKunde.getName());
+            kunde.setEmail(updatedKunde.getEmail());
+            return kunde;
+        } else {
+            throw new IllegalArgumentException("Kunde mit ID " + id + " nicht gefunden.");
+        }
     }
+//    public Kunde update(Long id, Kunde updatedKunde) {
+//        for (int i = 0; i < kunden.size(); i++) {
+//            if (kunden.get(i).getId().equals(id)) {
+//                updatedKunde.setId(id); // ID beibehalten!
+//                kunden.set(i, updatedKunde);
+//                return updatedKunde;
+//            }
+//        }
+//        return null;
+//    }
+
+
 }
 

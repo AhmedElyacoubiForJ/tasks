@@ -1,0 +1,13 @@
+<head th:fragment="head" xmlns:th="http://www.thymeleaf.org">
+    <meta charset="UTF-8">
+    <title>Kundenübersicht</title>
+    <script src="https://unpkg.com/htmx.org@1.9.2"></script>
+    <link href="https://cdn.simplecss.org/simple.min.css" rel="stylesheet">
+        <script>
+            function sync(el) {
+              const form = el.closest('tr').querySelector('form');
+              const hidden = form.querySelector(`input[name="${el.name}"]`);
+              if (hidden) hidden.value = el.value;
+            }
+        </script>
+</head>

@@ -1,26 +1,42 @@
-<tr th:fragment="rowEdit(kunde)"
-    xmlns:th="http://www.w3.org/1999/xhtml">
-    <td th:text="${kunde.id}">ID</td>
-    <td>
-        <input name="name" th:value="${kunde.name}" type="text"/>
-    </td>
-    <td>
-        <input name="email" th:value="${kunde.email}" type="email"/>
-    </td>
-    <td>
-        <form
-                hx-post="/inlineEdit/update/${kunde.id}"
-                hx-swap="outerHTML"
-                hx-target="closest tr"
-                th:object="${kunde}">
-            <button type="submit">💾 Speichern</button>
-            <button
-                    hx-get="/inlineEdit"
-                    hx-swap="outerHTML"
-                    hx-target="closest tr"
-                    type="button">
+<!--
+    Fragment zur Inline-Bearbeitung eines Kunden
+    - vollständiges <form> mit allen Feldern innerhalb einer einzigen <td>
+    - erlaubt valide HTML und sendet korrekte Werte
+-->
+<th:block th:fragment="rowEdit(kunde)" xmlns:th="http://www.thymeleaf.org">
+    <tr th:id="'kunde-' + ${kunde.id}">
+        <td>
+            <input name="id" readonly th:value="${kunde.id}" type="text"
+                   oninput="sync(this)" />
+        </td>
+        <td>
+            <input name="name" th:value="${kunde.name}" type="text"
+                   oninput="sync(this)" />
+        </td>
+        <td>
+            <input name="email" th:value="${kunde.email}" type="email"
+                   oninput="sync(this)" />
+        </td>
+        <td>
+            <form th:hx-post="@{'/inlineEdit/update/' + ${kunde.id}}"
+                  th:hx-target="'#kunde-' + ${kunde.id}"
+                  hx-swap="outerHTML">
+
+                <!-- versteckte Brückenfelder -->
+                <input type="hidden" name="id" th:value="${kunde.id}" />
+                <input type="hidden" name="name" th:value="${kunde.name}"/>
+                <input type="hidden" name="email" th:value="${kunde.email}"/>
+
+                <button type="submit">✅ Speichern</button>
+            </form>
+
+            <!-- ❌ Abbrechen-Button (separat im selben <td>) -->
+            <button type="button"
+                    th:hx-get="@{'/inlineEdit/view/' + ${kunde.id}}"
+                    th:hx-target="'#kunde-' + ${kunde.id}"
+                    hx-swap="outerHTML">
                 ❌ Abbrechen
             </button>
-        </form>
-    </td>
-</tr>
+        </td>
+    </tr>
+</th:block>

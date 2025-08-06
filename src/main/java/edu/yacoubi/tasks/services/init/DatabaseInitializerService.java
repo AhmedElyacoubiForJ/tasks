@@ -26,7 +26,7 @@ public class DatabaseInitializerService {
      * Enthält Aufgaben mit zufälligem Status/Priorität, einige ohne Fälligkeitsdatum,
      * sowie Listen mit 0 Tasks zur UI-Validierung.
      */
-    @PostConstruct
+    //@PostConstruct
     public void init() {
         log.info("🚀 Datenbank-Initialisierung gestartet");
 

@@ -1,8 +1,15 @@
-<th:block th:fragment="row(kunde)"
-          xmlns:th="http://www.w3.org/1999/xhtml">
-    <tr>
-        <td th:text="${kunde != null ? kunde.id : '–'}">ID</td>
-        <td th:text="${kunde != null ? kunde.name : '–'}">Name</td>
-        <td th:text="${kunde != null ? kunde.email : '–'}">Email</td>
+<!-- hx-target="this", hx-target="closest form", hx-target="closest tr" -->
+<th:block th:fragment="row(kunde)" xmlns:th="http://www.w3.org/1999/xhtml">
+    <tr th:id="'kunde-' + ${kunde.id}">
+        <td th:text="${kunde.id}"></td>
+        <td th:text="${kunde.name}"></td>
+        <td th:text="${kunde.email}"></td>
+        <td>
+            <button
+                    th:attr="hx-get='/inlineEdit/edit/' + ${kunde.id}, hx-target='#kunde-' + ${kunde.id}"
+                    hx-swap="outerHTML">
+                ✏️ Bearbeiten
+            </button>
+        </td>
     </tr>
 </th:block>
