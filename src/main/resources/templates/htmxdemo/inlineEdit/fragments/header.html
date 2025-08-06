@@ -9,5 +9,19 @@
               const hidden = form.querySelector(`input[name="${el.name}"]`);
               if (hidden) hidden.value = el.value;
             }
+            function highlightChange(el) {
+                const original = el.getAttribute('data-original');
+                const current = el.value;
+
+                console.log("Original:", original);
+                console.log("Current:", current);
+
+                if (current !== original) {
+                  el.classList.add('field-edited');
+                } else {
+                  el.classList.remove('field-edited');
+                }
+            }
         </script>
+    <link rel="stylesheet" href="/css/inlineBearbeitung.css"/>
 </head>

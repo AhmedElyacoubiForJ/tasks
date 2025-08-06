@@ -10,12 +10,18 @@
                    oninput="sync(this)" />
         </td>
         <td>
-            <input name="name" th:value="${kunde.name}" type="text"
-                   oninput="sync(this)" />
+            <input name="name"
+                   th:value="${kunde.name}"
+                   type="text"
+                   th:attr="data-original=${kunde.name}"
+                   oninput="sync(this); highlightChange(this)" />
         </td>
         <td>
-            <input name="email" th:value="${kunde.email}" type="email"
-                   oninput="sync(this)" />
+            <input name="email"
+                   th:value="${kunde.email}"
+                   type="email"
+                   th:attr="data-original=${kunde.email}"
+                   oninput="sync(this); highlightChange(this)"/>
         </td>
         <td>
             <form th:hx-post="@{'/inlineEdit/update/' + ${kunde.id}}"
