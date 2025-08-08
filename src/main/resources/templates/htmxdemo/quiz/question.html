@@ -1,5 +1,16 @@
 <div xmlns:th="http://www.thymeleaf.org" class="container mt-4">
     <div class="p-4 bg-dark-subtle rounded-3 shadow-sm">
+        <div class="mb-4">
+            <div class="progress" style="height: 25px;">
+                <div class="progress-bar bg-primary progress-bar-striped progress-bar-animated"
+                     role="progressbar"
+                     th:style="'width:' + (${progress} * 100 / ${total}) + '%'"
+                     th:text="'Frage ' + (${progress} + 1) + ' von ' + ${total}">
+                </div>
+            </div>
+        </div>
+
+
         <h2 th:text="${question.questionText}" class="h4 fw-bold text-dark-emphasis mb-4">Frage</h2>
 
         <form>
