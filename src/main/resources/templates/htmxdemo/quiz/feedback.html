@@ -1,4 +1,7 @@
-<div xmlns:th="http://www.thymeleaf.org">
-    <span th:if="${isCorrect}" class="text-success">✅ Richtig!</span>
-    <span th:if="${isCorrect == false}" class="text-danger">❌ Leider falsch.</span>
+<div xmlns:th="http://www.thymeleaf.org"
+     class="mt-4 p-3 rounded-3 text-center fw-semibold fade-in"
+     th:classappend="${isCorrect} ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'">
+
+    <span th:if="${isCorrect}">✅ Richtig!</span>
+    <span th:if="${isCorrect == false}">❌ Leider falsch.</span>
 </div>
