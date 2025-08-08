@@ -5,14 +5,15 @@
     <script src="https://unpkg.com/htmx.org@1.9.2"></script>
 </head>
 <body>
-<h1>Willkommen zum Quiz!</h1>
-<button type="button"
-        hx-get="/quiz/next"
-        hx-swap="innerHTML"
-        hx-target="#quiz-container">
-    Quiz starten
-</button>
+    <h1>Willkommen zum Quiz!</h1>
 
-<div id="quiz-container"></div>
-</body>
+    <button type="button"
+            hx-get="/quiz/next"
+            hx-swap="innerHTML"
+            hx-target="#quiz-container">
+        Quiz starten
+    </button>
+
+    <div id="quiz-container"></div>
+    </body>
 </html>
