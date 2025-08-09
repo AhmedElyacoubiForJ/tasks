@@ -21,27 +21,3 @@
         </a>
     </div>
 </div>
-
-<!--
-<div xmlns:th="http://www.thymeleaf.org"
-     th:class="'container mt-5 ' + (${score} == ${total} ? '' : '')">
-    <div th:class="'p-4 rounded-3 shadow-sm text-center ' +
-                 (${score} == ${total} ? 'bg-success-subtle text-success-emphasis' : 'bg-danger-subtle text-danger-emphasis')">
-
-        <h2 class="fw-bold mb-3"
-            th:text="${score} == ${total} ? '🎉 Quiz beendet!' : '😅 Quiz beendet – versuch’s nochmal!'">
-            Quiz beendet!
-        </h2>
-
-        <p class="lead"
-           th:text="'Du hast ' + ${score} + ' von ' + ${total} + ' Punkten erreicht.'">
-            Du hast X von Y Punkten erreicht.
-        </p>
-
-        <a href="/quiz" class="btn mt-3"
-           th:class="'btn mt-3 ' + (${score} == ${total} ? 'btn-outline-success' : 'btn-outline-danger')">
-            🔁 Nochmal spielen
-        </a>
-    </div>
-</div>
--->

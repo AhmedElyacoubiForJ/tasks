@@ -14,6 +14,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Controller
 @RequestMapping("/quiz")
 @RequiredArgsConstructor
@@ -63,6 +67,20 @@ public class QuizController {
 
     private String showQuestionPage(final QuizQuestion question,
                                     final int progress, final Model model) {
+
+        if (question.hasCode()) {
+            List<String> codeLines = Arrays.stream(question.getCodeText().split(";"))
+                    .map(String::trim)
+                    .filter(s -> !s.isEmpty())
+                    .map(s -> s + ";")
+                    .collect(Collectors.toList());
+            model.addAttribute("codeLines", codeLines);
+            codeLines.stream().forEach(System.out::println);
+            System.out.println("codeLines.size() : " + codeLines.size());
+        }
+
+        //model.addAttribute("codeLines", codeLines);
+
         model.addAttribute("question", question);
         model.addAttribute("progress", progress);
         model.addAttribute("total", quizService.getTotalQuestions());
