@@ -69,17 +69,10 @@ public class QuizController {
                                     final int progress, final Model model) {
 
         if (question.hasCode()) {
-            List<String> codeLines = Arrays.stream(question.getCodeText().split(";"))
-                    .map(String::trim)
-                    .filter(s -> !s.isEmpty())
-                    .map(s -> s + ";")
-                    .collect(Collectors.toList());
+            List<String> codeLines = question.getCodeLines();
             model.addAttribute("codeLines", codeLines);
-            codeLines.stream().forEach(System.out::println);
-            System.out.println("codeLines.size() : " + codeLines.size());
+            //codeLines.isEmpty();
         }
-
-        //model.addAttribute("codeLines", codeLines);
 
         model.addAttribute("question", question);
         model.addAttribute("progress", progress);

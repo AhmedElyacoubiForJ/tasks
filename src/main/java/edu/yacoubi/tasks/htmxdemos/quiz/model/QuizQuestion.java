@@ -3,6 +3,7 @@ package edu.yacoubi.tasks.htmxdemos.quiz.model;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
+import java.util.Arrays;
 import java.util.List;
 
 @EqualsAndHashCode
@@ -40,6 +41,16 @@ public class QuizQuestion {
 
     public boolean hasCode() {
         return codeText != null && !codeText.trim().isEmpty();
+    }
+
+    public List<String> getCodeLines() {
+        return codeText == null || codeText.isBlank()
+                ? List.of()
+                : Arrays.stream(codeText.split(";"))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .map(s -> s + ";") // Semikolon wieder anhängen
+                .toList();
     }
 
     public enum QuestionType {

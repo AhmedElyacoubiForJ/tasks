@@ -7,10 +7,6 @@ import java.util.List;
 
 @Service
 public class QuizService {
-    // Alte Fragen auskommentiert
-    // new QuizQuestion("Was ist die Hauptstadt von Frankreich?", List.of("Paris", "Berlin", "Rom"), "Paris"),
-    // new QuizQuestion("Was ist 2 + 2?", List.of("3", "4", "5"), "4"),
-    // new QuizQuestion("Welche Farbe hat der Himmel?", List.of("Blau", "Grün", "Rot"), "Blau"),
 
     private final List<QuizQuestion> quizQuestions = List.of(
             // Entwickler-Quiz zu Map.merge()

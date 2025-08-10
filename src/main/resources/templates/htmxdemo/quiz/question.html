@@ -12,28 +12,9 @@
 
         <h2 th:text="${question.questionText}" class="h4 fw-bold text-dark-emphasis mb-4">Frage</h2>
 
-<!--        <pre style="font-family: monospace;">-->
-<!--            <div th:each="line : ${codeLines}" th:text="${line}" style="margin: 0; padding: 0; line-height: 1.1em;"></div>-->
-<!--        </pre>-->
-
-        <pre th:if="${codeLines}" style="font-family: monospace; line-height: 1.0;">
+        <pre th:if="${codeLines != null and !codeLines.isEmpty()}" style="font-family: monospace; line-height: 1.0;">
             <div th:each="line : ${codeLines}" th:text="${line}" style="margin: 0; padding: 0;"></div>
         </pre>
-
-        <!--        <pre>-->
-<!--            <span th:each="line : ${codeLines}">-->
-<!--                <span th:text="${line}"></span><br />-->
-<!--            </span>-->
-<!--        </pre>-->
-
-<!--        <pre style="font-family: monospace;">-->
-<!--            <span th:each="line : ${codeLines}" th:utext="${line + '<br />'}" style="display: block;"></span>-->
-<!--        </pre>-->
-
-
-
-
-
 
         <form>
             <div class="mb-3" th:each="option : ${question.options}">
