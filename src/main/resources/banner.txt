@@ -1,0 +1,13 @@
+${AnsiColor.BRIGHT_GREEN}
+   ___       _                      _     _             _
+  / _ \ _ __(_)_   _____  ___ _ __ | |_  | |_ ___  __ _| |_ ___
+ | | | | '__| \ \ / / _ \/ _ \ '_ \| __| | __/ _ \/ _` | __/ _ \
+ | |_| | |  | |\ V /  __/  __/ | | | |_  | ||  __/ (_| | || (_) |
+  \___/|_|  |_| \_/ \___|\___|_| |_|\__|  \__\___|\__,_|\__\___/
+
+${AnsiColor.BLUE}
+${AnsiStyle.BOLD}
+:: Ahmed's Spring Boot Tasks App ::
+Application Version: ${application.version}
+Java Version: ${java.version}
+${AnsiColor.DEFAULT}
