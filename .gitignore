@@ -2,6 +2,12 @@
 HELP.md
 NOTES.md
 LAYOUT_DEMO.md
+CSS-README.md
+table.css
+buttons.css
+responsive.css
+HTML-Template.html
+Dark-Mode-Toggle.md
 target/
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/

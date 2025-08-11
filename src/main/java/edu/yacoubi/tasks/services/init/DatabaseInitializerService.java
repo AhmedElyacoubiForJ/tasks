@@ -26,7 +26,7 @@ public class DatabaseInitializerService {
      * Enthält Aufgaben mit zufälligem Status/Priorität, einige ohne Fälligkeitsdatum,
      * sowie Listen mit 0 Tasks zur UI-Validierung.
      */
-    //@PostConstruct
+    @PostConstruct
     public void init() {
         log.info("🚀 Datenbank-Initialisierung gestartet");
 
@@ -67,8 +67,8 @@ public class DatabaseInitializerService {
 
         // Liste mit 100 % erledigten Tasks
         TaskList completeList = new TaskList();
-        completeList.setTitle("✅ Abgeschlossene Liste");
-        completeList.setDescription("Alle Aufgaben sind erledigt — ideal für bg-success Balken");
+        completeList.setTitle("📋 TaskList #7 - TaskList #7 - TaskList #7");
+        completeList.setDescription("Alle Aufgaben sind erledigt");
         completeList.setCreated(now.minusDays(4));
         completeList.setUpdated(now);
 
