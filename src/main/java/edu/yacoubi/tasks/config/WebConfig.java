@@ -2,45 +2,41 @@ package edu.yacoubi.tasks.config;
 
 import edu.yacoubi.tasks.interceptor.ConsoleLoggingInterceptor;
 import edu.yacoubi.tasks.interceptor.JsonLoggingInterceptor;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.*;
 
 /**
- * Statische Seiten ohne Controller anzeigen
- *
- * Deine API absichern
- *
- * Ressourcen gezielt freigeben
- *
- * Logging oder Auth-Checks einbauen
+ * WebConfig – zentrale Konfiguration für:
+ * - Statische Seiten ohne Controller
+ * - CORS-Zugriffssteuerung
+ * - Ressourcenfreigabe
+ * - Logging-Interceptor
  */
 @Configuration
+@RequiredArgsConstructor
 public class WebConfig implements WebMvcConfigurer {
 
     @Value("${logging.interceptor.enabled}")
     private String activeInterceptor;
 
-    @Autowired
-    private ConsoleLoggingInterceptor consoleInterceptor;
+    private final ConsoleLoggingInterceptor consoleInterceptor;
+    private final JsonLoggingInterceptor jsonInterceptor;
 
-    @Autowired
-    private JsonLoggingInterceptor jsonInterceptor;
-
-    // ViewController: /about-Seite ohne Controller
-    // statische Seite about.html anzeigen,
-    // ohne extra einen Controller zu schreiben.
-    // man braucht nur src/main/resources/templates/about.html
-    // – kein Controller nötig!
+    /**
+     * Zeigt die Seite /about ohne eigenen Controller.
+     * Voraussetzung: Datei liegt unter src/main/resources/templates/about.html
+     */
     @Override
     public void addViewControllers(ViewControllerRegistry registry) {
         registry.addViewController("/about").setViewName("about");
     }
 
-    // CORS-Konfiguration: z.B. für externe Clients
-    // API für Tasks bereitstellen:
-    // 🔐 schützt der API & gezielte Zugriff freigeben.
+    /**
+     * CORS-Konfiguration für externe Clients.
+     * Erlaubt Zugriff auf die API unter /api/** von https://mein-client.de
+     */
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/api/**")
@@ -48,27 +44,28 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowedMethods("GET", "POST", "PUT", "DELETE");
     }
 
-    // Statische Ressourcen: z.B. für eigene Icons oder CSS
-    // 📁 Dann kann man z.B. <img src="/icons/check.svg"> direkt verwenden.
+    /**
+     * Statische Ressourcen wie Icons oder CSS-Dateien freigeben.
+     * Beispiel: <img src="/icons/check.svg">
+     */
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/icons/**")
                 .addResourceLocations("classpath:/static/icons/");
     }
 
-    // Interceptor: z.B. Logging aller Task-Requests
-    // 📋 Man bekommt bei jedem Task-Request eine Log-Ausgabe – super für Debugging!
+    /**
+     * Logging-Interceptor aktivieren für Task-Endpoints.
+     * Auswahl über Property: logging.interceptor.enabled = json | console
+     */
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
+        var paths = new String[]{"/tasklists/**", "/task-lists/**"};
 
         if ("json".equalsIgnoreCase(activeInterceptor)) {
-            registry.addInterceptor(jsonInterceptor)
-                    .addPathPatterns("/tasklists/**")
-                    .addPathPatterns("/task-lists/**");
+            registry.addInterceptor(jsonInterceptor).addPathPatterns(paths);
         } else {
-            registry.addInterceptor(consoleInterceptor)
-                    .addPathPatterns("/tasklists/**")
-                    .addPathPatterns("/task-lists/**");
+            registry.addInterceptor(consoleInterceptor).addPathPatterns(paths);
         }
     }
 }

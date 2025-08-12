@@ -21,7 +21,6 @@ public class JsonLoggingInterceptor implements HandlerInterceptor {
 
     private static final Logger jsonLogger = LoggerFactory.getLogger("jsonLogger");
     private static final ObjectMapper objectMapper = new ObjectMapper();
-            //.registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
 
     private static final String TRACE_ID = "traceId";
     private static final String START_TIME = "startTime";
@@ -47,10 +46,7 @@ public class JsonLoggingInterceptor implements HandlerInterceptor {
         String traceId = (String) request.getAttribute(TRACE_ID);
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS");
-
-
         Map<String, Object> logData = new LinkedHashMap<>();
-        //logData.put("timestamp", LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
         logData.put("timestamp", LocalDateTime.now().format(formatter));
         logData.put("traceId", traceId);
         logData.put("method", request.getMethod());

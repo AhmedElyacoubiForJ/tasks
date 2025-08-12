@@ -18,7 +18,6 @@ import java.util.UUID;
 
 @Component
 public class ConsoleLoggingInterceptor implements HandlerInterceptor {
-
     private static final org.slf4j.Logger log = LoggerFactory.getLogger(ConsoleLoggingInterceptor.class);
     private static final String TRACE_ID = "traceId";
     private static final String START_TIME = "startTime";
@@ -29,7 +28,7 @@ public class ConsoleLoggingInterceptor implements HandlerInterceptor {
                              Object handler) {
 
         // 🔍 Request-Infos sammeln
-        String method = request.getMethod();
+        String method = request.getMethod();;
         String uri = request.getRequestURI();
         String clientIP = "0:0:0:0:0:0:0:1".equals(request.getRemoteAddr()) ? "localhost" : request.getRemoteAddr();
         String userAgent = request.getHeader("User-Agent");
