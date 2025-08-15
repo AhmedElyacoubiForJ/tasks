@@ -1,0 +1,29 @@
+# 🧪 Testprofil: TEST
+
+spring:
+  # 🗄️ Datenbank-Konfiguration (H2 In-Memory)
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL
+    username: sa
+    password: ""
+
+  # 🧬 JPA & Hibernate
+  jpa:
+    hibernate:
+      ddl-auto: create-drop  # 🧨 Schema wird bei jedem Test neu erstellt
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: true  # 📄 Formatierte SQL-Ausgabe
+
+  # 🚀 Startverhalten
+  main:
+    banner-mode: off  # 📴 Kein Spring-Banner beim Start
+
+# 🐛 SQL-Logging
+logging:
+  level:
+    org.hibernate.SQL: DEBUG  # 🔍 Zeigt ausgeführte SQL-Statements
+  interceptor:
+    enabled: json  # 📦 JSON-Format für Logs

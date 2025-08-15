@@ -1,0 +1,18 @@
+# 📦 App-Informationen & 🌍 Profil
+spring:
+  application:
+    name: tasks
+  output:
+    ansi:
+      enabled: ALWAYS
+  profiles:
+    active: test  # Optionen: dev, test oder prod
+
+# 🧾 Versioning
+application:
+  version: 1.0.0
+
+# 📋 Logging-Konfiguration
+logging:
+  interceptor:
+    enabled: console  # Mögliche Werte: json oder console

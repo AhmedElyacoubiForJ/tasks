@@ -1,0 +1,32 @@
+# 🏭 Produktionsprofil: PROD
+
+spring:
+  # 🗄️ Datenbank-Konfiguration (PostgreSQL)
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/tasks_db
+    username: postgres
+    password: ${POSTGRE_PASSWORD}  # 🔐 Aus Umgebungsvariable
+
+  # 🧬 JPA & Hibernate
+  jpa:
+    hibernate:
+      ddl-auto: none  # 🚫 Keine automatische Schema-Generierung
+    properties:
+      hibernate:
+        format_sql: true  # 📄 Formatierte SQL-Ausgabe
+
+  # 🚫 H2-Konsole deaktiviert
+  h2:
+    console:
+      enabled: false
+  devtools:
+    livereload:
+      enabled: false  # 🚫 LiveReload deaktivieren
+    restart:
+      enabled: false  # 🚫 Auto-Restart deaktivieren
+
+# 📋 Logging
+logging:
+  interceptor:
+    enabled: console
