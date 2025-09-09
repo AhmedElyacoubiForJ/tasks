@@ -4,14 +4,14 @@ spring:
   # 🗄️ Datenbank-Konfiguration (PostgreSQL)
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/tasks_db
-    username: postgres
-    password: ${POSTGRE_PASSWORD}  # 🔐 Aus Umgebungsvariable
+    url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME} # localhost
+    username: ${DB_USER}
+    password: ${DB_PASSWORD} # 🔐 Aus Umgebungsvariable
 
   # 🧬 JPA & Hibernate
   jpa:
     hibernate:
-      ddl-auto: none  # 🚫 Keine automatische Schema-Generierung
+      ddl-auto: update  # 🚫 Keine automatische Schema-Generierung
     properties:
       hibernate:
         format_sql: true  # 📄 Formatierte SQL-Ausgabe

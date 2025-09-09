@@ -9,9 +9,12 @@ responsive.css
 HTML-Template.html
 Dark-Mode-Toggle.md
 target/
+backup/
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
+
+.env
 
 ### STS ###
 .apt_generated

@@ -6,7 +6,7 @@ spring:
     ansi:
       enabled: ALWAYS
   profiles:
-    active: test  # Optionen: dev, test oder prod
+    active: prod  # Optionen: dev, test oder prod
 
 # 🧾 Versioning
 application:
