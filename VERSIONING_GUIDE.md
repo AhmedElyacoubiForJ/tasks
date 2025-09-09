@@ -20,11 +20,11 @@ Versionierung hilft dir bei:
 
 Das Standardformat lautet: `MAJOR.MINOR.PATCH`
 
-| Teil     | Bedeutung                                                                 |
-|----------|---------------------------------------------------------------------------|
-| `MAJOR`  | Bricht Kompatibilität (z. B. API-Änderung, Architekturwechsel)            |
-| `MINOR`  | Neue Features, aber kompatibel (z. B. neue Use Cases, Erweiterungen)      |
-| `PATCH`  | Fehlerbehebungen, kleine Verbesserungen, Refactoring                      |
+| Teil     | Bedeutung                                                               |
+|----------|-------------------------------------------------------------------------|
+| `MAJOR`  | Bricht Kompatibilität (z.B. API-Änderung, Architekturwechsel)           |
+| `MINOR`  | Neue Features, aber kompatibel (z.B. neue Use Cases, Erweiterungen)     |
+| `PATCH`  | Fehlerbehebungen, kleine Verbesserungen, Refactoring                    |
 
 ### Beispielverlauf:
 
@@ -75,6 +75,7 @@ Git-Tags sind wie Marker in deiner Projektgeschichte. Sie helfen dir, Releases z
 ```bash
 git tag -a v0.1.0-dev -m "Erste lauffähige Version mit Task-Listen"
 git push origin v0.1.0-dev
+git push origin main
 ```
 
 Später:
@@ -119,7 +120,7 @@ make release VERSION=1.1.0-beta
 [//]: # ()
 [//]: # (**Ja, genau!**  )
 
-[//]: # (Wenn dein erstes Feature vollständig ist &#40;z. B. Task-Listen anzeigen + erstellen&#41;, kannst du sagen:)
+[//]: # (Wenn dein erstes Feature vollständig ist &#40;z.B. Task-Listen anzeigen + erstellen&#41;, kannst du sagen:)
 
 [//]: # (> „Ich bin kurz vor dem ersten stabilen Release.“)
 
