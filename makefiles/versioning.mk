@@ -11,7 +11,7 @@ release:
 	docker build -t $(APP_IMAGE):latest .
 	docker tag $(APP_IMAGE):latest $(APP_IMAGE):$(TIMESTAMP)
 
-release-all:
+release-all-1:
 	@if [ -z "$(VERSION)" ]; then \
         echo "❌ make release-all VERSION=x.y.z"; exit 1; \
     fi
@@ -74,18 +74,15 @@ release-github:
 	@echo "✅ GitHub Release erstellt: v$(VERSION)"
 
 # 🧪 Verwendung
-# make changelog-md FROM=v0.1.0 TO=v0.2.0
+# make changelog-md FROM=v0.1.0 TO=v0.2.0-dev
 changelog-md:
-	@if [ -z "$(FROM)" ] || [ -z "$(TO)" ]; then \
-        echo "❌ Bitte gib beide Versionen an: make changelog-md FROM=v0.1.0 TO=v0.2.0"; \
+	@if grep -q "## [$(TO)]" CHANGELOG.md; then \
+        echo "⚠️ CHANGELOG.md enthält bereits Eintrag für $(TO). Abbruch."; \
         exit 1; \
     fi
-	@echo "📝 Aktualisiere CHANGELOG.md mit Änderungen von $(FROM) → $(TO)..."
-	@echo "" >> CHANGELOG.md
 	@echo "## [$(TO)] – $(shell date +%Y-%m-%d)" >> CHANGELOG.md
-	@git log $(FROM)..$(TO) --pretty=format:"- %s" >> CHANGELOG.md
-	@echo "" >> CHANGELOG.md
-	@echo "✅ CHANGELOG.md wurde aktualisiert"
+	@git log $(FROM)..$(TO) --oneline --no-merges | sed 's/^/- /' >> CHANGELOG.md
+
 
 changelog-preview:
 	@git log $(FROM)..$(TO) --pretty=format:"- %s"

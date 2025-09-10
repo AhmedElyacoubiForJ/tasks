@@ -1,14 +1,41 @@
+# 📦 Docker-Kommandos für Setup & Wartung:
+# ----------------------------------------
+# 🔄 Projekt neu starten mit frischem Volume:
+# docker compose down -v && docker volume rm pgdata && docker compose up --build
+
+# 🧼 Nur Volume löschen:
+# docker volume rm pgdata
+
+# 🔍 Volume-Details anzeigen:
+# docker volume inspect pgdata
+
+# 🐙 Compose-Container anzeigen:
+# docker compose ps -a
+
+# 🐳 Alle Container anzeigen (auch manuelle):
+# docker ps -a
+
+# 🧠 Logs live verfolgen:
+# docker compose logs -f
+
+# 🚀 Compose im Hintergrund starten:
+# docker compose up --build --detach
+
+# 🧹 Container & Netzwerke komplett entfernen:
+# docker system prune -a
+
 services:
   db:
     image: postgres:alpine
     container_name: tasks-db
-    env_file: .env
+    env_file:
+      - .env
     environment:
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER}" ]
+      test: [ "CMD-SHELL", "pg_isready -U $$DB_USER" ]
       interval: 30s
       timeout: 5s
       retries: 5
@@ -19,7 +46,8 @@ services:
   app:
     image: myimage:tasks-app
     container_name: tasks-app
-    env_file: .env
+    env_file:
+      - .env
     ports:
       - "${APP_PORT:-8080}:8080"
     depends_on:
