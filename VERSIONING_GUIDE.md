@@ -99,6 +99,18 @@ make release VERSION=1.1.0-beta
 
 ---
 
+## 🏷️ So kannst du Tags sinnvoll nutzen:
+
+- **v1.0.0** → Erste stabile Version
+- **v1.1.0** → Neue Features hinzugefügt
+- **v1.1.1** → Kleine Bugfixes
+- **v2.0.0-dev** → Beginn einer neuen Entwicklungsphase
+
+> Du entscheidest, wann ein Commit „würdig“ ist, getaggt zu werden — und das macht deine Versionsgeschichte nachvollziehbar und professionell.
+
+
+---
+
 ## 📌 Fazit
 
 - Du kannst jederzeit taggen – auch mitten in der Entwicklung
