@@ -1,0 +1,44 @@
+# docker run --env-file .env.container-dev myimage:tasks-app
+# docker run \
+#  -e SPRING_PROFILES_ACTIVE=container-dev \
+#  -e DB_HOST=postgres \
+#  -e DB_PORT=5432 \
+#  -e DB_NAME=tasks_dev_db \
+#  -e DB_USER=dev_user \
+#  -e DB_PASSWORD=dev_pass \
+#  -e SERVER_PORT=8080 \
+#  myimage:tasks-app
+spring:
+  datasource:
+    url: jdbc:postgresql://172.31.155.33:${DB_PORT}/${DB_NAME}
+    username: ${APP_DB_USER}
+    password: ${APP_DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    # 🚫 H2-Konsole deaktiviert
+    h2:
+      console:
+        enabled: false
+  # 🚀 Startverhalten
+  main:
+    banner-mode: off
+  # 🔄 Devtools (Live Reload)
+  devtools:
+    livereload:
+      enabled: false
+
+server:
+  port: ${SERVER_PORT:8080}
+
+# 📋 Logging
+logging:
+  level:
+    edu.yacoubi.tasks.config: DEBUG
+  interceptor:
+    enabled: console
