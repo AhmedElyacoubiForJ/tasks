@@ -1,7 +1,3 @@
-Sehr gerne, Ahmed — hier ist eine elegante, gut strukturierte Version von `docs/scripts.md`, die deine Skriptlandschaft dokumentiert und navigierbar macht. Sie ist modular aufgebaut, klar kommentiert und bereit für Erweiterung:
-
----
-
 # 📜 **Skriptübersicht: Docker-Workflow**
 
 > Diese Datei dokumentiert alle Shellskripte zur Steuerung der containerisierten Entwicklungsumgebung. Ziel ist eine klare Navigation, konsistente Nutzung und robuste Erweiterbarkeit.
@@ -18,8 +14,11 @@ scripts/
     ├── restart.sh
     ├── logs.sh
     ├── status.sh
+    ├── health.sh
     ├── init-db.sh
-    └── reset-db.sh
+    ├── reset-db.sh
+    ├── check-env.sh
+    └── colors.sh
 ```
 
 ---
@@ -33,8 +32,11 @@ scripts/
 | `restart.sh`     | Kombiniert Stop & Start                             | `bash scripts/docker/restart.sh`   |
 | `logs.sh`        | Zeigt Live-Logs der App oder DB                     | `bash scripts/docker/logs.sh`      |
 | `status.sh`      | Zeigt den aktuellen Zustand der Container           | `bash scripts/docker/status.sh`    |
+| `health.sh`      | Prüft App-Health via Actuator                       | `bash scripts/docker/health.sh`    |
 | `init-db.sh`     | Erstellt DB-Container inkl. Volume & Test-Tabelle   | `bash scripts/docker/init-db.sh`   |
 | `reset-db.sh`    | Entfernt Container & Volume, setzt DB zurück        | `bash scripts/docker/reset-db.sh`  |
+| `check-env.sh`   | Prüft `.env`-Dateien auf Vollständigkeit & Inhalt   | `bash scripts/docker/check-env.sh` |
+| `colors.sh`      | Definiert Farbvariablen für konsistente Ausgaben    | Wird automatisch eingebunden       |
 
 ---
 
@@ -56,12 +58,31 @@ ROOT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 ```plaintext
 db-config/container/dev/
 ├── .env.dev         # Umgebungsvariablen für DB-Container
+├── .env.example     # Referenzdatei mit Kommentaren & Defaults
+├── init-dev-db.sh   # Initialisierungsskript für DB-User & Struktur
 └── init-test.sql    # Optionales SQL zur Prüfung von APP_DB_USER
 ```
 
 ---
 
-## 🧰 Optional: Makefile-Integration
+## 🧪 Validierung & CI-Fähigkeit
+
+### `check-env.sh`
+
+- Prüft `.env`-Dateien auf Existenz, leere Werte und fehlende Schlüssel
+- Vergleicht gegen `.env.example`
+- Gibt Vorschläge für fehlende Einträge aus
+- CI-freundlich durch Exit-Codes
+
+### `health.sh`
+
+- Prüft App-Status via `GET /actuator/health`
+- Wiederholt bis zu 10x mit Timeout
+- Meldet `UP` oder `nicht bereit`
+
+---
+
+## 🧰 Makefile-Integration
 
 ```makefile
 make dev           # Startet die Umgebung
@@ -71,6 +92,17 @@ make logs          # Zeigt Logs
 make status        # Zeigt Containerstatus
 make init-db       # Erstellt DB-Container
 make reset-db      # Setzt DB zurück
+make check-env     # Prüft .env-Dateien
+make health        # Prüft App-Health
+make verify        # Führt vollständige Umgebungsvorprüfung aus
+```
+
+### `make verify` führt aus:
+
+```bash
+bash scripts/docker/check-env.sh
+bash scripts/docker/status.sh || true
+bash scripts/docker/health.sh || true
 ```
 
 ---
