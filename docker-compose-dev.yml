@@ -1,0 +1,74 @@
+# 📦 Docker-Kommandos für Setup & Wartung:
+# ----------------------------------------
+# docker compose -f docker-compose.yml --env-file ./db-config/container/prod/.env.prod up --build
+# docker compose -f docker-compose.yml --env-file ./db-config/container/dev/.env.dev up --build
+#
+# 🔄 Projekt neu starten mit frischem Volume:
+# docker compose down -v && docker volume rm pgdata && docker compose up --build
+
+# 🧼 Nur Volume löschen:
+# docker volume rm pgdata
+
+# 🔍 Volume-Details anzeigen:
+# docker volume inspect pgdata
+
+# 🐙 Compose-Container anzeigen:
+# docker compose ps -a
+
+# 🐳 Alle Container anzeigen (auch manuelle):
+# docker ps -a
+
+# 🧠 Logs live verfolgen:
+# docker compose logs -f
+
+# 🚀 Compose im Hintergrund starten:
+# docker compose up --build --detach
+
+# 🧹 Container & Netzwerke komplett entfernen:
+# docker system prune -a
+
+services:
+  db:
+    image: ${DB_IMAGE}
+    container_name: ${CONTAINER_NAME}
+    env_file:
+      - ./db-config/container/prod/.env.prod
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      APP_DB_USER: ${APP_DB_USER}
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD}
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U $$DB_USER" ]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - ${VOLUME}:/var/lib/postgresql/data
+      - ./db-config/container/prod/init-prod-db.sh:/docker-entrypoint-initdb.d/init-prod-db.sh
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    #networks:
+    #  - app-network
+  app:
+    #image: ${APP_IMAGE}
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: tasks-app:prod
+    container_name: ${APP_CONTAINER}
+    env_file:
+      - ./db-config/container/prod/.env.prod
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+    ports:
+      - "${APP_PORT:-8080}:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata-prod:
+#networks:
+#  app-network:

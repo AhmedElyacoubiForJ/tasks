@@ -38,16 +38,16 @@ Sie nutzt lokale Ressourcen und vermeidet Container-Overhead — perfekt für fo
 ```bash
 # 🧪 1. Entwicklung starten (H2-Datenbank, lokale Entwicklung)
 SPRING_PROFILES_ACTIVE=local-dev ./mvnw spring-boot:run
-./run-local-dev.sh
+./scripts/local/run-dev.sh
 
 # 🧪 2. Tests ausführen (Testdatenbank, Unit/Integration Tests)
 SPRING_PROFILES_ACTIVE=test ./mvnw test
-./run-test.sh
+./scripts/local/run-test.sh
 
 # 🧪 3. Produktion simulieren (PostgreSQL, Konfiguration über .env)
-export $(grep -v '^#' .env | xargs)
+export $(grep -v '^#' ./db-config/local/prod/.env | xargs)
 SPRING_PROFILES_ACTIVE=local-prod ./mvnw spring-boot:run
-./run-local-prod.sh
+./scripts/local/run-prod.sh
 ```
 
 ➡️ Die Anwendung nutzt lokale Ressourcen, keine Container.  
@@ -61,3 +61,19 @@ SPRING_PROFILES_ACTIVE=local-prod ./mvnw spring-boot:run
 - **Spring Devtools** aktiviert in `application-local-dev.yml`
 - **HTMX** eingebunden in `Thymeleaf`-Templates
 - **JavaFaker** für schnelle Testdaten
+
+
+---
+
+[//]: # (🧠 Was du damit vorbereitest)
+
+[//]: # (1. Du kannst db-config/local/.env minimal halten: nur Spring-spezifische Werte für H2)
+
+[//]: # ()
+[//]: # (2. Du kannst db-config/compose/.env.dev für compose-dev.yml bauen)
+
+[//]: # ()
+[//]: # (3. Du kannst run-local-prod.sh später sogar in scripts/local/ verschieben, wenn du willst)
+
+[//]: # ()
+[//]: # (4. Du kannst Makefile-Kommandos wie make local-dev, make local-prod, make test definieren)
