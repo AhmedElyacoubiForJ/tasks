@@ -13,11 +13,13 @@ GRANT CONNECT ON DATABASE app_db TO user_prod;
 
 -- dev darf eigene Schemas erstellen
 GRANT CREATE ON DATABASE app_db TO user_dev;
+GRANT CREATE ON DATABASE app_db TO user_test;
 
 -- 3️⃣ Schema-Rechte
 -- 👉 wichtig: Tabellen liegen immer in einem Schema (standard: public)
 GRANT CREATE ON SCHEMA public TO user_dev;
+GRANT CREATE ON SCHEMA public TO user_test;
 
 -- test & prod dürfen nur lesen
-GRANT SELECT ON ALL TABLES IN SCHEMA public TO user_test;
+-- GRANT SELECT ON ALL TABLES IN SCHEMA public TO user_test;
 GRANT SELECT ON ALL TABLES IN SCHEMA public TO user_prod;

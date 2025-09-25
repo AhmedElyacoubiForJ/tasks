@@ -1,5 +1,4 @@
-Super, Ahmed — willkommen zum **PostgreSQL Container Workshop: User-Profile & Automatisierung** 🧑‍🏫🐳  
-Wir machen das **Step-by-Step**, mit einem speziellen Container und Volume nur für diesen Workshop. Ziel ist, dass du verstehst:
+# User-Profile & Automatisierung** 🧑‍🏫🐳  
 
 - Wie PostgreSQL-User beim Containerstart entstehen
 - Warum sie verschwinden, wenn du den Container löschst

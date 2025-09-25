@@ -1,76 +1,136 @@
-## 🐳 **Workflow: Docker & Docker Compose**
+# 🐳 **Workflow: Docker & Docker Compose**
 
-> Die Applikation kann containerised betrieben werden — entweder direkt über Dockerfile & Makefile oder orchestriert über Docker Compose.
-> Beide Varianten sind produktionsnah und CI-kompatibel.
-
-1. **Docker-only Workflow** → App und DB manuell starten mit Dockerfile und Makefile
-2. **Docker Compose Workflow** → App und DB gemeinsam orchestrieren mit `docker-compose.yml`
+> Dieser Workflow beschreibt die containerisierte Entwicklungsumgebung der Applikation. Ziel ist es, produktionsnahe Abläufe lokal zu simulieren und eine stabile Basis für CI/CD vorzubereiten.
 
 ---
 
-### 🐳 **Teil 1: Starten mit Dockerfile & Makefile (ohne Compose)**
+## 🔹 Übersicht
 
-#### 🔧 Voraussetzungen
+1. **Docker-Skripte (manuell, portabel)**  
+   → App und DB werden über Shellskripte gesteuert, ideal für lokale Entwicklung und Debugging
 
-- PostgreSQL läuft separat im Container oder lokal
-- Dockerfile für die App ist vorhanden (`Dockerfile`)
-- Makefile enthält Build- und Run-Kommandos
-- Umgebungsvariablen werden über `.env` oder direkt gesetzt
+2. **Docker Compose (dev-orientiert)**  
+   → App und DB werden gemeinsam orchestriert, ideal für CI/CD und produktionsnahe Tests
 
-#### 🔨 Beispiel-Befehle
+---
 
-```bash
-# 1. App-Image bauen
-make build
+## 🐚 **Teil 1: Docker-Skripte (ohne Compose)**
 
-# 2. App starten mit dev-Profil
-SPRING_PROFILES_ACTIVE=dev make run
+### 📦 Struktur
 
-# 3. App starten mit test-Profil
-SPRING_PROFILES_ACTIVE=test make run
+Die Umgebung basiert auf zwei Hauptcontainern:
 
-# 4. App starten mit prod-Profil (z.B. über .env)
-export $(grep -v '^#' .env | xargs)
-SPRING_PROFILES_ACTIVE=prod make run
+- `postgres-dev`: Datenbankcontainer mit initialem Setup via `init-db.sh`
+- `tasks-app`: Applikationscontainer mit Zugriff auf die Datenbank
+
+Alle Konfigurationen befinden sich unter:
+
+```
+db-config/container/dev/
+├── .env.dev
+└── init-test.sql
 ```
 
-➡️ Die App läuft isoliert im Container, aber die Datenbank muss separat gestartet werden (z.B. via `docker run postgres` oder lokal auf Windows).
+Die Steuerung erfolgt über:
 
----
-
-### 🐳 **Teil 2: Starten mit Docker Compose**
-
-#### 🔧 Voraussetzungen
-
-- `docker-compose.yml` ist vorhanden
-- Optional: Erweiterungen wie `docker-compose.test.yml`, `docker-compose.prod.yml`
-- App und PostgreSQL werden gemeinsam gestartet
-- Umgebungsvariablen können über `.env` geladen werden
-
-#### 🔨 Beispiel-Befehle
-
-```bash
-# 1. Entwicklung starten (dev-Profil)
-SPRING_PROFILES_ACTIVE=dev docker-compose up --build
-
-# 2. Tests ausführen (test-Profil)
-SPRING_PROFILES_ACTIVE=test docker-compose -f docker-compose.yml -f docker-compose.test.yml up --build
-
-# 3. Produktion starten (prod-Profil, detached)
-export $(grep -v '^#' .env | xargs)
-SPRING_PROFILES_ACTIVE=prod docker-compose -f docker-compose.yml -f docker-compose.prod.yml up --build --detach
+```
+scripts/docker/
+├── dev.sh
+├── stop.sh
+├── restart.sh
+├── logs.sh
+├── status.sh
+├── init-db.sh
+└── reset-db.sh
 ```
 
-➡️ App und Datenbank laufen gemeinsam im Containerverbund. Ideal für Integrationstests, produktionsnahe Simulation und spätere CI/CD-Anbindung.
+---
+
+### 🛠️ Skriptfunktionen
+
+| Skript           | Zweck                                               |
+|------------------|-----------------------------------------------------|
+| `dev.sh`         | Startet App- und DB-Container mit Healthcheck       |
+| `stop.sh`        | Beendet und entfernt Container                      |
+| `restart.sh`     | Kombiniert Stop & Start                             |
+| `logs.sh`        | Zeigt Live-Logs der App oder DB                     |
+| `status.sh`      | Zeigt den aktuellen Zustand der Container           |
+| `init-db.sh`     | Erstellt DB-Container inkl. Volume & Test-Tabelle   |
+| `reset-db.sh`    | Entfernt Container & Volume, setzt DB zurück        |
+
+Alle Skripte sind **portabel** und nutzen `ROOT_DIR`, um unabhängig vom Arbeitsverzeichnis zu funktionieren.
 
 ---
 
-## ✅ Fazit
+### 🧪 Healthcheck & Interaktivität
 
-| Variante           | Vorteil                             | Voraussetzung             |
-|--------------------|--------------------------------------|---------------------------|
-| Dockerfile + Make  | Schnell, flexibel, manuell steuerbar | Separater DB-Start        |
-| Docker Compose     | Komplett orchestriert, CI-ready      | Compose-Dateien vorhanden |
+- `dev.sh` prüft den `/actuator/health` Endpoint der App
+- Der Nutzer kann direkt in die Datenbank springen (`psql`)
+- Optionales Initialisierungsskript (`init-test.sql`) prüft, ob `APP_DB_USER` Tabellen erstellen kann
 
-Du kannst beide Varianten unabhängig testen — und später entscheiden, welche du in CI übernimmst.  
-Wenn du willst, helfe ich dir beim Schreiben eines `Makefile`-Ziels für `prod`, `test`, `dev` oder beim Aufsetzen von `docker-compose.test.yml`. Sag einfach Bescheid, sobald du bereit bist.
+---
+
+### 🧰 Makefile (optional)
+
+```bash
+make dev           # Startet die Umgebung
+make stop          # Beendet die Umgebung
+make restart       # Setzt die Umgebung neu auf
+make logs          # Zeigt Logs
+make status        # Zeigt Containerstatus
+make init-db       # Erstellt DB-Container
+make reset-db      # Setzt DB zurück
+```
+
+---
+
+> ➡️ Dieser Workflow ist modular, portabel und CI-kompatibel. Er bildet die Brücke zwischen lokalem Entwickeln und automatisierter Qualitätssicherung.
+
+---
+
+## 📦 **Teil 2: Docker Compose (dev-orientiert)**
+
+> Für produktionsnahe Tests und CI/CD wird `docker-compose-dev.yml` verwendet.  
+> Ziel: deklarative Orchestrierung, reproduzierbare Builds, klare Trennung von Dev & Prod.
+
+### 🔧 Aufbau
+
+```yaml
+services:
+  app:
+    build:
+      context: ./docker/app
+      dockerfile: Dockerfile
+    image: myimage:tasks-app
+    ports:
+      - "8080:8080"
+    env_file:
+      - ./db-config/container/dev/.env.dev
+    depends_on:
+      - db
+
+  db:
+    image: postgres:16
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    env_file:
+      - ./db-config/container/dev/.env.dev
+    ports:
+      - "5432:5432"
+
+volumes:
+  pgdata:
+```
+
+### 🧠 Kommentarblock zur Build-Strategie
+
+```yaml
+# ----------------------------------------
+# 🧱 Build-Kontext: Portables Szenario für Image-Erstellung
+# ----------------------------------------
+# Wir verwenden einen expliziten Build-Kontext, um das Image aus einem modularen Verzeichnis zu erstellen.
+# Dadurch vermeiden wir unnötige Dateien im Build (z.B. .git, node_modules, docs) und halten das Setup wartbar.
+# Das Verzeichnis docker/app enthält den Dockerfile und alle relevanten Ressourcen für das App-Image.
+# Vorteil: klare Trennung, portabel über ROOT_DIR referenzierbar, ideal für CI/CD und produktionsnahe Builds.
+# ----------------------------------------
+```

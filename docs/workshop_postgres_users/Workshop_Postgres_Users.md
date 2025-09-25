@@ -1,56 +1,57 @@
-> Hier ist **einen vollständigen kleinen Workshop** – **ohne docker-compose**, nur mit `docker run`.
-> Es enthält **Erklärungen**, **alle Befehle**, **SQL-Skripte** und die **typischen Best Practices**.
+
+
+* die einfachen **Konzepte zu Rollen/Benutzern**,
+* den kompletten **Docker-run-Workflow**,
+* die **Korrektur mit Schema-Rechten**,
+* und eine **Checkliste zum Prüfen der Rechte**.
 
 ---
 
-# 🏫 Workshop: PostgreSQL-Benutzerprofile (dev / test / prod) mit Docker (postgres\:alpine)
+# 🏫 Workshop: PostgreSQL-Benutzerprofile (dev / test / prod) mit Docker (postgres:alpine)
 
----
+## 1️⃣ Grundwissen: Rollen & Benutzer in PostgreSQL
 
-## 1️⃣ Grundwissen: Benutzer & Rollen in PostgreSQL
-
-> **Merksatz:** In PostgreSQL gibt es keinen Unterschied zwischen „Benutzer“ und „Rolle“.
+> In PostgreSQL sind **Benutzer nichts anderes als Rollen mit LOGIN-Recht**.
 
 ### 🔑 Wichtige Punkte
+- **Rolle (Role)** = Container für Rechte.
+- **Benutzer (User)** = Rolle **mit LOGIN-Recht**.
+- Rechte („Privileges“) können auf **verschiedenen Ebenen** vergeben werden:
+  - **Globale Attribute**: `SUPERUSER`, `CREATEDB`, `CREATEROLE` …
+  - **Datenbank-Ebene**: `CONNECT`, `CREATE` (neue Schemas anlegen)
+  - **Schema-Ebene**: `CREATE` (Tabellen, Views, Funktionen …)
+  - **Objekt-Ebene**: `SELECT`, `INSERT`, `UPDATE`, `DELETE` auf einzelne Tabellen.
 
-* **Rolle (Role)** = Container für Rechte.
-* **Benutzer (User)** = Rolle **mit LOGIN-Recht**.
-* Rechte („Privileges“) z. B.:
-
-    * `CREATE DATABASE` – Datenbanken anlegen
-    * `CREATE` – Tabellen anlegen
-    * `SELECT`, `INSERT`, `UPDATE`, `DELETE` – auf Daten zugreifen
-
-💡 **Best Practice:**
-Erstelle wenige „Rollen mit Rechten“ und weise diese Rollen den einzelnen Usern zu → Rechte einfach wiederverwendbar.
+💡 **Best Practice:**  
+Rollen trennen und immer nur die **minimal nötigen Rechte (Least Privilege)** vergeben.
 
 ---
 
-## 2️⃣ Ziel des Workshops
+## 2️⃣ Ziel
 
-Wir legen drei typische Benutzerprofile an:
+Wir legen drei Benutzerprofile an:
 
-| Umgebung    | User-Name      | Rechte                  |
-| ----------- | -------------- | ----------------------- |
-| Entwicklung | **user\_dev**  | darf Tabellen erstellen |
-| Test        | **user\_test** | darf nur lesen          |
-| Produktion  | **user\_prod** | darf nur lesen          |
+| Umgebung    | User        | Typische Rechte                 |
+|-------------|-------------|---------------------------------|
+| Entwicklung | `user_dev`  | Tabellen anlegen & Daten ändern |
+| Test        | `user_test` | nur lesend (`SELECT`)           |
+| Produktion  | `user_prod` | nur lesend (`SELECT`)           |
 
 ---
 
 ## 3️⃣ Projektstruktur
+```
 
-```
-Workshop_Postgres_Users/
-├─ init.sql
-└─ .env
-```
+Workshop\_Postgres\_Users/
+├─ .env
+└─ init.sql
+
+````
 
 ---
 
-## 4️⃣ .env – sensible Zugangsdaten
-
-> Erstelle die Datei `Workshop_Postgres_Users/.env` (nicht in Git committen!)
+## 4️⃣ `.env` – sensible Zugangsdaten
+> Nicht in Git committen! (`.gitignore`)
 
 ```env
 POSTGRES_PASSWORD=admin_secret
@@ -64,41 +65,42 @@ TEST_PASSWORD=test_secret
 
 PROD_USER=user_prod
 PROD_PASSWORD=prod_secret
-```
+````
 
 ---
 
-## 5️⃣ init.sql – SQL Skript zum Anlegen der Benutzer
-
-> Datei: `Workshop_Postgres_Users/init.sql`
-> (PostgreSQL ersetzt hier keine Variablen automatisch – setze feste Werte oder nutze `envsubst`.)
+## 5️⃣ `init.sql` – Rollen und Rechte anlegen
 
 ```sql
--- Haupt-Datenbank ist app_db (wird von POSTGRES_DB erzeugt)
+-- Haupt-Datenbank ist app_db (wird vom Container automatisch erstellt)
 
--- 1️⃣ Benutzer anlegen
+-- 1️⃣ Benutzer anlegen (Rollen mit LOGIN)
 CREATE ROLE user_dev  WITH LOGIN PASSWORD 'dev_secret';
 CREATE ROLE user_test WITH LOGIN PASSWORD 'test_secret';
 CREATE ROLE user_prod WITH LOGIN PASSWORD 'prod_secret';
 
--- 2️⃣ Rechte vergeben
+-- 2️⃣ Datenbank-Rechte
 GRANT CONNECT ON DATABASE app_db TO user_dev;
 GRANT CONNECT ON DATABASE app_db TO user_test;
 GRANT CONNECT ON DATABASE app_db TO user_prod;
 
--- user_dev darf auch Tabellen anlegen
+-- dev darf eigene Schemas erstellen
 GRANT CREATE ON DATABASE app_db TO user_dev;
 
--- test und prod dürfen nur lesen
+-- 3️⃣ Schema-Rechte
+-- 👉 wichtig: Tabellen liegen immer in einem Schema (standard: public)
+GRANT CREATE ON SCHEMA public TO user_dev;
+
+-- test & prod dürfen nur lesen
 GRANT SELECT ON ALL TABLES IN SCHEMA public TO user_test;
 GRANT SELECT ON ALL TABLES IN SCHEMA public TO user_prod;
 ```
 
 ---
 
-## 6️⃣ Docker Container starten (ohne docker-compose)
+## 6️⃣ PostgreSQL mit Docker starten (ohne docker-compose)
 
-### 6.1. Starte den Container
+Im Ordner `Workshop_Postgres_Users`:
 
 ```bash
 docker run -d \
@@ -110,68 +112,101 @@ docker run -d \
   postgres:alpine
 ```
 
-✔️ Der Ordner `/docker-entrypoint-initdb.d/` ist ein **Feature des offiziellen Postgres-Images**:
-Alle SQL-Dateien dort werden **beim allerersten Start** ausgeführt.
+✔️ Das offizielle Postgres-Image führt beim **allerersten Start** alle SQL-Dateien in
+`/docker-entrypoint-initdb.d/` automatisch aus.
 
 ---
 
-### 6.2. Prüfen, ob die Benutzer angelegt wurden
+## 7️⃣ Verbindung testen
+
+### Als Admin (`postgres`)
 
 ```bash
 docker exec -it pg_app psql -U postgres -d app_db
 ```
 
-Dann im psql-Client:
+In psql:
 
 ```sql
-\du
+\du        -- zeigt globale Rollenattribute
+\l+ app_db -- zeigt DB-Rechte
+\dn+       -- zeigt Schema-Rechte
 ```
-
-➡️ Zeigt alle Rollen/Benutzer.
 
 ---
 
-### 6.3. Test: als user\_dev einloggen
-
-Öffne eine neue Shell:
+### Als user\_dev
 
 ```bash
 docker exec -it -e PGPASSWORD=dev_secret pg_app psql -U user_dev -d app_db
 ```
 
+Test:
+
+```sql
+CREATE TABLE demo_table (
+  id SERIAL PRIMARY KEY,
+  name TEXT
+);
+INSERT INTO demo_table (name) VALUES ('Hello Dev');
+SELECT * FROM demo_table;
+```
+
+### Als user\_test (nur lesen)
+
+```bash
+docker exec -it -e PGPASSWORD=test_secret pg_app psql -U user_test -d app_db
+```
+
+Test:
+
+```sql
+SELECT * FROM demo_table;      -- ✅ sollte gehen
+INSERT INTO demo_table VALUES (2,'x');  -- ❌ Permission denied
+```
+
+### Als user\_prod (nur lesen)
+
+```bash
+docker exec -it -e PGPASSWORD=prod_secret pg_app psql -U user_prod -d app_db
+```
+
 ---
 
-## 7️⃣ Typische Best Practices
+## 8️⃣ Wichtige Prüf-Befehle (Rechte-Audit)
 
-1. **Least Privilege**:
-   Prod-User nur minimale Rechte (meist nur `SELECT`, ggf. `INSERT`).
-
-2. **Migrationen** (Flyway, Liquibase):
-   Erstelle einen separaten „migrations“-User mit `CREATE`-Rechten nur für den CI/CD Prozess.
-
-3. **Secrets nicht im Code**:
-   Passwörter immer über `.env` oder Secret-Management (z. B. GitHub Actions Secrets) verwalten.
-
-4. **Backups & Audits**:
-   Rechteänderungen dokumentieren.
+| Zweck                           | psql-Befehl                      |
+|---------------------------------|----------------------------------|
+| Alle Rollen & globale Attribute | `\du`                            |
+| Rechte auf Datenbanken          | `\l+` oder `\z app_db`           |
+| Rechte auf Schemas              | `\dn+`                           |
+| Rechte auf Tabellen             | `\z` oder `\z public.demo_table` |
 
 ---
 
-## 8️⃣ Nützliche Kommandos
+## 9️⃣ Best Practices aus der Praxis
 
-| Aktion                          | Befehl                                       |
-| ------------------------------- | -------------------------------------------- |
-| Container stoppen               | `docker stop pg_app`                         |
-| Container starten               | `docker start pg_app`                        |
-| Container löschen (inkl. Daten) | `docker rm -f pg_app`                        |
-| Datenvolumen beibehalten        | Mount eines Docker Volumes statt `-v $(pwd)` |
+1. **Least Privilege** – Prod-User hat nur, was er unbedingt braucht.
+2. **Migrations-User** – für Flyway/Liquibase separaten User mit `CREATE`-Rechten.
+3. **Secrets sicher verwalten** – z. B. `.env` nie committen, in CI/CD als „Secrets“ speichern.
+4. **Audits** – mit `\z` und `\dn+` regelmäßig Rechte prüfen.
 
 ---
 
-## 🎯 Zusammenfassung
+## 10️⃣ Container-Management
 
-* In PostgreSQL sind **Benutzer nichts anderes als Rollen mit LOGIN**.
-* Wir trennen **user\_dev**, **user\_test**, **user\_prod** für verschiedene Umgebungen.
-* Mit `docker run` + `init.sql` werden Benutzer und Rechte **automatisch beim ersten Start** angelegt.
+| Aktion                            | Befehl                               |
+|-----------------------------------|--------------------------------------|
+| Container stoppen                 | `docker stop pg_app`                 |
+| Container starten                 | `docker start pg_app`                |
+| Container löschen (inkl. Daten)   | `docker rm -f pg_app`                |
+| mit Daten-Volume statt Host-Mount | `-v pgdata:/var/lib/postgresql/data` |
 
-➡️ Jetzt hast du ein **komplettes, reproduzierbares Setup**, das du direkt ausführen und als Referenz-Workshop weitergeben kannst.
+---
+
+### ✅ Zusammenfassung
+
+* **Benutzer = Rollen mit LOGIN-Recht**.
+* **CREATE ON DATABASE** ≠ **CREATE ON SCHEMA**.
+* Tabellen können nur erstellt werden, wenn der User im Schema selbst `CREATE` hat.
+* Mit `docker run` + `init.sql` lassen sich dev/test/prod-User und deren Rechte vollautomatisch anlegen und prüfen.
