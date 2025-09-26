@@ -13,7 +13,6 @@ RUN ./mvnw dependency:go-offline
 # 🧑‍💻 Source & Resources
 COPY src ./src
 COPY src/main/resources/application.yml ./src/main/resources/
-# COPY src/main/resources/application-container-dev.yml ./src/main/resources/
 COPY src/main/resources/application-compose-dev.yml ./src/main/resources/
 
 # Stelle sicher, dass mvnw ausführbar ist
@@ -35,6 +34,6 @@ COPY --from=build /app/target/*.jar ./app.jar
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
 
-# CMD ["java", "-jar", "app.jar", "--spring.profiles.active=container-prod"]
+# CMD ["java", "-jar", "app.jar", "--spring.profiles.active=compose-prod"]
 
 #  docker build -t myimage:tasks-app .

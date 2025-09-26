@@ -1,0 +1,9 @@
+# Wenn du willst, können wir jetzt makefiles/Makefile.compose schreiben mit Kommandos wie:
+
+# make dev-up
+
+# make dev-down
+
+# make dev-logs
+
+# make dev-health

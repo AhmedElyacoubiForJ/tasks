@@ -1,7 +1,8 @@
 # 📦 Docker-Kommandos für Setup & Wartung:
 # ----------------------------------------
-# docker compose -f docker-compose.yml --env-file ./db-config/container/prod/.env.prod up --build
-# docker compose -f docker-compose.yml --env-file ./db-config/container/dev/.env.dev up --build
+#
+# docker compose -f ./compose/docker-compose-dev.yml --env-file ./compose/.env.compose-dev up --build
+# docker compose -f ./compose/docker-compose-dev.yml --env-file ./compose/.env.compose-dev down -v
 #
 # 🔄 Projekt neu starten mit frischem Volume:
 # docker compose down -v && docker volume rm pgdata && docker compose up --build
@@ -29,37 +30,34 @@
 
 services:
   db:
-    image: ${DB_IMAGE}
-    container_name: ${CONTAINER_NAME}
+    image: postgres:alpine # ${DB_IMAGE}
+    container_name: postgres-dev # ${DB_CONTAINER}
     env_file:
-      - ./db-config/container/prod/.env.prod
+      - .env.compose-dev
     environment:
       POSTGRES_DB: ${DB_NAME}
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       APP_DB_USER: ${APP_DB_USER}
       APP_DB_PASSWORD: ${APP_DB_PASSWORD}
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U $$DB_USER" ]
-      interval: 30s
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${DB_NAME}" ]
+      interval: 10s
       timeout: 5s
       retries: 5
     volumes:
       - ${VOLUME}:/var/lib/postgresql/data
-      - ./db-config/container/prod/init-prod-db.sh:/docker-entrypoint-initdb.d/init-prod-db.sh
+      - ./init-dev-db.sh:/docker-entrypoint-initdb.d/init-dev-db.sh
     ports:
       - "${DB_PORT:-5432}:5432"
-    #networks:
-    #  - app-network
   app:
-    #image: ${APP_IMAGE}
+    image: tasks-app:last # ${APP_IMAGE}
     build:
       context: .
-      dockerfile: Dockerfile
-    image: tasks-app:prod
-    container_name: ${APP_CONTAINER}
+      dockerfile: ./compose/Dockerfile.dev
+    container_name: tasks-app # ${APP_CONTAINER}
     env_file:
-      - ./db-config/container/prod/.env.prod
+      - ./.env.compose-dev
     environment:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
     ports:
@@ -69,6 +67,4 @@ services:
         condition: service_healthy
 
 volumes:
-  pgdata-prod:
-#networks:
-#  app-network:
+  pgdata-compose-dev:

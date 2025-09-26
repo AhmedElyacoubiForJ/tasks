@@ -6,7 +6,7 @@ spring:
     ansi:
       enabled: ALWAYS
   profiles:
-    default: local-dev
+    default: local-dev # container-dev, local-dev
     #active: dev  # Optionen: dev, test oder prod
 
 # 🧾 Versioning

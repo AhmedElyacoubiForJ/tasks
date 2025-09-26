@@ -26,31 +26,6 @@ public class TaskListRestController implements TaskListControllerSwaggerDocs {
     private final ITaskListService taskListService;
     private final TaskListMapper taskListMapper;
 
-    @GetMapping
-    public ResponseEntity<APIResponse<Page<TaskListDto>>> getTaskLists(
-            @ParameterObject TaskListFilterDto filterParams
-    ) {
-        Page<TaskListDto> result = taskListService.getFilteredTaskLists(filterParams);
-        return ResponseEntity.ok(APIResponse.<Page<TaskListDto>>builder()
-                .status("success")
-                .statusCode(200)
-                .message("Task-Listen erfolgreich zurückgegeben")
-                .data(result)
-                .build()
-        );
-    }
-
-    @Override
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteTaskList(@PathVariable UUID id) {
-        boolean deleted = taskListService.deleteTaskList(id);
-        if (deleted) {
-            return ResponseEntity.noContent().build(); // 204
-        } else {
-            return ResponseEntity.notFound().build(); // 404
-        }
-    }
-
     @GetMapping("/details")
     public ResponseEntity<APIResponse<List<TaskListWithTaskDetailDto>>> getDetailedLists() {
         log.info("GET /task-lists/details angefragt");
@@ -89,6 +64,31 @@ public class TaskListRestController implements TaskListControllerSwaggerDocs {
 
         log.info("GET /task-lists/summary erfolgreich abgeschlossen");
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping
+    public ResponseEntity<APIResponse<Page<TaskListDto>>> getTaskLists(
+            @ParameterObject TaskListFilterDto filterParams
+    ) {
+        Page<TaskListDto> result = taskListService.getFilteredTaskLists(filterParams);
+        return ResponseEntity.ok(APIResponse.<Page<TaskListDto>>builder()
+                .status("success")
+                .statusCode(200)
+                .message("Task-Listen erfolgreich zurückgegeben")
+                .data(result)
+                .build()
+        );
+    }
+
+    @Override
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteTaskList(@PathVariable UUID id) {
+        boolean deleted = taskListService.deleteTaskList(id);
+        if (deleted) {
+            return ResponseEntity.noContent().build(); // 204
+        } else {
+            return ResponseEntity.notFound().build(); // 404
+        }
     }
 
 }

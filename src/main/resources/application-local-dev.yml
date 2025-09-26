@@ -34,4 +34,5 @@ spring:
 # 🐛 Logging
 logging:
   level:
+    edu.yacoubi.tasks: DEBUG
     org.thymeleaf: DEBUG

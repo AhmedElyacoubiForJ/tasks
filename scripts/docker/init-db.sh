@@ -1,5 +1,4 @@
 #!/bin/bash
-#!/bin/bash
 # ----------------------------------------
 # 🧱 Initialisiert PostgreSQL-Container für die Dev-Umgebung
 # ----------------------------------------

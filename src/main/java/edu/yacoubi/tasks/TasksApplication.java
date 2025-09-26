@@ -1,19 +1,14 @@
 package edu.yacoubi.tasks;
 
-import org.springframework.boot.CommandLineRunner;
+import jakarta.annotation.PostConstruct;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.MessageSource;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.support.ReloadableResourceBundleMessageSource;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.support.PropertiesLoaderUtils;
 
-import java.io.IOException;
-import java.util.Locale;
-import java.util.Properties;
-
+/*@SpringBootApplication(
+        exclude = { JpaRepositoriesAutoConfiguration.class }
+)
+@Import(JpaConfig.class)
+*/
 @SpringBootApplication
 public class TasksApplication {
 
@@ -21,6 +16,13 @@ public class TasksApplication {
         SpringApplication.run(TasksApplication.class, args);
     }
 
+    //@PostConstruct
+    public void init() {
+        System.out.println("####################################");
+        System.out.println("✅ Direkt in TasksApplication geladen");
+        System.out.println("####################################");
+    }
+/*
     @Bean
     public CommandLineRunner run(MessageSource messageSource) {
         return args -> {
@@ -45,5 +47,5 @@ public class TasksApplication {
         messageSource.setBasename("classpath:messages");
         messageSource.setDefaultEncoding("UTF-8");
         return messageSource;
-    }
+    }*/
 }

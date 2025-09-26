@@ -1,21 +1,36 @@
 # Ignore files and directories that should not be tracked by Git
-HELP.md
-NOTES.md
-LAYOUT_DEMO.md
-CSS-README.md
-table.css
-buttons.css
-responsive.css
-HTML-Template.html
-Dark-Mode-Toggle.md
+desktop/HELP.md
+desktop/NOTES.md
+desktop/LAYOUT_DEMO.md
+desktop/CSS-README.md
+desktop/table.css
+desktop/buttons.css
+desktop/responsive.css
+desktop/HTML-Template.html
+desktop/Dark-Mode-Toggle.md
+desktop/
 target/
 backup/
-VERSIONING_HELPER.md
+desktop/VERSIONING_HELPER.md
+logs/
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
 
 .env
+.env.ci
+.env.test
+db-config/container/dev/.env.dev
+db-config/container/test/.env.test
+db-config/container/prod/.env.prod
+db-config/local/prod/.
+db-config/compose/dev/.env.dev
+compose/.env.compose-dev
+htmx/
+
+## workshops ##
+desktop/zu-docs/workshop_profile_users/.env.workshop
+desktop/zu-docs/workshop_postgres_users/.env
 
 ### STS ###
 .apt_generated
