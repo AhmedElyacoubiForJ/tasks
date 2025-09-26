@@ -1,14 +1,8 @@
 package edu.yacoubi.tasks;
 
-import jakarta.annotation.PostConstruct;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-/*@SpringBootApplication(
-        exclude = { JpaRepositoriesAutoConfiguration.class }
-)
-@Import(JpaConfig.class)
-*/
 @SpringBootApplication
 public class TasksApplication {
 
@@ -16,12 +10,6 @@ public class TasksApplication {
         SpringApplication.run(TasksApplication.class, args);
     }
 
-    //@PostConstruct
-    public void init() {
-        System.out.println("####################################");
-        System.out.println("✅ Direkt in TasksApplication geladen");
-        System.out.println("####################################");
-    }
 /*
     @Bean
     public CommandLineRunner run(MessageSource messageSource) {

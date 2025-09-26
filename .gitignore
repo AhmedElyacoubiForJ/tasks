@@ -17,15 +17,13 @@ logs/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
-.env
 .env.ci
 .env.test
+.env.compose-dev
 db-config/container/dev/.env.dev
 db-config/container/test/.env.test
 db-config/container/prod/.env.prod
 db-config/local/prod/.
-db-config/compose/dev/.env.dev
-compose/.env.compose-dev
 htmx/
 
 ## workshops ##
