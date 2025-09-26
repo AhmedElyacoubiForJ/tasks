@@ -3,8 +3,8 @@ bash
 # Stellt sicher, dass das Skript bei einem Fehler sofort abbricht
 set -e
 
-echo "APP_DB_USER = $APP_DB_USER"
-echo "APP_DB_PASSWORD = $APP_DB_PASSWORD"
+#echo "APP_DB_USER = $APP_DB_USER"
+#echo "APP_DB_PASSWORD = $APP_DB_PASSWORD"
 
 
 # Führe das SQL-Kommando aus.
