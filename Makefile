@@ -43,44 +43,34 @@
 #include makefiles/Makefile.local
 #.PHONY: run-dev stop-dev restart-dev logs db-reset status
 
-# ----------------------------------------
-# 🐳 Docker Dev Workflow
-# ----------------------------------------Umgebung
 
-ROOT := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
-SCRIPTS := $(ROOT)/scripts/docker
+# 🧩 Haupt-Makefile: Umgebungseinbindung
 
-dev:
-	bash $(SCRIPTS)/dev.sh
+include Makefile.docker
+include Makefile.compose
 
-stop:
-	bash $(SCRIPTS)/stop.sh
+.DEFAULT_GOAL := help-all
 
-restart:
-	bash $(SCRIPTS)/restart.sh
+#help:
+#	@echo "📦 Hauptübersicht:"
+#	@echo "  make help-docker     # Docker-Umgebung (manuell)"
+#	@echo "  make help-compose    # Compose-Umgebung"
+#	@echo "  make help-all        # Alle Hilfetexte kombiniert"
 
-logs:
-	bash $(SCRIPTS)/logs.sh
+# help-all: help-docker help-compose
+help-all:
+	@echo "📦 Übersicht aller Makefile-Kommandos:"
+	@echo ""
+	@echo "🐳 Docker Targets:"
+	@$(MAKE) --no-print-directory help-docker
+	@echo ""
+	@echo "🐙 Compose Targets:"
+	@$(MAKE) --no-print-directory help-compose
 
-status:
-	- bash $(SCRIPTS)/status.sh
+#	@echo ""
+#	@echo "📚 Weitere Module:"
+#	@$(MAKE) help-db || true
+#	@$(MAKE) help-test || true
 
-init-db:
-	bash $(SCRIPTS)/init-db.sh
-
-reset-db:
-	bash $(SCRIPTS)/reset-db.sh
-
-health:
-	bash $(SCRIPTS)/health.sh
-
-check-env:
-	bash $(SCRIPTS)/check-env.sh
-
-verify:
-	@echo "🔍 Starte vollständige Umgebungprüfung..."
-	@bash $(SCRIPTS)/check-env.sh
-	@bash $(SCRIPTS)/status.sh || true
-	@bash $(SCRIPTS)/health.sh || true
 
 

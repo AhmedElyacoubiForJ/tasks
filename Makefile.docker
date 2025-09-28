@@ -1,0 +1,52 @@
+# 🐳 Docker-Umgebung (ohne Compose)
+
+ROOT := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
+SCRIPTS := $(ROOT)/scripts/docker
+
+help-docker:
+	@echo "🐳 Docker-Umgebung (manuell, ohne Compose):"
+	@echo "  make docker-dev-up         # Starte manuelle Umgebung"
+	@echo "  make docker-dev-down       # Stoppe Container"
+	@echo "  make docker-dev-restart    # Neustart"
+	@echo "  make docker-dev-logs       # Zeige Logs"
+	@echo "  make docker-dev-status     # Status anzeigen"
+	@echo "  make docker-dev-db-init    # DB initialisieren"
+	@echo "  make docker-dev-db-reset   # DB zurücksetzen"
+	@echo "  make docker-dev-health     # Health-Check"
+	@echo "  make docker-dev-check-env  # ENV-Diagnose"
+	@echo "  make docker-dev-verify     # Vollständige Prüfung"
+
+
+
+docker-dev-up:
+	bash $(SCRIPTS)/dev.sh
+
+docker-dev-down:
+	bash $(SCRIPTS)/stop.sh
+
+docker-dev-restart:
+	bash $(SCRIPTS)/restart.sh
+
+docker-dev-logs:
+	bash $(SCRIPTS)/logs.sh
+
+docker-dev-status:
+	- bash $(SCRIPTS)/status.sh
+
+docker-dev-db-init:
+	bash $(SCRIPTS)/init-db.sh
+
+docker-dev-db-reset:
+	bash $(SCRIPTS)/reset-db.sh
+
+docker-dev-health:
+	bash $(SCRIPTS)/health.sh
+
+docker-dev-check-env:
+	bash $(SCRIPTS)/check-env.sh
+
+docker-dev-verify:
+	@echo "🔍 Starte vollständige Umgebungprüfung..."
+	@bash $(SCRIPTS)/check-env.sh
+	@bash $(SCRIPTS)/status.sh || true
+	@bash $(SCRIPTS)/health.sh || true

@@ -1,1 +1,50 @@
-# make dev-up, make dev-down, make dev-logs
+# 🛠️ Compose-Dev Umgebung steuern
+
+ROOT := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
+SCRIPTS := $(ROOT)/scripts/compose-dev
+
+help-compose:
+	@echo "🐙 Compose-Umgebung:"
+	@echo "  make compose-dev-up       # Starte Compose-Umgebung"
+	@echo "  make compose-dev-down     # Stoppe Compose-Umgebung"
+	@echo "  make compose-dev-restart  # Neustart"
+	@echo "  make compose-dev-logs     # Logs & ENV-Diagnose"
+	@echo "  make compose-dev-clean    # Entferne Container & Volume"
+	@echo "  make compose-dev-volumes  # Volume-Details anzeigen"
+
+
+compose-dev-up:
+	@echo "🚀 Starte compose-dev Umgebung..."
+	bash ./scripts/compose-dev/up.sh
+
+compose-dev-down:
+	@echo "🛑 Stoppe compose-dev Umgebung..."
+	bash ./scripts/compose-dev/down.sh
+
+compose-dev-restart:
+	@echo "🔄 Starte compose-dev Umgebung neu..."
+	bash ./scripts/compose-dev/restart.sh
+
+compose-dev-logs:
+	@echo "📜 Zeige Logs & ENV-Diagnose..."
+	bash ./scripts/compose-dev/logs.sh
+
+# TODO wenn nötig ist
+#compose-dev-db-init:
+#	@echo "🧪 Initialisiere dev-Datenbank..."
+#	bash ./scripts/compose-dev/init-db.sh
+
+compose-dev-ps:
+	@echo "🐙 Zeige Compose-Container..."
+	docker compose -f docker-compose-dev.yml ps -a
+
+compose-dev-volumes:
+	@echo "🔍 Zeige Volume-Details..."
+	docker volume inspect pgdata-compose-dev
+
+compose-dev-clean:
+	@echo "🧹 Entferne Container & Volume..."
+	docker compose -f docker-compose-dev.yml --env-file .env.compose-dev down -v
+	-docker volume rm tasks_pgdata-compose-dev
+
+
