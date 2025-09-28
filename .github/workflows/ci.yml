@@ -18,8 +18,9 @@ jobs:
       APP_DB_PASSWORD: dev_secret
       DB_NAME: tasks_dev_db
       DB_HOST: db
-      VOLUME: pgdata-dev
       SPRING_PROFILES_ACTIVE: compose-dev
+      DB_PORT: 5432
+      APP_PORT: 8080
 
     steps:
       - name: 📥 Checkout Code
@@ -32,7 +33,7 @@ jobs:
         run: docker compose -f docker-compose-dev.yml up -d
 
       - name: 🔍 Zeige Logs
-        run: docker compose -f docker-compose-dev.yml logs
+        run: docker compose -f docker-compose-dev-ci.yml logs
 
       - name: 🧹 Stoppe Umgebung
-        run: docker compose -f docker-compose-dev.yml down
+        run: docker compose -f docker-compose-dev-ci.yml down

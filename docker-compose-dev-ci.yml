@@ -1,0 +1,37 @@
+services:
+  db:
+    image: postgres:alpine # ${DB_IMAGE}
+    container_name: postgres-dev # ${DB_CONTAINER}
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      APP_DB_USER: ${APP_DB_USER}
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD}
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - pgdata-dev:/var/lib/postgresql/data     # ${VOLUME}:/var/lib/postgresql/data
+      - ./init-dev-db.sh:/docker-entrypoint-initdb.d/init-dev-db.sh
+    ports:
+      - "${DB_PORT:-5432}:5432"
+  app:
+    image: tasks-app:last # ${APP_IMAGE}
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: tasks-app # ${APP_CONTAINER}
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+    ports:
+      - "${APP_PORT:-8080}:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata-dev:
+  #pgdata-compose-dev:
