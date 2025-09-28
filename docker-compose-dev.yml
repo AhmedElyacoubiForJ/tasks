@@ -33,7 +33,7 @@ services:
     image: postgres:alpine # ${DB_IMAGE}
     container_name: postgres-dev # ${DB_CONTAINER}
     env_file:
-      - ./.env.compose-dev
+      - .env.compose-dev
     environment:
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${POSTGRES_USER}
@@ -57,7 +57,7 @@ services:
       dockerfile: Dockerfile.dev
     container_name: tasks-app # ${APP_CONTAINER}
     env_file:
-      - ./.env.compose-dev
+      - .env.compose-dev
     environment:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
     ports:

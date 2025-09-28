@@ -37,7 +37,7 @@ scripts/docker/
 └── colors.sh
 ```
 
-➡️ Details zu jedem Skript findest du in [`docs/scripts.md`](scripts.md)
+➡️ Details zu jedem Skript findest du in [`docs/scripts.md`](../scripts.md)
 
 ---
 
@@ -100,8 +100,88 @@ make verify        # Führt vollständige Umgebungsvorprüfung aus
 
 ---
 
+# 🧪 Laufzeitumgebung: `compose-dev`
+
+Die Umgebung `compose-dev` simuliert eine produktionsnahe Container-Landschaft für lokale Entwicklung und Diagnose. Sie verwendet:
+
+- `docker-compose-dev.yml` im Projekt-Root
+- `Dockerfile.dev` für die App
+- `.env.compose-dev` zur Steuerung aller ENV-Variablen
+- `init-dev-db.sh` zur Initialisierung der Datenbank beim Containerstart
+- Diagnose- und Steuerungsskripte unter `scripts/compose-dev/`
+- Makefile-Kommandos in `Makefile.compose`
+
+---
+
+## 🔧 Start & Stop
+
+```bash
+make compose-dev-up      # Umgebung starten
+make compose-dev-down    # Umgebung stoppen
+make compose-dev-restart # Umgebung neu starten
+```
+
+---
+
+## 📜 Logs & Diagnose
+
+```bash
+make compose-dev-logs
+```
+
+Dieses Kommando zeigt:
+
+- ENV-Diagnose (Parser-Check & Container-Check)
+- Aktive Spring-Profile
+- Live-Logs der App
+
+---
+
+## 🧹 Cleanup & Volume-Handling
+
+```bash
+make compose-dev-clean         # Container & Volume entfernen
+make compose-dev-volumes       # Volume-Details anzeigen
+make compose-dev-db-init       # Datenbank manuell initialisieren (optional)
+```
+
+---
+
+## 📁 ENV-Datei `.env.compose-dev`
+
+Steuert alle Variablen für App & DB:
+
+```env
+POSTGRES_USER=admin
+POSTGRES_DB=tasks_dev_db
+POSTGRES_PASSWORD=adminpass
+APP_DB_USER=dev_user
+APP_DB_PASSWORD=dev_secret
+SPRING_PROFILES_ACTIVE=compose-dev
+VOLUME=pgdata-compose-dev
+```
+
+---
+
+## 📂 Diagnose-Tools
+
+- `scripts/compose-dev/logs.sh` → ENV-Check + Logs
+- `scripts/compose-dev/restart.sh` → Umgebung neu starten
+- `scripts/compose-dev/init-db.sh` → ruft `init-dev-db.sh` im Root auf
+
+---
+
+### 📄 Weitere Hinweise
+
+- Siehe auch: `DB-DIAGNOSTIK.md` für Datenbankanalyse
+- Siehe auch: `SESSION-METRICS-EXAMPLE.md` für Hibernate-Cache-Statistiken
+- Die Umgebung ist modular erweiterbar für `compose-prod`, `container-dev`, `local`
+
+---
+
 > 🧱 Dieser Workflow ist modular, portabel und CI-kompatibel.  
 > Er bildet die Brücke zwischen lokalem Entwickeln und automatisierter Qualitätssicherung.
+> Wir haben hier nicht nur eine Umgebung gebaut, sondern ein **Entwickler-Ökosystem**, das sich selbst erklärt, selbst testet und selbst heilt.
 
 ---
 
