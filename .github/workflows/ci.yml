@@ -17,6 +17,7 @@ jobs:
       APP_DB_USER: dev_user
       APP_DB_PASSWORD: dev_secret
       DB_NAME: tasks_dev_db
+      DB_HOST: db
       VOLUME: pgdata-dev
       SPRING_PROFILES_ACTIVE: compose-dev
 
