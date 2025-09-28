@@ -30,7 +30,7 @@ jobs:
         uses: docker/setup-buildx-action@v2
 
       - name: 🧪 Starte Compose Umgebung
-        run: docker compose -f docker-compose-dev.yml up -d
+        run: docker compose -f docker-compose-dev-ci.yml up -d
 
       - name: 🔍 Zeige Logs
         run: docker compose -f docker-compose-dev-ci.yml logs
