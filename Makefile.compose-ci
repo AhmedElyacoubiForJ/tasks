@@ -90,8 +90,16 @@ ci-dev-process-watch:
 
 
 ci-dev-verify:
-	@make ci-dev-healthcheck-retry
-	@make ci-dev-tasklist-check
+	@make -f Makefile.compose-ci ci-dev-healthcheck-retry
+	@make -f Makefile.compose-ci ci-dev-tasklist-check
+
+
+# ➡️ $MAKE ist die aktuelle make-Instanz
+# ➡️ $(MAKEFILE_LIST) ist der Pfad zum aktuellen Makefile
+#ci-dev-verify:
+#	@$(MAKE) -f $(MAKEFILE_LIST) ci-dev-healthcheck-retry
+#	@$(MAKE) -f $(MAKEFILE_LIST) ci-dev-tasklist-check
+
 
 ci-dev-clean:
 	@echo "🧹 Entferne Volumes..."
@@ -105,7 +113,7 @@ ci-release-check:
 
 
 ci-dev-check-and-release-check:
-	@make ci-dev-verify
+	@make -f Makefile.compose-ci ci-dev-verify
 	@curl --fail --silent http://127.0.0.1:8080/actuator/info | grep '"version"' > /dev/null \
         && echo "✅ Release-Info verfügbar!" \
         || (echo "❌ Release-Info fehlt!" && exit 1)
