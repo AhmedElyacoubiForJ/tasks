@@ -50,7 +50,7 @@ ci-dev-healthcheck:
 ci-dev-healthcheck-retry:
 	@echo "🔄 Warte auf App im Container..."
 	@for i in {1..10}; do \
-        docker exec tasks-app curl --fail --silent http://localhost:8080/actuator/health && echo "✅ App erreichbar!" && exit 0; \
+        docker exec tasks-app curl --fail --silent --show-error http://localhost:8080/actuator/health && echo "✅ App erreichbar!" && exit 0; \
         echo "⏳ Versuch $$i fehlgeschlagen, warte..."; \
         sleep 3; \
     done; \
