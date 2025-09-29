@@ -51,7 +51,7 @@ services:
     ports:
       - "${DB_PORT:-5432}:5432"
   app:
-    image: tasks-app:last # ${APP_IMAGE}
+    image: tasks-app:latest # ${APP_IMAGE}
     build:
       context: .
       dockerfile: Dockerfile.dev

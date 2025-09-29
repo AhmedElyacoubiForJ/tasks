@@ -19,10 +19,10 @@ services:
     ports:
       - "${DB_PORT:-5432}:5432"
   app:
-    image: tasks-app:last # ${APP_IMAGE}
+    image: tasks-app:latest # ${APP_IMAGE}
     build:
       context: .
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile.ci
     container_name: tasks-app # ${APP_CONTAINER}
     environment:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}

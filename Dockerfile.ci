@@ -1,6 +1,6 @@
 # 🧱 Base Layer
 FROM eclipse-temurin:17-jdk-alpine AS build
-#RUN apk add --no-cache curl
+RUN apk add --no-cache curl
 WORKDIR /app
 
 # 🧰 Maven Wrapper
@@ -15,8 +15,6 @@ RUN ./mvnw dependency:go-offline
 
 # 🧑‍💻 Source & Resources
 COPY src ./src
-COPY src/main/resources/application.yml ./src/main/resources/
-COPY src/main/resources/application-compose-dev.yml ./src/main/resources/
 
 # Build
 RUN ./mvnw clean package -DskipTests
@@ -33,7 +31,3 @@ USER appuser
 COPY --from=build /app/target/*.jar ./app.jar
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
-
-# CMD ["java", "-jar", "app.jar", "--spring.profiles.active=compose-prod"]
-
-#  docker build -t myimage:tasks-app .
