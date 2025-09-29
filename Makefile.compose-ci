@@ -42,12 +42,14 @@ ci-dev-ps:
 	docker compose -f docker-compose-dev-ci.yml ps -a
 
 ci-dev-ps-watch:
-	@echo "🐙 Überwache Compose-Container-Status..."
-	@for i in $(seq 1 10); do \
-        echo "⏱️  Versuch $$i: docker compose ps -a"; \
+	@set -x; \
+    for i in $(seq 1 10); do \
+        #echo "⏱️  Versuch $$i: docker compose ps -a"; \
+        echo "::notice title=Versuch $$i::docker compose ps -a" \
         docker compose -f docker-compose-dev-ci.yml ps -a || echo "❌ Fehler beim Abrufen"; \
         sleep 5; \
     done
+
 
 
 ci-dev-healthcheck:
