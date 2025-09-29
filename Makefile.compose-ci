@@ -43,13 +43,15 @@ ci-dev-ps:
 
 ci-dev-healthcheck:
 	@echo "🔍 Prüfe App-Verfügbarkeit..."
-	docker exec tasks-app curl --fail --silent --show-error http://localhost:8080/actuator/health || (echo "❌ App nicht erreichbar!" && exit 1)
+	#docker exec tasks-app curl --fail --silent --show-error http://localhost:8080/actuator/health || (echo "❌ App nicht erreichbar!" && exit 1)
+	docker exec tasks-app curl --fail --silent --show-error http://127.0.0.1:8080/actuator/health || (echo "❌ App nicht erreichbar!" && exit 1)
 
 
 ci-dev-healthcheck-retry:
 	@echo "🔄 Warte auf App..."
 	@for i in {1..10}; do \
-        docker exec tasks-app curl --fail --silent http://localhost:8080/actuator/health && exit 0; \
+        # docker exec tasks-app curl --fail --silent http://localhost:8080/actuator/health && exit 0; \
+        curl --fail --silent http://127.0.0.1:8080/actuator/health && exit 0; \
         echo "⏳ Versuch $$i fehlgeschlagen, warte..."; \
         sleep 3; \
     done; \
@@ -57,7 +59,8 @@ ci-dev-healthcheck-retry:
 
 ci-dev-tasklist-check:
 	@echo "📋 Prüfe /task-lists/details..."
-	docker exec tasks-app curl --fail --silent --show-error http://localhost:8080/task-lists/details || (echo "❌ Endpoint fehlgeschlagen!" && exit 1)
+	#docker exec tasks-app curl --fail --silent --show-error http://localhost:8080/task-lists/details || (echo "❌ Endpoint fehlgeschlagen!" && exit 1)
+	curl --fail --silent --show-error http://127.0.0.1:8080/task-lists/details || (echo "❌ Endpoint fehlgeschlagen!" && exit 1)
 
 
 
