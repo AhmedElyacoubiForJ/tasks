@@ -25,8 +25,13 @@ services:
       dockerfile: Dockerfile.ci
     container_name: tasks-app # ${APP_CONTAINER}
     environment:
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_NAME: ${DB_NAME}
+      APP_DB_USER: ${APP_DB_USER}
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD}
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
-    command: ["sleep", "60"]
+    # command: ["sleep", "60"]
     ports:
       - "${APP_PORT:-8080}:8080"
     depends_on:
