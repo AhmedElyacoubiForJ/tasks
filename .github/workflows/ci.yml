@@ -44,9 +44,8 @@ jobs:
       #- name: 🧠 Prozessliste im App-Container
       #  run: docker exec tasks-app ps aux
 
-      #- name: 🐙 Überwache Compose-Container # klappt nicht
+      #- name: 🐙 Überwache Compose-Container
       #  run: make -f Makefile.compose-ci ci-dev-ps-watch
-
 
       - name: 🐙 Überwache Compose-Container
         run: |
@@ -59,14 +58,15 @@ jobs:
       - name: 📜 Zeige App-Logs
         run: docker compose -f docker-compose-dev-ci.yml logs app
 
-      - name: 📋 Kombiniertes Check 🧪 Healthcheck & 📋 Task list
+      - name: 📋 Kombiniertes Check 🧪 Healthcheck & 📋 Task list Endpoint
         run: make -f Makefile.compose-ci ci-dev-verify
 
-      - name: 📜 Zeige App-Logs 2
-        run: docker logs tasks-app
+      - name: 📜 Zeige App-Logs
+        run: docker compose -f docker-compose-dev-ci.yml logs app
+        #run: docker logs tasks-app
 
-      #- name: 📂 Logdateien im App-Container (optional)
-      #  run: docker exec tasks-app find /app -name "*.log" -exec cat {} \;
+      - name: 📂 Logdateien im App-Container (optional)
+        run: docker exec tasks-app find /app -name "*.log" -exec cat {} \;
 
       # - name: 🔍 Überwache App-Prozess
       #   run: make -f Makefile.compose-ci ci-dev-process-watch
