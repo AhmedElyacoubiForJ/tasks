@@ -51,7 +51,6 @@ ci-dev-ps-watch:
     done
 
 
-
 ci-dev-healthcheck:
 	@echo "🔍 Prüfe App-Verfügbarkeit..."
 	#docker exec tasks-app curl --fail --silent --show-error http://localhost:8080/actuator/health || (echo "❌ App nicht erreichbar!" && exit 1)
@@ -70,7 +69,7 @@ ci-dev-healthcheck-retry:
 
 ci-dev-tasklist-check:
 	@echo "📋 Prüfe /task-lists/details..."
-    @curl --fail --silent --show-error http://127.0.0.1:8080/task-lists/details | grep '"status":"success"' > /dev/null \
+	@curl --fail --silent --show-error http://127.0.0.1:8080/task-lists/details | grep '"status":"success"' > /dev/null \
         && echo "✅ TaskList-Endpunkt erfolgreich!" \
         || (echo "❌ TaskList-Endpunkt fehlgeschlagen!" && exit 1)
 
@@ -91,12 +90,27 @@ ci-dev-process-watch:
 
 
 ci-dev-verify:
-    @make ci-dev-healthcheck-retry
-    @make ci-dev-tasklist-check
+	@make ci-dev-healthcheck-retry
+	@make ci-dev-tasklist-check
 
 ci-dev-clean:
-    @echo "🧹 Entferne Volumes..."
-    @docker volume rm tasks_pgdata-dev || echo "⚠️ Volume nicht vorhanden"
+	@echo "🧹 Entferne Volumes..."
+	@docker volume rm tasks_pgdata-dev || echo "⚠️ Volume nicht vorhanden"
+
+ci-release-check:
+	@echo "🚀 Prüfe Release-Bereitschaft..."
+	@curl --fail --silent --show-error http://127.0.0.1:8080/actuator/info | grep '"version"' > /dev/null \
+        && echo "✅ Release-Info verfügbar!" \
+        || (echo "❌ Release-Info fehlt!" && exit 1)
+
+
+ci-dev-check-and-release-check:
+	@make ci-dev-verify
+	@curl --fail --silent http://127.0.0.1:8080/actuator/info | grep '"version"' > /dev/null \
+        && echo "✅ Release-Info verfügbar!" \
+        || (echo "❌ Release-Info fehlt!" && exit 1)
+
+
 
 
 
