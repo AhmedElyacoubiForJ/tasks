@@ -41,6 +41,11 @@ ci-dev-ps:
 	@echo "🐙 Zeige Compose-Container..."
 	docker compose -f docker-compose-dev-ci.yml ps -a
 
+ci-dev-healthcheck:
+	@echo "🔍 Prüfe App-Verfügbarkeit..."
+	curl --fail --silent --show-error http://localhost:8080/actuator/health || (echo "❌ App nicht erreichbar!" && exit 1)
+
+
 ci-dev-healthcheck-retry:
 	@echo "🔄 Warte auf App..."
 	@for i in {1..10}; do \
