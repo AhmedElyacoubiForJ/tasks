@@ -66,6 +66,23 @@ ci-dev-debug:
 	@echo "🌐 Versuche Verbindung zu App..."
 	curl -v http://127.0.0.1:8080/actuator/health || echo "❌ Verbindung fehlgeschlagen"
 
+ci-dev-process-watch:
+	@echo "🔍 Überwache App-Prozess im Container..."
+	@for i in $(seq 1 20); do \
+        echo "⏱️  Versuch $$i: Prüfe Prozessliste..."; \
+        docker exec tasks-app ps aux | grep "java -jar app.jar" && echo "✅ App-Prozess läuft!" && exit 0; \
+        echo "⏳ Prozess nicht gefunden, warte..."; \
+        sleep 5; \
+    done; \
+    echo "❌ App-Prozess nicht stabil nach 20 Versuchen!" && exit 1
+
+
+ci-dev-verify-app:
+	make ci-dev-process-watch
+	make ci-dev-healthcheck-retry
+
+
+
 
 # 🔁 Gemeinsame Targets referenzieren
 # TODO
