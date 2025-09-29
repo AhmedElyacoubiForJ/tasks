@@ -26,6 +26,7 @@ services:
     container_name: tasks-app # ${APP_CONTAINER}
     environment:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+    command: ["sleep", "60"]
     ports:
       - "${APP_PORT:-8080}:8080"
     depends_on:

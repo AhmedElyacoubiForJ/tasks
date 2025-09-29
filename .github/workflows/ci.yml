@@ -56,14 +56,14 @@ jobs:
             sleep 5
           done
 
-      - name: 📂 Logdateien im App-Container (optional)
-        run: docker exec tasks-app find /app -name "*.log" -exec cat {} \;
+      #- name: 📂 Logdateien im App-Container (optional)
+      #  run: docker exec tasks-app find /app -name "*.log" -exec cat {} \;
 
       # - name: 🔍 Überwache App-Prozess
       #   run: make -f Makefile.compose-ci ci-dev-process-watch
 
-      #- name: 🧪 Healthcheck
-      #  run: make -f Makefile.compose-ci ci-dev-healthcheck-retry
+      - name: 🧪 Healthcheck
+        run: make -f Makefile.compose-ci ci-dev-healthcheck-retry
 
       #- name: 📋 Tasklist-Check
       #  run: make -f Makefile.compose-ci ci-dev-tasklist-check
