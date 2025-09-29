@@ -44,8 +44,8 @@ jobs:
       - name: 🧠 Prozessliste im App-Container
         run: docker exec tasks-app ps aux
 
-      #- name: 📂 Logdateien im App-Container (optional)
-      #  run: docker exec tasks-app find /app -name "*.log" -exec cat {} \;
+      - name: 📂 Logdateien im App-Container (optional)
+        run: docker exec tasks-app find /app -name "*.log" -exec cat {} \;
 
       #- name: 🧪 Healthcheck
       #  run: make -f Makefile.compose-ci ci-dev-healthcheck-retry
