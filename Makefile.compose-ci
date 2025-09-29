@@ -70,8 +70,10 @@ ci-dev-healthcheck-retry:
 
 ci-dev-tasklist-check:
 	@echo "📋 Prüfe /task-lists/details..."
-	#docker exec tasks-app curl --fail --silent --show-error http://localhost:8080/task-lists/details || (echo "❌ Endpoint fehlgeschlagen!" && exit 1)
-	curl --fail --silent --show-error http://127.0.0.1:8080/task-lists/details || (echo "❌ Endpoint fehlgeschlagen!" && exit 1)
+    @curl --fail --silent --show-error http://127.0.0.1:8080/task-lists/details | grep '"status":"success"' > /dev/null \
+        && echo "✅ TaskList-Endpunkt erfolgreich!" \
+        || (echo "❌ TaskList-Endpunkt fehlgeschlagen!" && exit 1)
+
 
 ci-dev-debug:
 	@echo "🌐 Versuche Verbindung zu App..."
@@ -88,9 +90,14 @@ ci-dev-process-watch:
     echo "❌ App-Prozess nicht stabil nach 20 Versuchen!" && exit 1
 
 
-ci-dev-verify-app:
-	make ci-dev-process-watch
-	make ci-dev-healthcheck-retry
+ci-dev-verify:
+    @make ci-dev-healthcheck-retry
+    @make ci-dev-tasklist-check
+
+ci-dev-clean:
+    @echo "🧹 Entferne Volumes..."
+    @docker volume rm tasks_pgdata-dev || echo "⚠️ Volume nicht vorhanden"
+
 
 
 
