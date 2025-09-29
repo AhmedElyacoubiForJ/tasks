@@ -1,7 +1,11 @@
 # 🧱 Base Layer
-FROM eclipse-temurin:17-jdk-alpine AS build
-#RUN apk add --no-cache curl
+#ARG CI=false
+FROM eclipse-temurin:17-jdk AS build
 WORKDIR /app
+
+
+#RUN [ "$CI" = "true" ] && apk add --no-cache curl || echo "CI=false, skip curl"
+
 
 # 🧰 Maven Wrapper
 COPY .mvn/ .mvn/

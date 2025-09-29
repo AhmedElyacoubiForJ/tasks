@@ -1,6 +1,6 @@
+# Dockerfile.ci
 # 🧱 Base Layer
-FROM eclipse-temurin:17-jdk-alpine AS build
-RUN apk add --no-cache curl
+FROM eclipse-temurin:17-jdk AS build
 WORKDIR /app
 
 # 🧰 Maven Wrapper
@@ -22,6 +22,9 @@ RUN ./mvnw clean package -DskipTests
 # 🔒 Final Stage
 FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
+
+# 🛠️ curl installieren für CI-Healthcheck
+RUN apk add --no-cache curl
 
 # 🔒 Nicht-root Benutzer
 RUN adduser -D -h /home/appuser appuser
