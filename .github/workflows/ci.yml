@@ -59,11 +59,11 @@ jobs:
       - name: 📜 Zeige App-Logs
         run: docker compose -f docker-compose-dev-ci.yml logs app
 
-      - name: 📜 Zeige App-Logs 2
-        run: docker logs tasks-app
-
       - name: 📋 Kombiniertes Check 🧪 Healthcheck & 📋 Task list
         run: make -f Makefile.compose-ci ci-dev-verify
+
+      - name: 📜 Zeige App-Logs 2
+        run: docker logs tasks-app
 
       #- name: 📂 Logdateien im App-Container (optional)
       #  run: docker exec tasks-app find /app -name "*.log" -exec cat {} \;
@@ -80,8 +80,8 @@ jobs:
       #- name: 🌐 Versuche Verbindung zu App...
       #  run: make -f Makefile.compose-ci ci-dev-debug
 
-      - name: 🧼 Clean volume
-        run: make -f Makefile.compose-ci ci-dev-clean
+      #- name: 🧼 Clean volume
+      #  run: make -f Makefile.compose-ci ci-dev-clean
 
       - name: 🧹 Stoppe Umgebung
         run: make -f Makefile.compose-ci ci-dev-down # run: docker compose -f docker-compose-dev-ci.yml down
