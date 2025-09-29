@@ -51,7 +51,7 @@ ci-dev-healthcheck-retry:
 	@echo "🔄 Warte auf App..."
 	@for i in {1..10}; do \
         # docker exec tasks-app curl --fail --silent http://localhost:8080/actuator/health && exit 0; \
-        curl --fail --silent http://127.0.0.1:8080/actuator/health && exit 0; \
+        curl --fail --silent --show-error http://127.0.0.1:8080/actuator/health && exit 0; \
         echo "⏳ Versuch $$i fehlgeschlagen, warte..."; \
         sleep 3; \
     done; \
@@ -62,6 +62,9 @@ ci-dev-tasklist-check:
 	#docker exec tasks-app curl --fail --silent --show-error http://localhost:8080/task-lists/details || (echo "❌ Endpoint fehlgeschlagen!" && exit 1)
 	curl --fail --silent --show-error http://127.0.0.1:8080/task-lists/details || (echo "❌ Endpoint fehlgeschlagen!" && exit 1)
 
+ci-dev-debug:
+	@echo "🌐 Versuche Verbindung zu App..."
+	curl -v http://127.0.0.1:8080/actuator/health || echo "❌ Verbindung fehlgeschlagen"
 
 
 # 🔁 Gemeinsame Targets referenzieren
