@@ -44,8 +44,17 @@ jobs:
       - name: 🧠 Prozessliste im App-Container
         run: docker exec tasks-app ps aux
 
+      #- name: 🐙 Überwache Compose-Container # klappt nicht
+      #  run: make -f Makefile.compose-ci ci-dev-ps-watch
+
+
       - name: 🐙 Überwache Compose-Container
-        run: make -f Makefile.compose-ci ci-dev-ps-watch
+        run: |
+          for i in {1..10}; do
+            echo "⏱️  Versuch $i: docker compose ps -a"
+            docker compose -f docker-compose-dev-ci.yml ps -a || echo "❌ Fehler beim Abrufen"
+            sleep 5
+          done
 
       - name: 📂 Logdateien im App-Container (optional)
         run: docker exec tasks-app find /app -name "*.log" -exec cat {} \;
