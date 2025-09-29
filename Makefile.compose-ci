@@ -43,7 +43,7 @@ ci-dev-ps:
 
 ci-dev-healthcheck:
 	@echo "🔍 Prüfe App-Verfügbarkeit..."
-	curl --fail --silent --show-error http://localhost:8080/actuator/health || (echo "❌ App nicht erreichbar!" && exit 1)
+	docker exec tasks-app curl --fail --silent --show-error http://localhost:8080/actuator/health || (echo "❌ App nicht erreichbar!" && exit 1)
 
 
 ci-dev-healthcheck-retry:
