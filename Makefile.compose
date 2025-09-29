@@ -1,7 +1,7 @@
 # 🛠️ Compose-Dev Umgebung steuern
 
 ROOT := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
-SCRIPTS := $(ROOT)/scripts/compose-dev
+COMPOSE_SCRIPTS := $(ROOT)/scripts/compose-dev
 
 help-compose:
 	@echo "🐙 Compose-Umgebung:"
@@ -15,19 +15,19 @@ help-compose:
 
 compose-dev-up:
 	@echo "🚀 Starte compose-dev Umgebung..."
-	bash ./scripts/compose-dev/up.sh
+	bash $(COMPOSE_SCRIPTS)/up.sh
 
 compose-dev-down:
 	@echo "🛑 Stoppe compose-dev Umgebung..."
-	bash ./scripts/compose-dev/down.sh
+	bash $(COMPOSE_SCRIPTS)/down.sh
 
 compose-dev-restart:
 	@echo "🔄 Starte compose-dev Umgebung neu..."
-	bash ./scripts/compose-dev/restart.sh
+	bash $(COMPOSE_SCRIPTS)/restart.sh
 
 compose-dev-logs:
 	@echo "📜 Zeige Logs & ENV-Diagnose..."
-	bash ./scripts/compose-dev/logs.sh
+	bash $(COMPOSE_SCRIPTS)/logs.sh
 
 # TODO wenn nötig ist
 #compose-dev-db-init:
@@ -45,6 +45,6 @@ compose-dev-volumes:
 compose-dev-clean:
 	@echo "🧹 Entferne Container & Volume..."
 	docker compose -f docker-compose-dev.yml --env-file .env.compose-dev down -v
-	-docker volume rm tasks_pgdata-compose-dev
+	- docker volume rm tasks_pgdata-compose-dev
 
 

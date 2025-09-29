@@ -1,0 +1,80 @@
+# 📁 Makefile.compose-ci
+
+# In ci.yml run: make -f Makefile.compose-ci ci-dev-up
+# make -f Makefile.compose-ci ci-dev-down
+# - name: 🧪 Healthcheck
+#  run: make -f Makefile.compose-ci ci-dev-healthcheck
+#
+# - name: 📋 Tasklist-Check
+#  run: make -f Makefile.compose-ci ci-dev-tasklist-check
+
+ROOT := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
+COMPOSE_CI := $(ROOT)/scripts/compose-ci
+COMPOSE := $(ROOT)/scripts/compose-dev
+
+# 🧭 Pfadprüfung
+ci-print-path:
+	@echo "📁 ROOT         = $(ROOT)"
+	@echo "📁 COMPOSE_CI   = $(COMPOSE_CI)"
+	@echo "📁 COMPOSE      = $(COMPOSE)"
+
+# 🆘 Hilfe für CI-Targets
+ci-help:
+	@echo "🛠️  CI-spezifische Makefile Targets:"
+	@grep -E '^ci-[a-zA-Z_-]+:' $(lastword $(MAKEFILE_LIST)) | awk 'BEGIN {FS = ":"}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, "→ CI-spezifischer Befehl"}'
+
+# make -f Makefile.compose-ci ci-print-path
+# make -f Makefile.compose-ci ci-help
+
+
+# 🔧 CI-spezifische Targets
+ci-dev-up:
+	docker compose -f docker-compose-dev-ci.yml up -d
+
+ci-dev-down:
+	docker compose -f docker-compose-dev-ci.yml down -v
+
+ci-dev-logs:
+	docker compose -f docker-compose-dev-ci.yml logs --no-color
+
+ci-dev-ps:
+	@echo "🐙 Zeige Compose-Container..."
+	docker compose -f docker-compose-dev-ci.yml ps -a
+
+ci-dev-healthcheck-retry:
+	@echo "🔄 Warte auf App..."
+	@for i in {1..10}; do \
+        curl --fail --silent http://localhost:8080/actuator/health && exit 0; \
+        echo "⏳ Versuch $$i fehlgeschlagen, warte..."; \
+        sleep 3; \
+    done; \
+    echo "❌ App nicht erreichbar nach 10 Versuchen!" && exit 1
+
+ci-dev-tasklist-check:
+	@echo "📋 Prüfe /task-lists/details..."
+	curl --fail --silent --show-error http://localhost:8080/task-lists/details || (echo "❌ Endpoint fehlgeschlagen!" && exit 1)
+
+
+
+# 🔁 Gemeinsame Targets referenzieren
+# TODO
+#ci-dev-verify:
+#	make -f Makefile.compose compose-dev-verify # TODO
+#
+#ci-dev-lint:
+#	make -f Makefile.compose compose-dev-lint   # TODO
+#
+#ci-dev-reset-db:
+#	make -f Makefile.compose compose-dev-reset-db # TODO
+
+
+
+#🧩 Nächste Schritte
+#
+#ci-dev-verify bauen, das App & DB prüft
+#
+#ci-dev-reset-db ergänzen, falls du DB-Tests brauchst
+#
+#ci-dev-release-check vorbereiten für spätere Deployment-Logik
+#
+#Oder ci-help-all bauen, das auch Makefile.compose referenziert

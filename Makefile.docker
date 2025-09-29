@@ -1,7 +1,14 @@
 # 🐳 Docker-Umgebung (ohne Compose)
 
+#ROOT := $(shell git rev-parse --show-toplevel)
 ROOT := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
-SCRIPTS := $(ROOT)/scripts/docker
+DOCKER_SCRIPTS := $(ROOT)/scripts/docker
+
+print-paths:
+	@echo MAKEFILE_LIST=$(MAKEFILE_LIST)
+	@echo ROOT=$(ROOT)
+	@echo DOCKER_SCRIPTS=$(DOCKER_SCRIPTS)
+
 
 help-docker:
 	@echo "🐳 Docker-Umgebung (manuell, ohne Compose):"
@@ -16,37 +23,37 @@ help-docker:
 	@echo "  make docker-dev-check-env  # ENV-Diagnose"
 	@echo "  make docker-dev-verify     # Vollständige Prüfung"
 
+.PHONY: docker-dev-up docker-dev-down
 
+docker-dev-up:	 ## Startet die Docker-Dev-Umgebung
+	bash $(DOCKER_SCRIPTS)/dev.sh
 
-docker-dev-up:
-	bash $(SCRIPTS)/dev.sh
-
-docker-dev-down:
-	bash $(SCRIPTS)/stop.sh
+docker-dev-down: ## Stoppt und räumt die Docker-Dev-Umgebung auf
+	bash $(DOCKER_SCRIPTS)/stop.sh
 
 docker-dev-restart:
-	bash $(SCRIPTS)/restart.sh
+	bash $(DOCKER_SCRIPTS)/restart.sh
 
 docker-dev-logs:
-	bash $(SCRIPTS)/logs.sh
+	bash $(DOCKER_SCRIPTS)/logs.sh
 
 docker-dev-status:
-	- bash $(SCRIPTS)/status.sh
+	- bash $(DOCKER_SCRIPTS)/status.sh
 
 docker-dev-db-init:
-	bash $(SCRIPTS)/init-db.sh
+	bash $(DOCKER_SCRIPTS)/init-db.sh
 
 docker-dev-db-reset:
-	bash $(SCRIPTS)/reset-db.sh
+	bash $(DOCKER_SCRIPTS)/reset-db.sh
 
 docker-dev-health:
-	bash $(SCRIPTS)/health.sh
+	bash $(DOCKER_SCRIPTS)/health.sh
 
 docker-dev-check-env:
-	bash $(SCRIPTS)/check-env.sh
+	bash $(DOCKER_SCRIPTS)/check-env.sh
 
 docker-dev-verify:
 	@echo "🔍 Starte vollständige Umgebungprüfung..."
-	@bash $(SCRIPTS)/check-env.sh
-	@bash $(SCRIPTS)/status.sh || true
-	@bash $(SCRIPTS)/health.sh || true
+	@bash $(DOCKER_SCRIPTS)/check-env.sh
+	@bash $(DOCKER_SCRIPTS)/status.sh || true
+	@bash $(DOCKER_SCRIPTS)/health.sh || true
