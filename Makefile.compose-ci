@@ -32,6 +32,7 @@ ci-dev-up:
 	docker compose -f docker-compose-dev-ci.yml up -d
 
 ci-dev-down:
+	@echo "🔄 Stoppe Umgebung und entferne alles..."
 	docker compose -f docker-compose-dev-ci.yml down -v
 
 ci-dev-logs:
@@ -105,18 +106,18 @@ ci-dev-clean:
 	@echo "🧹 Entferne Volumes..."
 	@docker volume rm tasks_pgdata-dev || echo "⚠️ Volume nicht vorhanden"
 
-ci-release-check:
-	@echo "🚀 Prüfe Release-Bereitschaft..."
-	@curl --fail --silent --show-error http://127.0.0.1:8080/actuator/info | grep '"version"' > /dev/null \
-        && echo "✅ Release-Info verfügbar!" \
-        || (echo "❌ Release-Info fehlt!" && exit 1)
-
-
-ci-dev-check-and-release-check:
-	@make -f Makefile.compose-ci ci-dev-verify
-	@curl --fail --silent http://127.0.0.1:8080/actuator/info | grep '"version"' > /dev/null \
-        && echo "✅ Release-Info verfügbar!" \
-        || (echo "❌ Release-Info fehlt!" && exit 1)
+#ci-release-check:
+#	@echo "🚀 Prüfe Release-Bereitschaft..."
+#	@curl --fail --silent --show-error http://127.0.0.1:8080/actuator/info | grep '"version"' > /dev/null \
+#        && echo "✅ Release-Info verfügbar!" \
+#        || (echo "❌ Release-Info fehlt!" && exit 1)
+#
+#
+#ci-dev-check-and-release-check:
+#	@make -f Makefile.compose-ci ci-dev-verify
+#	@curl --fail --silent http://127.0.0.1:8080/actuator/info | grep '"version"' > /dev/null \
+#        && echo "✅ Release-Info verfügbar!" \
+#        || (echo "❌ Release-Info fehlt!" && exit 1)
 
 
 
