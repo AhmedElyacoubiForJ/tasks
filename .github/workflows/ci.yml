@@ -1,10 +1,13 @@
 name: CI Dev Compose
 
+#on:
+#  push:
+#    branches: [ main ]
+#  pull_request:
+#    branches: [ main ]
+
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   dev-compose:
@@ -47,6 +50,9 @@ jobs:
       #- name: 🐙 Überwache Compose-Container
       #  run: make -f Makefile.compose-ci ci-dev-ps-watch
 
+      - name: 🌐 Versuche Verbindung zu App...
+        run: make -f Makefile.compose-ci ci-dev-debug
+
       - name: 🐙 Überwache Compose-Container
         run: |
           for i in {1..10}; do
@@ -58,15 +64,15 @@ jobs:
       - name: 📜 Zeige App-Logs
         run: docker compose -f docker-compose-dev-ci.yml logs app
 
-      - name: 📋 Kombiniertes Check 🧪 Healthcheck & 📋 Task list Endpoint
+      - name: 🧪 Healthcheck & 📋 Tasks listen über Rest-Endpoint (kombiniert)
         run: make -f Makefile.compose-ci ci-dev-verify
 
       - name: 📜 Zeige App-Logs
         run: docker compose -f docker-compose-dev-ci.yml logs app
         #run: docker logs tasks-app
 
-      - name: 📂 Logdateien im App-Container (optional)
-        run: docker exec tasks-app find /app -name "*.log" -exec cat {} \;
+      #- name: 📂 Logdateien im App-Container (optional)
+      #  run: docker exec tasks-app find /app -name "*.log" -exec cat {} \;
 
       # - name: 🔍 Überwache App-Prozess
       #   run: make -f Makefile.compose-ci ci-dev-process-watch
@@ -79,9 +85,6 @@ jobs:
 
       #- name: 🌐 Versuche Verbindung zu App...
       #  run: make -f Makefile.compose-ci ci-dev-debug
-
-      #- name: 🧼 Clean volume
-      #  run: make -f Makefile.compose-ci ci-dev-clean
 
       - name: 🧹 Stoppe Umgebung
         run: make -f Makefile.compose-ci ci-dev-down # run: docker compose -f docker-compose-dev-ci.yml down
