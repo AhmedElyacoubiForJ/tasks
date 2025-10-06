@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tasks-salat
+  namespace: dev
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: tasks-salat
+  template:
+    metadata:
+      labels:
+        app: tasks-salat
+    spec:
+      containers:
+        - name: tasks-app
+          image: tasks-app:dev
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: compose-dev
+            - name: DB_HOST
+              value: db
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_NAME
+              value: tasks_dev_db
+            - name: APP_DB_USER
+              value: dev_user
+            - name: APP_DB_PASSWORD
+              value: dev_secret
