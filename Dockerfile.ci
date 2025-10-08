@@ -30,7 +30,10 @@ RUN apk add --no-cache curl
 RUN adduser -D -h /home/appuser appuser
 USER appuser
 
-# App Jar übernehmen
 COPY --from=build /app/target/*.jar ./app.jar
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
+
+# 🧪 Teststrategie
+# docker build -t tasks:latest -f Dockerfile.ci .
+# docker compose -f docker-compose-dev-ci.yml --env-file .env.compose-dev up -d

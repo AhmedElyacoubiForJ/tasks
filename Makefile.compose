@@ -36,7 +36,11 @@ compose-dev-logs:
 
 compose-dev-ps:
 	@echo "🐙 Zeige Compose-Container..."
-	docker compose -f docker-compose-dev.yml ps -a
+	docker compose -f docker-compose-dev.yml --env-file .env.compose-dev ps -a
+	#@echo "🐙 Zeige Compose-Container...Format table"
+	#@docker compose -f docker-compose-dev.yml --env-file .env.compose-dev ps -a --format table
+	#@echo "🐙 Zeige Tasks-Container...Format table"
+	#@docker compose -f docker-compose-dev.yml --env-file .env.compose-dev ps -a --format table | grep "tasks"
 
 compose-dev-volumes:
 	@echo "🔍 Zeige Volume-Details..."
@@ -46,5 +50,7 @@ compose-dev-clean:
 	@echo "🧹 Entferne Container & Volume..."
 	docker compose -f docker-compose-dev.yml --env-file .env.compose-dev down -v
 	- docker volume rm tasks_pgdata-compose-dev
+
+
 
 

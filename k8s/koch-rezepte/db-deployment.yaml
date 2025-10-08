@@ -1,0 +1,113 @@
+# 🧑‍🍳 Schritt-für-Schritt: Postgres-Rezept starten
+# 1️⃣ Namespace anlegen
+# kubectl create namespace dev
+#
+# 2️⃣ ConfigMap mit dem Init-Skript bereitstellen
+# kubectl apply -f ./k8s/koch-rezepte/init-db-script.yaml
+#
+# 3️⃣ Postgres-Deployment starten
+# kubectl apply -f ./k8s/koch-rezepte/db-deployment.yaml
+#
+# Und dann prüfen, ob unser dev_user schon mit dem Kochlöffel wedelt 😄
+# 🔍 Danach prüfen wir:
+# 🧑‍🍳 Nächste Schritte am Herd
+# Pod-Status prüfen
+# kubectl get pods -n dev
+#
+# Logs anschauen (Init-Skript-Ausgabe)
+# kubectl logs <pod-name> -n dev
+#
+# In den Container springen
+# kubectl exec -it <pod-name> -n dev -- sh
+#
+# Mit psql verbinden
+# psql -U admin -d tasks_dev_db
+# 🧑‍🍳 Was tun, wenn du frisch starten willst?
+#
+# 🧼 1. Deployment löschen
+# kubectl delete deployment postgres-dev -n dev
+#
+# 🧼 2. ConfigMap optional löschen (wenn du sie ändern willst)
+# kubectl delete configmap init-db-script -n dev
+#
+# 🧼 3. Volume leeren (wichtig!)
+# kubectl delete pod <pod-name> -n dev
+# → Dadurch wird der Pod samt Volume-Inhalt entfernt
+# → Beim nächsten Deployment-Start wird das Init-Skript neu ausgeführt
+# 🔍 Pod-Namen herausfinden
+# kubectl get pods -n dev
+# → Oder du verwendest emptyDir wie bisher, dann reicht das Löschen des Pods/Deployments
+#
+# ✅ Lösung: Wenn du wirklich aufräumen willst
+# kubectl delete deployment tasks-app -n dev
+# → Danach verschwinden die Pods dauerhaft, bis du das Deployment neu erstellst
+#
+# 🔍 Bonus: Deployment-Status prüfen
+# kubectl get deployments -n dev
+# 🔁 Dann neu anwenden:
+# kubectl apply -f ./k8s/koch-rezepte/init-db-script.yaml
+# kubectl apply -f ./k8s/koch-rezepte/db-deployment.yaml
+# db-deployment.yml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-dev
+  namespace: dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres-dev
+  template:
+    metadata:
+      labels:
+        app: postgres-dev
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:15-alpine
+          ports:
+            - containerPort: 5432
+
+          # 🧑‍🍳 Diese Umgebungsvariablen werden sowohl vom Container als auch vom Init-Skript verwendet.
+          # Sie definieren die Superuser-Zugangsdaten und den dedizierten App-User.
+          env:
+            - name: POSTGRES_DB
+              value: tasks_dev_db
+            - name: POSTGRES_USER
+              value: admin
+            - name: POSTGRES_PASSWORD
+              value: adminpass
+            - name: APP_DB_USER
+              value: dev_user
+            - name: APP_DB_PASSWORD
+              value: dev_secret
+
+          volumeMounts:
+            # 🧑‍🍳 Persistente Datenbankdaten werden hier gespeichert.
+            - name: pgdata
+              mountPath: /var/lib/postgresql/data
+
+            # 🧑‍🍳 Das Init-Skript wird beim ersten Start automatisch ausgeführt,
+            # wenn das Volume leer ist. Es wird als einzelne Datei aus der ConfigMap gemountet.
+            - name: init-script
+              mountPath: /docker-entrypoint-initdb.d/init-dev-db.sh
+              subPath: init-dev-db.sh
+
+          # 🧑‍🍳 readinessProbe prüft regelmäßig, ob Postgres bereit ist.
+          # So weiß Minikube, wann der Container einsatzfähig ist.
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-U", "admin", "-d", "tasks_dev_db"]
+            initialDelaySeconds: 10
+            periodSeconds: 10
+
+      volumes:
+        - name: pgdata
+          emptyDir: {}
+
+        # 🧑‍🍳 Die ConfigMap enthält das Init-Skript.
+        # Sie wird hier eingebunden und über subPath als einzelne Datei gemountet.
+        - name: init-script
+          configMap:
+            name: init-db-script

@@ -27,10 +27,10 @@ Das Projekt unterstützt mehrere Umgebungen:
 - `test` – automatisierte Tests mit isolierter Datenbank
 - `ci` – Continuous Integration Setup für Pipelines
 
-> 👉 Details und Startbefehle findest du im [Workflow-Bereich](./docs/workflow/README.md)  
+> 👉 Details und Startbefehle findest du im [Workflow-Bereich](docs/DevOps-Ecosystem/workflow/README.md)  
 > Dort findest du:
-> - [`workflow-local.md`](./docs/workflow/workflow-local.md) – lokale Entwicklung mit H2 & Hotreload
-> - [`workflow-docker.md`](./docs/workflow/workflow-docker.md) – Compose-basierte Umgebung mit PostgreSQL
+> - [`workflow-local.md`](docs/DevOps-Ecosystem/workflow/workflow-local.md) – lokale Entwicklung mit H2 & Hotreload
+> - [`workflow-docker.md`](docs/DevOps-Ecosystem/workflow/workflow-docker.md) – Compose-basierte Umgebung mit PostgreSQL
 > - `README.md` – Übersicht aller Startprofile und Empfehlungen
 
 ---

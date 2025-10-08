@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: init-db-script
+  namespace: dev
+data:
+  init-dev-db.sh: |
+    #!/bin/bash
+    # Stellt sicher, dass das Skript bei einem Fehler sofort abbricht
+    set -e
+
+    # Führe das SQL-Kommando aus.
+    # psql wird mit den Superuser-Credentials ($POSTGRES_USER) ausgeführt,
+    # die der Container aus den Umgebungsvariablen kennt.
+    # Die Variablen $APP_DB_USER und $APP_DB_PASSWORD werden ebenfalls über env gesetzt.
+    psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
+        -- Erstelle den dedizierten User für die Applikation
+        CREATE USER $APP_DB_USER WITH PASSWORD '$APP_DB_PASSWORD';
+
+        -- Datenbank-Rechte
+        GRANT CONNECT ON DATABASE $POSTGRES_DB TO $APP_DB_USER;
+        -- dev darf eigene Schemas erstellen
+        GRANT CREATE ON DATABASE $POSTGRES_DB TO $APP_DB_USER;
+        -- wichtig: Tabellen liegen immer in einem Schema (standard: public)
+        GRANT CREATE ON SCHEMA public TO $APP_DB_USER;
+    EOSQL

@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-dev
+  namespace: dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres-dev
+  template:
+    metadata:
+      labels:
+        app: postgres-dev
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:15-alpine # postgres:alpine
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_DB
+              value: tasks_dev_db
+            - name: POSTGRES_USER
+              value: admin
+            - name: POSTGRES_PASSWORD
+              value: adminpass
+            - name: APP_DB_USER
+              value: dev_user
+            - name: APP_DB_PASSWORD
+              value: dev_secret
+          volumeMounts:
+            - name: pgdata
+              mountPath: /var/lib/postgresql/data
+            - name: init-script
+              mountPath: /docker-entrypoint-initdb.d/init-dev-db.sh
+              subPath: init-dev-db.sh
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-U", "admin", "-d", "tasks_dev_db"]
+            initialDelaySeconds: 10
+            periodSeconds: 10
+      volumes:
+        - name: pgdata
+          emptyDir: {}
+        - name: init-script
+          configMap:
+            name: init-db-script

@@ -7,18 +7,11 @@ COPY .mvn/ .mvn/
 COPY mvnw .
 RUN chmod +x mvnw
 COPY pom.xml .
+COPY src/ src/
 
-# 📦 Dependencies (cached)
-# So wird go-offline nur neu ausgeführt, wenn pom.xml sich ändert
-RUN ./mvnw dependency:go-offline
-
-# 🧑‍💻 Source & Resources
-COPY src ./src
-COPY src/main/resources/application.yml ./src/main/resources/
-COPY src/main/resources/application-compose-dev.yml ./src/main/resources/
-
-# Build
+# 📦 Build ohne Tests
 RUN ./mvnw clean package -DskipTests
+
 
 # 🔒 Final Stage
 FROM eclipse-temurin:17-jre-alpine
@@ -33,6 +26,4 @@ COPY --from=build /app/target/*.jar ./app.jar
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
 
-# CMD ["java", "-jar", "app.jar", "--spring.profiles.active=compose-prod"]
-
-#  docker build -t myimage:tasks-app .
+# docker build -t tasks-app:dev -f Dockerfile.minikube .

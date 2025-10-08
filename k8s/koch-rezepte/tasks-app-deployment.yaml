@@ -1,0 +1,85 @@
+# 🧑‍🍳 Schritt-für-Schritt: App-Deployment starten
+
+# 1️⃣ Namespace anlegen (falls noch nicht vorhanden)
+# kubectl create namespace dev
+
+# 2️⃣ App-Deployment anwenden
+# kubectl apply -f ./k8s/koch-rezepte/tasks-app-deployment.yaml
+
+# 🔍 Danach prüfen wir:
+# 🧑‍🍳 Nächste Schritte am Herd
+
+# Pod-Status prüfen
+# kubectl get pods -n dev
+
+# Logs anschauen (Startverhalten & DB-Verbindung)
+# kubectl logs <pod-name> -n dev
+
+# In den Container springen
+# kubectl exec -it <pod-name> -n dev -- sh
+
+# 🧼 Was tun, wenn du frisch starten willst?
+
+# 1. Deployment löschen
+# kubectl delete deployment tasks-app -n dev
+
+# 2. Pod manuell löschen (falls nötig)
+# kubectl delete pod <pod-name> -n dev
+
+# 🔍 Bonus: Deployment-Status prüfen
+# kubectl get deployments -n dev
+
+# 🔁 Dann neu anwenden:
+# kubectl apply -f ./k8s/koch-rezepte/tasks-app-deployment.yaml
+
+# voraussetzung image app vorhanden in Minikube-Docker
+#
+# Wenn Image nicht in Minikube-docker ist "eval $(minikube docker-env)"
+# docker build -t tasks-app:dev -f Dockerfile.minikube .
+#
+# „sanft“ neustarten für alle Fälle
+# kubectl rollout restart deployment tasks-app -n dev
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tasks-app
+  namespace: dev
+  labels:
+    app: tasks-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tasks-app
+  template:
+    metadata:
+      labels:
+        app: tasks-app
+    spec:
+      containers:
+        - name: tasks-app
+          image: tasks-app:dev # 🧂 Hier kommt dein App-Image rein
+          ports:
+            - containerPort: 8080 # 🔢 Port, auf dem die App lauscht
+          env:
+            # 🧠 Datenbankverbindung für Spring Boot
+            - name: DB_HOST
+              value: postgres-dev # 🔗 Service-Name der Datenbank
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_NAME
+              value: tasks_dev_db
+            - name: APP_DB_USER
+              value: dev_user
+            - name: APP_DB_PASSWORD
+              value: dev_secret
+            - name: SPRING_PROFILES_ACTIVE
+              value: container-dev
+          # 🧪 Optional: Readiness-Probe für später
+          # readinessProbe:
+          #   httpGet:
+          #     path: /actuator/health
+          #     port: 8080
+          #   initialDelaySeconds: 10
+          #   periodSeconds: 5

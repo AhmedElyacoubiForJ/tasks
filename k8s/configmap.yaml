@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: init-db-script
+  namespace: dev
+data:
+  init-dev-db.sh: |
+    #!/bin/bash
+    set -e
+    psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" <<-EOSQL
+      CREATE USER dev_user WITH PASSWORD 'dev_secret';
+      CREATE DATABASE tasks_dev_db OWNER dev_user;
+      GRANT ALL PRIVILEGES ON DATABASE tasks_dev_db TO dev_user;
+    EOSQL
+

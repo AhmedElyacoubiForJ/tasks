@@ -1,0 +1,13 @@
+# kubectl apply -f ./k8s/koch-rezepte/postgres-dev-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-dev
+  namespace: dev
+spec:
+  type: ClusterIP
+  selector:
+    app: postgres-dev
+  ports:
+    - port: 5432
+      targetPort: 5432

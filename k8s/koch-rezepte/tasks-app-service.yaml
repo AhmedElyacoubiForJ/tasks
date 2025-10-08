@@ -1,0 +1,48 @@
+# 🧑‍🍳 Schritt-für-Schritt: App-Service servieren
+
+# 1️⃣ Namespace anlegen (falls noch nicht vorhanden)
+# kubectl create namespace dev
+
+# 2️⃣ Service anwenden
+# kubectl apply -f ./k8s/koch-rezepte/tasks-app-service.yaml
+
+# 🔍 Danach prüfen wir:
+# 🧑‍🍳 Nächste Schritte am Herd
+
+# Services anzeigen
+# kubectl get svc -n dev
+
+# Details prüfen (Port, Ziel, Typ)
+# kubectl describe svc tasks-app -n dev
+
+# Minikube-IP holen
+# minikube ip
+
+# App testen (im Browser oder mit curl)
+# curl http://<minikube-ip>:30080
+
+# 🧼 Was tun, wenn du frisch starten willst?
+
+# 1. Service löschen
+# kubectl delete svc tasks-app -n dev
+
+# 🔍 Bonus: Service-Status prüfen
+# kubectl get svc tasks-app -n dev
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: tasks-app
+  namespace: dev
+  labels:
+    app: tasks-app
+spec:
+  type: NodePort         # 🚪 Macht die App von außen erreichbar
+  selector:
+    app: tasks-app       # 🧂 Verbindet sich mit dem Deployment über Label
+  ports:
+    - port: 8080         # 📦 Port im Service (intern)
+      targetPort: 8080   # 🎯 Port im Container
+      nodePort: 30080    # 🌍 Port auf dem Minikube-Host (für curl & Browser)
