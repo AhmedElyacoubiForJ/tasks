@@ -2,13 +2,13 @@
 
 > Die Applikation wird in drei aufeinander aufbauenden Phasen betrieben — jede Phase entspricht einem typischen Entwicklungsschritt in modernen Softwareprojekten:
 
-1. [**Lokal ohne Docker**](./workflow-local.md)  
+1. [**Lokal ohne Docker**](./profile-local.md)  
    → Schnelles Entwickeln und Testen direkt auf dem Host-System, mit minimaler Infrastruktur
 
-2. [**Mit Docker & Docker Compose**](./workflow-docker.md)  
+2. [**Mit Docker & Docker Compose**](./profile-docker.md)  
    → Containerisierte Umgebung zur Simulation produktionsnaher Abläufe und zur Vorbereitung auf CI/CD
 
-3. [**Automatisiert via CI**](./workflow-ci.md)  
+3. [**Automatisiert via CI**](./profile-ci.md)  
    → Vollständig automatisierter Build- und Testprozess, ideal für Qualitätssicherung und Deployment
 
 > Dieses gestufte Vorgehen ist ein bewährter Ansatz, wie ihn viele professionelle Teams einsetzen.  
