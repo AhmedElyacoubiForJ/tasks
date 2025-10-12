@@ -39,6 +39,6 @@ server:
 # 📋 Logging
 logging:
   level:
-    edu.yacoubi.tasks.config: DEBUG
+    #edu.yacoubi.tasks.config: DEBUG
   interceptor:
     enabled: console

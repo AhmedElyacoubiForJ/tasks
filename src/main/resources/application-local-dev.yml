@@ -33,6 +33,9 @@ spring:
 
 # 🐛 Logging
 logging:
-  level:
-    edu.yacoubi.tasks: DEBUG
-    org.thymeleaf: DEBUG
+  interceptor:
+    enabled: console
+  #level:
+  #  edu.yacoubi.tasks: DEBUG
+    #org.thymeleaf: DEBUG
+    #com.zaxxer.hikari.HikariConfig: DEBUG
