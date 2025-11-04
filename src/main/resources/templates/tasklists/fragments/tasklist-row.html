@@ -1,0 +1,39 @@
+<tr th:fragment="row(taskList)"
+    xmlns:th="http://www.w3.org/1999/xhtml">
+    <td class="text-truncate" style="max-width: 200px;"
+        th:attr="title=${taskList.title}"
+        th:text="${taskList.title}">
+    </td>
+    <td class="text-truncate" style="max-width: 200px;"
+        th:attr="title=${taskList.description}"
+        th:text="${taskList.description}">
+    </td>
+    <td>
+        <div class="progress" style="height: 15px;">
+            <div class="progress-bar"
+                 role="progressbar"
+                 th:attr="aria-valuenow=${taskList.roundedProgress()}"
+                 th:classappend="${progressColorService.getColorClass(taskList.roundedProgress())}"
+                 th:style="'width:' + ${taskList.roundedProgress()} + '%'">
+                <small th:text="${taskList.roundedProgress()} + '%'"></small>
+            </div>
+        </div>
+    </td>
+    <td class="d-flex gap-2 align-items-center">
+    <button class="btn btn-sm btn-primary"
+                th:attr="hx-get=@{/tasklists/{id}/edit(id=${taskList.id})}"
+                hx-target="closest tr"
+                hx-swap="outerHTML">
+            ✏️
+        </button>
+        <button class="btn btn-sm btn-danger"
+                th:attr="hx-delete=@{/tasklists/{id}(id=${taskList.id})}"
+                hx-confirm="Möchtest du diese Liste wirklich löschen?">
+            🗑️
+        </button>
+        <a class="btn btn-sm btn-outline-secondary"
+           th:href="@{/tasklists/{id}/tasks(id=${taskList.id})}">
+            📂 Aufgaben anzeigen
+        </a>
+    </td>
+</tr>

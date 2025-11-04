@@ -1,0 +1,40 @@
+<tr th:fragment="row(taskList)"
+    th:object="${taskList}"
+    xmlns:th="http://www.thymeleaf.org">
+    <td class="text-truncate" style="max-width: 200px;">
+        <input type="text" name="title" th:field="*{title}" class="form-control"
+               th:classappend="${#fields.hasErrors('title')} ? 'is-invalid'">
+        <div class="invalid-feedback" th:if="${#fields.hasErrors('title')}" th:errors="*{title}"></div>
+    </td>
+    <td class="text-truncate" style="max-width: 200px;">
+        <input type="text" name="description" th:field="*{description}" class="form-control"
+               th:classappend="${#fields.hasErrors('description')} ? 'is-invalid'">
+        <div class="invalid-feedback" th:if="${#fields.hasErrors('description')}" th:errors="*{description}"></div>
+    </td>
+    <td>
+        <div class="progress" style="height: 15px;">
+            <div class="progress-bar"
+                 role="progressbar"
+                 th:attr="aria-valuenow=${taskList.roundedProgress()}"
+                 th:classappend="${progressColorService.getColorClass(taskList.roundedProgress())}"
+                 th:style="'width:' + ${taskList.roundedProgress()} + '%'">
+                <small th:text="${taskList.roundedProgress()} + '%'"></small>
+            </div>
+        </div>
+    </td>
+    <td class="d-flex gap-2 align-items-center">
+    <button class="btn btn-sm btn-secondary"
+                th:attr="hx-get=@{/tasklists/{id}(id=${taskList.id})}"
+                hx-target="closest tr"
+                hx-swap="outerHTML">
+            ❌
+        </button>
+        <button class="btn btn-sm btn-success"
+                th:attr="hx-put=@{/tasklists/{id}(id=${taskList.id})}"
+                hx-include="closest tr"
+                hx-target="closest tr"
+                hx-swap="outerHTML">
+            💾
+        </button>
+    </td>
+</tr>

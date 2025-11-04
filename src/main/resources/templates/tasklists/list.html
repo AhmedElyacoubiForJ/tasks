@@ -1,3 +1,4 @@
+<!-- src/main/resources/templates/tasklists/list-old.html -->
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
@@ -32,48 +33,15 @@
                 <th>Aktionen</th>
             </tr>
             </thead>
-            <tbody hx-confirm="Möchtest du diese Liste wirklich löschen?"
-                   hx-swap="outerHTML swap:1s"
-                   hx-target="closest tr">
-            <tr th:each="list : ${taskLists}">
-                <td class="text-truncate" style="max-width: 200px;"
-                    th:attr="title=${list.title}"
-                    th:text="${list.title}">
-                </td>
-                <td class="text-truncate" style="max-width: 200px;"
-                    th:attr="title=${list.description}"
-                    th:text="${list.description}">
-                </td>
-
-                <td>
-                    <div class="progress" style="height: 15px;">
-                        <div class="progress-bar"
-                             role="progressbar"
-                             th:attr="aria-valuenow=${list.roundedProgress()}"
-                             th:classappend="${progressColorService.getColorClass(list.roundedProgress())}"
-                             th:style="'width:' + ${list.roundedProgress()} + '%'">
-                            <small th:text="${list.roundedProgress()} + '%'"></small>
-                        </div>
-                    </div>
-                </td>
-                <td class="d-flex gap-2">
-                    <button class="btn btn-sm btn-primary"
-                            hx-swap="innerHTML"
-                            hx-target="#modal"
-                            th:attr="hx-get=@{'/tasklists/updateForm?id=' + ${list.id}}">
-                        ✏️
-                    </button>
-                    <button class="btn btn-sm btn-danger"
-                            th:attr="hx-delete=@{/tasklists/{id}(id=${list.id})}">
-                        🗑️
-                    </button>
-                </td>
-            </tr>
+            <tbody hx-swap="outerHTML swap:1s" hx-target="closest tr">
+            <th:block th:each="taskList : ${taskLists}">
+                <tr th:replace="~{tasklists/fragments/tasklist-row :: row(${taskList})}"></tr>
+            </th:block>
             </tbody>
         </table>
     </div>
-    <a class="btn btn-outline-secondary" href="/api/tasklists/export/pdf" target="_blank">
-        📄 Als PDF herunterladen
+    <a class="btn btn-outline-secondary no-print" href="/tasklists/export/pdf/view" target="_blank">
+        👁️ PDF-Vorschau anzeigen
     </a>
 </div>
 <!-- Modal mit Container für Inhalt -->
@@ -89,3 +57,4 @@
 </div>
 </body>
 </html>
+

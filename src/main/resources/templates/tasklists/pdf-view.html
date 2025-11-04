@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>📄 Aufgabenübersicht</title>
+    <link href="/css/pdf.css" rel="stylesheet"/>
+</head>
+<body>
+<div style="display: flex; justify-content: space-between; align-items: center;">
+    <h1>📋 Aufgabenübersicht</h1>
+    <!--    <img src="/images/logo.png" alt="Logo" style="height: 40px;">-->
+    📄
+</div>
+<p>Exportiert am: <span th:text="${exportDate}"></span></p>
+
+<table>
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Titel</th>
+        <th>Beschreibung</th>
+        <th>Erstellt</th>
+        <th>Geändert</th>
+        <th>Fortschritt</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="task : ${taskLists}">
+        <td th:text="${task.id}"></td>
+        <td th:text="${task.title}"></td>
+        <td th:text="${task.description}"></td>
+        <td th:text="${task.created}"></td>
+        <td th:text="${task.updated}"></td>
+        <td th:text="${task.progress} + '%'"></td>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>
