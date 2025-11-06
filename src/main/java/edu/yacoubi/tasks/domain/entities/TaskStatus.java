@@ -1,5 +1,5 @@
 package edu.yacoubi.tasks.domain.entities;
 
 public enum TaskStatus {
-    OPEN, CLOSED
+    OPEN, IN_PROGRESS, CLOSED
 }
