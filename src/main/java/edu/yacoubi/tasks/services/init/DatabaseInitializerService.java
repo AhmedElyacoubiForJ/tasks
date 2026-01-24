@@ -1,109 +1,123 @@
 package edu.yacoubi.tasks.services.init;
 
+import edu.yacoubi.tasks.domain.dto.request.tasklist.CreateTaskListDto;
 import edu.yacoubi.tasks.domain.entities.Task;
 import edu.yacoubi.tasks.domain.entities.TaskList;
 import edu.yacoubi.tasks.domain.entities.TaskPriority;
 import edu.yacoubi.tasks.domain.entities.TaskStatus;
-import edu.yacoubi.tasks.repositories.TaskListRepository;
+import edu.yacoubi.tasks.services.app.ITaskListService;
+import edu.yacoubi.tasks.services.app.ITaskService;
 import jakarta.annotation.PostConstruct;
+import java.time.LocalDateTime;
+import java.util.Random;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class DatabaseInitializerService {
 
-    private final TaskListRepository taskListRepository;
-    private final Random random = new Random();
-    private final LocalDateTime now = LocalDateTime.now();
+  private final ITaskListService taskListService;
+  private final ITaskService taskService;
 
-    @PostConstruct
-    public void init() {
-        log.info("🚀 Initialisiere Demo-Daten");
+  private final Random random = new Random();
+  private final LocalDateTime now = LocalDateTime.now();
 
-        if (taskListRepository.count() > 0) {
-            log.info("📦 Datenbank enthält bereits TaskLists – Initialisierung wird übersprungen");
-            return;
-        }
+  @PostConstruct
+  public void init() {
+    log.info("🚀 Initialisiere Demo-Daten (DDD-konform)");
 
-        for (int i = 1; i <= 6; i++) {
-            TaskList list = createTaskList("📋 TaskList #" + i, "Auto-generierte Liste für Demo-Zwecke");
-
-            if (i == 3 || i == 6) {
-                list.setTasks(List.of()); // leer für UI-Tests
-            } else {
-                list.setTasks(List.of(
-                        createTask("Aufgabe " + i + ".1", list, true),
-                        createTask("Aufgabe " + i + ".2", list, false),
-                        createTask("Aufgabe " + i + ".3", list, random.nextBoolean())
-                ));
-            }
-
-            taskListRepository.save(list);
-        }
-
-        taskListRepository.save(createCompleteList());
-
-        log.info("✅ Demo-Daten erfolgreich gespeichert");
+    if (!taskListService.getAllTaskLists().isEmpty()) {
+      log.info("📦 Datenbank enthält bereits TaskLists – Initialisierung wird übersprungen");
+      return;
     }
 
-    private TaskList createTaskList(String title, String description) {
-        TaskList list = new TaskList();
-        list.setTitle(title);
-        list.setDescription(description);
-        list.setCreated(now.minusDays(random.nextInt(10)));
-        list.setUpdated(now);
-        return list;
+    // 6 Demo-Listen erzeugen
+    for (int i = 1; i <= 6; i++) {
+
+      TaskList list =
+          taskListService.createTaskList(
+              new CreateTaskListDto("📋 TaskList #" + i, "Auto-generierte Liste für Demo-Zwecke"));
+
+      // Liste 3 und 6 bleiben leer
+      if (i == 3 || i == 6) {
+        continue;
+      }
+
+      // Sonst 3 Tasks erzeugen
+      createRandomTask("Aufgabe " + i + ".1", list, true);
+      createRandomTask("Aufgabe " + i + ".2", list, false);
+      createRandomTask("Aufgabe " + i + ".3", list, random.nextBoolean());
     }
 
-    private Task createTask(String title, TaskList list, boolean withDueDate) {
-        Task task = new Task();
-        task.setTitle(title);
-        task.setDescription("Generierter Task: " + title);
-        task.setPriority(randomEnum(TaskPriority.class));
-        task.setStatus(randomEnum(TaskStatus.class));
-        task.setTaskList(list);
+    // Eine vollständige Liste erzeugen
+    createCompleteList();
 
-        if (withDueDate) {
-            task.setDueDate(now.plusDays(random.nextInt(14) + 1));
-        }
+    log.info("✅ Demo-Daten erfolgreich gespeichert");
+  }
 
-        return task;
-    }
+  private void createRandomTask(String title, TaskList list, boolean withDueDate) {
 
-    private TaskList createCompleteList() {
-        TaskList list = createTaskList("📋 TaskList #7 - 100% erledigt", "Alle Aufgaben sind abgeschlossen");
+    Task task =
+        Task.builder()
+            .title(title)
+            .description("Generierter Task: " + title)
+            .priority(randomEnum(TaskPriority.class))
+            .dueDate(withDueDate ? now.plusDays(random.nextInt(14) + 1) : null)
+            .taskList(list)
+            .build();
 
-        List<Task> tasks = new ArrayList<>();
+    // Status nachträglich setzen (DDD-konform)
+    task.changeStatus(randomEnum(TaskStatus.class));
 
-        tasks.add(createFixedTask("Dokumentation finalisieren", TaskPriority.MEDIUM, TaskStatus.OPEN, now.minusDays(1), list));
-        tasks.add(createFixedTask("UI-Tests abschließen", TaskPriority.HIGH, TaskStatus.CLOSED, now.minusDays(2), list));
-        tasks.add(createFixedTask("Swagger veröffentlichen", TaskPriority.LOW, TaskStatus.CLOSED, null, list));
+    taskService.createTask(task);
+  }
 
-        list.setTasks(tasks);
-        return list;
-    }
+  private void createCompleteList() {
 
-    private Task createFixedTask(String title, TaskPriority priority, TaskStatus status, LocalDateTime dueDate, TaskList list) {
-        Task task = new Task();
-        task.setTitle(title);
-        task.setDescription("Task wurde abgeschlossen");
-        task.setPriority(priority);
-        task.setStatus(status);
-        task.setDueDate(dueDate);
-        task.setTaskList(list);
-        return task;
-    }
+    TaskList list =
+        taskListService.createTaskList(
+            new CreateTaskListDto(
+                "📋 TaskList #7 - 100% erledigt", "Alle Aufgaben sind abgeschlossen"));
 
-    private <T> T randomEnum(Class<T> enumClass) {
-        T[] values = enumClass.getEnumConstants();
-        return values[random.nextInt(values.length)];
-    }
+    Task t1 =
+        Task.builder()
+            .title("Dokumentation finalisieren")
+            .description("Task wurde abgeschlossen")
+            .priority(TaskPriority.MEDIUM)
+            .dueDate(now.minusDays(1))
+            .taskList(list)
+            .build();
+    t1.changeStatus(TaskStatus.OPEN);
+    taskService.createTask(t1);
+
+    Task t2 =
+        Task.builder()
+            .title("UI-Tests abschließen")
+            .description("Task wurde abgeschlossen")
+            .priority(TaskPriority.HIGH)
+            .dueDate(now.minusDays(2))
+            .taskList(list)
+            .build();
+    t2.changeStatus(TaskStatus.COMPLETED);
+    taskService.createTask(t2);
+
+    Task t3 =
+        Task.builder()
+            .title("Swagger veröffentlichen")
+            .description("Task wurde abgeschlossen")
+            .priority(TaskPriority.LOW)
+            .dueDate(null)
+            .taskList(list)
+            .build();
+    t3.changeStatus(TaskStatus.COMPLETED);
+    taskService.createTask(t3);
+  }
+
+  private <T> T randomEnum(Class<T> enumClass) {
+    T[] values = enumClass.getEnumConstants();
+    return values[random.nextInt(values.length)];
+  }
 }
