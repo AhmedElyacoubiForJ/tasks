@@ -2,110 +2,58 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>📂 Aufgaben</title>
+    <script src="https://unpkg.com/htmx.org@1.9.2"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
 </head>
 <body class="container">
 <h1>📂 Aufgaben für TaskList</h1>
 
 <!-- 🧩 Tabs für Status-Filter -->
-<!--<ul class="nav nav-tabs mb-3">
-    <li class="nav-item">
-        <a class="nav-link" th:classappend="${selectedStatus == null} ? 'active'"
-           th:href="@{/tasklists/{id}/tasks(id=${taskListId})}">
-            Alle
-        </a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link" th:classappend="${selectedStatus == 'OPEN'} ? 'active'"
-           th:href="@{/tasklists/{id}/tasks/status(id=${taskListId}, status='OPEN')}">
-            Offen
-        </a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link" th:classappend="${selectedStatus == 'CLOSED'} ? 'active'"
-           th:href="@{/tasklists/{id}/tasks/status(id=${taskListId}, status='CLOSED')}">
-            Erledigt
-        </a>
-    </li>
-</ul>-->
 <ul class="nav nav-tabs mb-3">
     <li class="nav-item">
-        <a class="nav-link" th:classappend="${selectedStatus == null} ? 'active text-primary'"
-           th:href="@{/tasklists/{id}/tasks(id=${taskListId})}">
+        <a class="nav-link"
+           th:attr="hx-get=@{/tasklists/{id}/tasks(id=${taskListId})}, hx-target='#taskTable', hx-swap='outerHTML'"
+           th:classappend="${selectedStatus == null} ? 'active text-primary'">
             📋 Alle
         </a>
     </li>
     <li class="nav-item">
-        <a class="nav-link" th:classappend="${selectedStatus == 'OPEN'} ? 'active text-success'"
-           th:href="@{/tasklists/{id}/tasks/status(id=${taskListId}, status='OPEN')}">
+        <a class="nav-link"
+           th:attr="hx-get=@{/tasklists/{id}/tasks/status(id=${taskListId}, status='OPEN')}, hx-target='#taskTable', hx-swap='outerHTML'"
+           th:classappend="${selectedStatus == 'OPEN'} ? 'active text-success'">
             🟢 Offen
         </a>
     </li>
     <li class="nav-item">
-        <a class="nav-link" th:classappend="${selectedStatus == 'CLOSED'} ? 'active text-secondary'"
-           th:href="@{/tasklists/{id}/tasks/status(id=${taskListId}, status='CLOSED')}">
+        <a class="nav-link"
+           th:attr="hx-get=@{/tasklists/{id}/tasks/status(id=${taskListId}, status='CLOSED')}, hx-target='#taskTable', hx-swap='outerHTML'"
+           th:classappend="${selectedStatus == 'CLOSED'} ? 'active text-secondary'">
             🔵 Erledigt
         </a>
     </li>
 </ul>
 
+
 <!-- 📋 Tabelle mit Tasks -->
-<table class="table table-striped table-hover table-sm">
-    <thead>
-    <tr>
-        <th>Titel</th>
-        <th>Beschreibung</th>
-        <th>Fällig</th>
-        <th>Priorität</th>
-        <th>Status</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:each="task : ${tasks}">
-        <td th:text="${task.title}"></td>
-        <td th:text="${task.description}"></td>
-        <!-- 🔴 Überfällig -->
-        <td class="text-danger"
-            th:if="${task.status.name() != 'CLOSED' and task.dueDate != null and task.dueDate.toLocalDate().isBefore(T(java.time.LocalDate).now())}">
-            <span th:text="${#temporals.format(task.dueDate, 'dd.MM.yyyy')}"></span>
-        </td>
-
-        <!-- 🟡 Heute -->
-        <td class="text-warning"
-            th:if="${task.status.name() != 'CLOSED' and task.dueDate != null and task.dueDate.toLocalDate().isEqual(T(java.time.LocalDate).now())}">
-            <span th:text="${#temporals.format(task.dueDate, 'dd.MM.yyyy')}"></span>
-        </td>
-
-        <!-- 🟡 Morgen -->
-        <td class="text-warning"
-            th:if="${task.status.name() != 'CLOSED' and task.dueDate != null and task.dueDate.toLocalDate().isEqual(T(java.time.LocalDate).now().plusDays(1))}">
-            <span th:text="${#temporals.format(task.dueDate, 'dd.MM.yyyy')}"></span>
-        </td>
-
-        <!-- ⚪ Neutral -->
-        <td th:if="${task.dueDate == null or task.status.name() == 'CLOSED'}">
-            <span th:text="${#temporals.format(task.dueDate, 'dd.MM.yyyy')}"></span>
-        </td>
-
-        <span th:switch="${task.priority.name()}">
-            <span th:case="'LOW'">🧊 Niedrig</span>
-            <span th:case="'MEDIUM'">🔥 Mittel</span>
-            <span th:case="'HIGH'">🚨 Hoch</span>
-            <span th:case="*">⚪ Unbekannt</span>
-        </span>
-        </td>
-
-        <td>
-        <span th:switch="${task.status.name()}">
-            <span th:case="'OPEN'">🟢 Offen</span>
-            <span th:case="'IN_PROGRESS'">🟡 In Bearbeitung</span>
-            <span th:case="'CLOSED'">🔵 Erledigt</span>
-            <span th:case="*">⚪ Unbekannt</span>
-        </span>
-        </td>
-
-    </tr>
-    </tbody>
-</table>
+<!-- 📦 Fragment für Tabelle -->
+<div id="taskTable" th:fragment="table">
+    <table class="table table-striped table-hover table-sm">
+        <thead>
+        <tr>
+            <th>Titel</th>
+            <th>Beschreibung</th>
+            <th>Fällig</th>
+            <th>Priorität</th>
+            <th>Status</th>
+        </tr>
+        </thead>
+        <tbody hx-swap="outerHTML swap:1s" hx-target="closest tr">
+            <th:block th:each="task : ${tasks}">
+                <tr th:replace="~{tasks/fragments/task-row :: row(${task})}"></tr>
+            </th:block>
+        </tbody>
+    </table>
+</div>
 </body>
 </html>
+

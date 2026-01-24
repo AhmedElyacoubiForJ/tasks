@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -19,7 +20,7 @@ import java.util.List;
 public class APIResponse<T> {
 
     @Schema(description = "Status der Antwort", example = "success")
-    private String status;
+    private ResponseStatus status;
 
     @Schema(description = "HTTP Statuscode", example = "200")
     private int statusCode;
@@ -32,4 +33,11 @@ public class APIResponse<T> {
 
     @Schema(description = "Antwortdaten bei erfolgreicher Anfrage")
     private T data;
+
+    @Schema(description = "Zeitstempel der Antwort")
+    private LocalDateTime timestamp;
+
+    // 🔧 Verbesserungsidee: Trace-ID oder Request-ID für verteilte Systeme,
+    // damit man Fehler leichter über mehrere Services hinweg verfolgen kann.
+    // private String traceId;
 }

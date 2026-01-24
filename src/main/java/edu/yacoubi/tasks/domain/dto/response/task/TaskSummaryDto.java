@@ -26,6 +26,9 @@ public record TaskSummaryDto(
         TaskPriority priority,
 
         @Schema(description = "Status der Aufgabe", example = "OPEN")
-        TaskStatus status
+        TaskStatus status,
+
+        @Schema(description = "ID der zugehörigen Task-Liste", example = "640eb884-723b-408a-869d-59b38ca44b84")
+        UUID taskListId
 ) {
 }

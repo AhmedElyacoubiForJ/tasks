@@ -1,16 +1,30 @@
 package edu.yacoubi.tasks.domain.dto.request.tasklist;
 
+import edu.yacoubi.tasks.domain.validation.annotations.ValidTaskListDescription;
+import edu.yacoubi.tasks.domain.validation.annotations.ValidTaskListTitle;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotBlank;
+
+// Hinweis: Wir verwenden hier bewusst @ValidTaskListTitle statt @NotBlank/@Size,
+// damit die Constraints über Springdoc in Swagger sichtbar werden.
+// Die Standard-Annotations sind trotzdem importiert, falls wir später
+// wieder direkt mit @NotBlank/@Size arbeiten wollen oder die Custom-Validatoren erweitern.
+
 
 @Schema(description = "DTO zur Erstellung einer neuen Task-Liste")
 public record CreateTaskListDto(
 
+        //@NotBlank(message = "Titel darf nicht leer sein")
+        //@Size(min = 3, max = 100, message = "Titel muss zwischen 3 und 100 Zeichen lang sein")
+        @ValidTaskListTitle
         @Schema(description = "Titel der Task-Liste", example = "🏁 Demo-Liste")
-        @NotBlank
         String title,
 
-        @Schema(description = "Beschreibung der Task-Liste", example = "Beispielhafte Aufgaben für Swagger & Seeding")
+        //@Size(max = 500, message = "Beschreibung darf maximal 500 Zeichen lang sein")
+        @ValidTaskListDescription
+        @Schema(
+                description = "Beschreibung der Task-Liste",
+                example = "Beispielhafte Aufgaben für Swagger & Seeding"
+        )
         String description
 ) {
 }

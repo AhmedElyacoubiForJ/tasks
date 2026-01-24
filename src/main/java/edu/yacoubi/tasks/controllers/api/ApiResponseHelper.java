@@ -1,7 +1,5 @@
-package edu.yacoubi.tasks.domain.dto.response;
+package edu.yacoubi.tasks.controllers.api;
 
-import edu.yacoubi.tasks.controllers.api.APIResponse;
-import edu.yacoubi.tasks.controllers.api.ResponseStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 
@@ -51,7 +49,7 @@ public class ApiResponseHelper {
 
         final APIResponse<T> response = APIResponse.<T>builder()
                 .message(msg == null ? "No message provided" : msg)
-                .status(status) // geändert
+                .status(status)
                 .statusCode(statusCode.value())
                 .data(data)
                 .timestamp(LocalDateTime.now())

@@ -35,6 +35,14 @@ public class ConsoleLoggingInterceptor implements HandlerInterceptor {
         String[] pathSegments = uri.split("/");
         String username = request.getUserPrincipal() != null ? request.getUserPrincipal().getName() : "👻 Anonym";
         boolean isAjax = "XMLHttpRequest".equals(request.getHeader("X-Requested-With"));
+        String hxRequest = request.getHeader("HX-Request");
+        String hxTarget = request.getHeader("HX-Target");
+        String hxTrigger = request.getHeader("HX-Trigger");
+        String hxBoosted = request.getHeader("HX-Boosted");
+        String hxCurrentUrl = request.getHeader("HX-Current-URL");
+        String hxPrompt = request.getHeader("HX-Prompt");
+        boolean isHtmx = hxRequest != null;
+
 
         // 🧭 Trace-ID & Startzeit speichern
         String traceId = UUID.randomUUID().toString();
@@ -51,6 +59,14 @@ public class ConsoleLoggingInterceptor implements HandlerInterceptor {
         log.info("🧭 User-Agent: {}", userAgent);
         log.info("🙋 Benutzer: {}", username);
         log.info("⚡ AJAX-Request: {}", isAjax);
+        log.info("⚡ HTMX-Request: {}", isHtmx);
+        if (isHtmx) {
+            log.info("📌 HX-Target: {}", hxTarget);
+            log.info("🎯 HX-Trigger: {}", hxTrigger);
+            log.info("🔗 HX-Current-URL: {}", hxCurrentUrl);
+            log.info("🚀 HX-Boosted: {}", hxBoosted);
+            log.info("💬 HX-Prompt: {}", hxPrompt);
+        }
         log.info("⏱️ Zeitstempel: {}", LocalDateTime.now());
         log.info("🎯 Ziel-Handler: {}", handler.getClass().getSimpleName());
         log.info("🧩 Pfad-Segmente: {}", Arrays.toString(pathSegments));

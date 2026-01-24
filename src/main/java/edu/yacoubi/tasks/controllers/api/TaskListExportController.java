@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-@RestController
+//@RestController
 @RequestMapping("/api/tasklists")
 @Tag(name = "TaskList Export", description = "Exportiere Task-Listen als PDF")
 @RequiredArgsConstructor
@@ -33,7 +33,7 @@ public class TaskListExportController {
     )
     @GetMapping(value = "/export/pdf", produces = MediaType.APPLICATION_PDF_VALUE)
     public ResponseEntity<byte[]> exportAsPdf() {
-        List<TaskListDto> taskLists = taskListService.listTaskLists()
+        List<TaskListDto> taskLists = taskListService.getAllTaskLists()
                 .stream()
                 .map(taskListMapper::toTaskListDto)
                 .toList();

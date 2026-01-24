@@ -35,7 +35,7 @@ public class TaskListViewController {
 
     @GetMapping()
     public String showTaskLists(Model model) {
-        List<TaskList> lists = taskListService.listTaskLists();
+        List<TaskList> lists = taskListService.getAllTaskLists();
         List<TaskListDto> dtos = lists.stream()
                 .map(taskListMapper::toTaskListDto)
                 .toList();
@@ -119,7 +119,7 @@ public class TaskListViewController {
     public String showPdfView(Model model) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
 
-        List<Map<String, String>> formattedTaskLists = taskListService.listTaskLists().stream()
+        List<Map<String, String>> formattedTaskLists = taskListService.getAllTaskLists().stream()
                 .map(taskList -> {
                     TaskListDto dto = taskListMapper.toTaskListDto(taskList);
                     Map<String, String> map = new LinkedHashMap<>();

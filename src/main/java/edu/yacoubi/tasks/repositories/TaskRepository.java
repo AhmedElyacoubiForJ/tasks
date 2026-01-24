@@ -14,7 +14,6 @@ import java.util.UUID;
 
 @Repository
 public interface TaskRepository extends JpaRepository<Task, UUID> {
-
     @Query("""
                 SELECT new edu.yacoubi.tasks.domain.dto.response.task.TaskSummaryDto(
                     t.id,
@@ -22,13 +21,15 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
                     t.description,
                     t.dueDate,
                     t.priority,
-                    t.status
+                    t.status,
+                    t.taskList.id
                 )
                 FROM Task t
                 WHERE t.taskList.id = :taskListId
             """)
     List<TaskSummaryDto> findByTaskListId(UUID taskListId);
 
+
     @Query("""
                 SELECT new edu.yacoubi.tasks.domain.dto.response.task.TaskSummaryDto(
                     t.id,
@@ -36,7 +37,8 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
                     t.description,
                     t.dueDate,
                     t.priority,
-                    t.status
+                    t.status,
+                    t.taskList.id
                 )
                 FROM Task t
                 WHERE t.taskList.id = :taskListId
@@ -51,7 +53,8 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
                     t.description,
                     t.dueDate,
                     t.priority,
-                    t.status
+                    t.status,
+                    t.taskList.id
                 )
                 FROM Task t
                 WHERE t.taskList.id = :taskListId

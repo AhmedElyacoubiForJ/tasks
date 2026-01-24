@@ -1,17 +1,18 @@
 package edu.yacoubi.tasks.controllers.api;
 
-import edu.yacoubi.tasks.domain.dto.response.task.TaskDto;
-import edu.yacoubi.tasks.domain.responses.APIResponse;
+import edu.yacoubi.tasks.domain.dto.request.task.CreateTaskDto;
+import edu.yacoubi.tasks.domain.dto.request.task.UpdateTaskDto;
+import edu.yacoubi.tasks.domain.dto.response.task.TaskSummaryDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 
@@ -26,17 +27,30 @@ public interface ITaskListsTasksApi extends IBaseTaskListsApi {
             description = "Gibt alle Tasks zurück, die zu einer bestimmten TaskList gehören."
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Liste aller Tasks",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = APIResponse.class))),
-            @ApiResponse(responseCode = "404", description = "TaskList nicht gefunden",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = APIResponse.class)))
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Liste aller Tasks",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = APIResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "TaskList nicht gefunden",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = APIResponse.class)
+                    )
+            )
     })
-    @GetMapping(value = "/tasklists/{id}/tasks", produces = "application/json")
-    ResponseEntity<APIResponse<List<TaskDto>>> getTasksByListId(
+    @GetMapping(
+            value = "/tasklists/{taskListId}/tasks",
+            produces = "application/json"
+    )
+    ResponseEntity<APIResponse<List<TaskSummaryDto>>> getTasksByListId(
             @Parameter(description = "UUID der TaskList", required = true)
-            @PathVariable UUID id
+            @PathVariable UUID taskListId
     );
 
     @Operation(
@@ -44,22 +58,41 @@ public interface ITaskListsTasksApi extends IBaseTaskListsApi {
             description = "Fügt einen neuen Task zu einer bestehenden TaskList hinzu."
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "201", description = "Task erfolgreich erstellt",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = APIResponse.class))),
-            @ApiResponse(responseCode = "400", description = "Ungültige Eingabe",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = APIResponse.class))),
-            @ApiResponse(responseCode = "404", description = "TaskList nicht gefunden",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = APIResponse.class)))
+            @ApiResponse(
+                    responseCode = "201",
+                    description = "Task erfolgreich erstellt",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = APIResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Ungültige Eingabe",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = APIResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "TaskList nicht gefunden",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = APIResponse.class)
+                    )
+            )
     })
-    @PostMapping(value = "/tasklists/{id}/tasks", consumes = "application/json", produces = "application/json")
-    ResponseEntity<APIResponse<TaskDto>> createTaskInList(
+    @PostMapping(
+            value = "/tasklists/{taskListId}/tasks",
+            consumes = "application/json",
+            produces = "application/json"
+    )
+    ResponseEntity<APIResponse<TaskSummaryDto>> createTaskInList(
             @Parameter(description = "UUID der TaskList", required = true)
-            @PathVariable UUID id,
+            @PathVariable UUID taskListId,
             @Parameter(description = "Daten für neuen Task")
-            @Valid @RequestBody TaskDto dto
+            @Valid @RequestBody CreateTaskDto dto
     );
 
     @Operation(
@@ -67,42 +100,75 @@ public interface ITaskListsTasksApi extends IBaseTaskListsApi {
             description = "Aktualisiert einen bestehenden Task innerhalb einer TaskList."
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Task erfolgreich aktualisiert",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = APIResponse.class))),
-            @ApiResponse(responseCode = "400", description = "Ungültige Eingabe",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = APIResponse.class))),
-            @ApiResponse(responseCode = "404", description = "Task oder TaskList nicht gefunden",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = APIResponse.class)))
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Task erfolgreich aktualisiert",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = APIResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Ungültige Eingabe",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = APIResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Task oder TaskList nicht gefunden",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = APIResponse.class)
+                    )
+            )
     })
-    @PutMapping(value = "/tasklists/{id}/tasks/{taskId}", consumes = "application/json", produces = "application/json")
-    ResponseEntity<APIResponse<TaskDto>> updateTaskInList(
+    @PutMapping(
+            value = "/tasklists/{taskListId}/tasks/{taskId}",
+            consumes = "application/json",
+            produces = "application/json"
+    )
+    ResponseEntity<APIResponse<TaskSummaryDto>> updateTaskInList(
             @Parameter(description = "UUID der TaskList", required = true)
-            @PathVariable UUID id,
+            @PathVariable UUID taskListId,
             @Parameter(description = "UUID des Tasks", required = true)
             @PathVariable UUID taskId,
             @Parameter(description = "Daten für Task-Update")
-            @Valid @RequestBody TaskDto dto
+            @Valid @RequestBody UpdateTaskDto dto
     );
 
     @Operation(
             summary = "Task innerhalb einer TaskList löschen",
-            description = "Löscht einen Task aus einer bestimmten TaskList."
+            description = "Löscht einen Task aus einer bestimmten TaskList. "
+                    + "Gibt eine APIResponse zurück, die den Erfolg bestätigt."
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Task erfolgreich gelöscht",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = APIResponse.class))),
-            @ApiResponse(responseCode = "404", description = "Task oder TaskList nicht gefunden",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = APIResponse.class)))
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Task erfolgreich gelöscht",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = APIResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Task oder TaskList nicht gefunden",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = APIResponse.class)
+                    )
+            )
     })
-    @DeleteMapping(value = "/tasklists/{id}/tasks/{taskId}", produces = "application/json")
+    @DeleteMapping(
+            value = "/tasklists/{taskListId}/tasks/{taskId}",
+            produces = "application/json"
+    )
     ResponseEntity<APIResponse<Void>> deleteTaskInList(
             @Parameter(description = "UUID der TaskList", required = true)
-            @PathVariable UUID id,
+            @PathVariable UUID taskListId,
             @Parameter(description = "UUID des Tasks", required = true)
             @PathVariable UUID taskId
     );

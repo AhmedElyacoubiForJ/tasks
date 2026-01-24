@@ -5,20 +5,19 @@ import edu.yacoubi.tasks.domain.dto.request.tasklist.TaskListFilterDto;
 import edu.yacoubi.tasks.domain.dto.request.tasklist.UpdateTaskListDto;
 import edu.yacoubi.tasks.domain.dto.response.tasklist.TaskListDto;
 import edu.yacoubi.tasks.domain.entities.TaskList;
+import edu.yacoubi.tasks.domain.entities.TaskListStatus;
 import edu.yacoubi.tasks.mappers.TaskListMapper;
 import edu.yacoubi.tasks.repositories.TaskListRepository;
 import edu.yacoubi.tasks.services.app.ITaskListService;
 import jakarta.persistence.EntityNotFoundException;
+import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -29,13 +28,77 @@ public class TaskListServiceImpl implements ITaskListService {
     private final TaskListMapper mapper;
 
     @Override
-    public List<TaskList> listTaskLists() {
-        return taskListRepository.findAll();
+    public List<TaskList> getAllTaskLists() {
+        log.info("📋 Service: Abrufen aller TaskLists");
+
+        List<TaskList> taskLists = taskListRepository.findAll();
+
+        log.info("✅ Service: {} TaskLists gefunden", taskLists.size());
+        return taskLists;
     }
 
     @Override
-    public Page<TaskListDto> getFilteredTaskLists(TaskListFilterDto params) {
-        Pageable pageable = PageRequest.of(params.page(), params.size());
+    public List<TaskList> getActiveTaskLists() {
+        log.info("📋 Service: Abrufen aller aktiven TaskLists");
+
+        // Gibt eine leere Liste zurück, wenn keine aktiven TaskLists existieren.
+        List<TaskList> taskLists = taskListRepository.findByStatus(TaskListStatus.ACTIVE);
+
+        log.info("✅ Service: {} aktive TaskLists gefunden", taskLists.size());
+        return taskLists;
+    }
+
+    @Override
+    public List<TaskList> getArchivedTaskLists() {
+        log.info("📋 Service: Abrufen aller archivierten TaskLists");
+
+        // Gibt eine leere Liste zurück, wenn keine archived TaskLists existieren.
+        List<TaskList> taskLists = taskListRepository.findByStatus(TaskListStatus.ARCHIVED);
+
+        log.info("✅ Service: {} archivierte TaskLists gefunden", taskLists.size());
+        return taskLists;
+    }
+
+//    @Override
+//    public TaskList archiveTaskList(final UUID taskListId) {
+//        log.info("📋 Service: Archivieren der TaskList {}", taskListId);
+//
+//        final TaskList taskList = taskListRepository.findById(taskListId)
+//                .orElseThrow(() -> logAndThrowNotFound(taskListId));
+//
+//        final boolean allCompleted = isArchivable(taskListId);
+//
+//        if (allCompleted) {
+//            taskList.setStatus(TaskListStatus.ARCHIVED);
+//            taskList.setUpdated(LocalDateTime.now());
+//
+//            final TaskList saved = taskListRepository.save(taskList);
+//
+//            log.info("✅ Service: TaskList {} erfolgreich archiviert", taskListId);
+//            return saved;
+//        } else {
+//            log.warn("⚠️ Service: TaskList {} konnte nicht archiviert werden (Tasks nicht abgeschlossen)", taskListId);
+//            throw new IllegalStateException("Cannot archive TaskList: not all tasks are completed");
+//        }
+//    }
+//
+//    @Override
+//    public boolean isArchivable(UUID taskListId) {
+//        log.info("📋 Service: Prüfen ob TaskList {} archivierbar ist", taskListId);
+//
+//        TaskList taskList = taskListRepository.findById(taskListId)
+//                .orElseThrow(() -> logAndThrowNotFound(taskListId));
+//
+//        boolean archivable = taskList.getTasks().stream()
+//                .allMatch(task -> task.getStatus() == TaskStatus.CLOSED);
+//
+//        log.info("✅ Service: TaskList {} archivierbar = {}", taskListId, archivable);
+//        return archivable;
+//    }
+
+    @Override
+    public Page<TaskListDto> getFilteredTaskLists(final TaskListFilterDto params) {
+        final Pageable pageable = PageRequest.of(params.page(), params.size());
         if (params.query() != null && !params.query().isBlank()) {
             return taskListRepository.findByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCase(
                     params.query(), params.query(), pageable
@@ -46,35 +109,106 @@ public class TaskListServiceImpl implements ITaskListService {
     }
 
     @Override
-    public TaskList getTaskListOrThrow(UUID id) {
+    public TaskList getTaskListOrThrow(final UUID id) {
+        log.info("📥 Lade TaskList mit ID {}", id);
+
         return taskListRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("TaskList not found"));
-    }
-
-
-    @Override
-    public TaskList createTaskList(CreateTaskListDto taskListDto) {
-        TaskList taskList = new TaskList();
-        taskList.setTitle(taskListDto.title());
-        taskList.setDescription(taskListDto.description());
-
-        return taskListRepository.save(taskList);
+                .orElseThrow(() -> logAndThrowNotFound(id));
     }
 
     @Override
-    public boolean deleteTaskList(UUID id) {
-        if (taskListRepository.existsById(id)) {
-            taskListRepository.deleteById(id);
-            return true;
+    public TaskList createTaskList(final CreateTaskListDto dto) {
+        log.info("🆕 Service: Erstelle neue TaskList mit Titel '{}'", dto.title());
+
+        // Aggregat über Domain-Builder erzeugen (Invarianten werden hier geprüft)
+        TaskList taskList = TaskList.builder()
+                .title(dto.title())
+                .description(dto.description())
+                .build();
+
+        // Persistieren
+        TaskList saved = taskListRepository.save(taskList);
+
+        log.info("✅ Service: TaskList {} erfolgreich erstellt", saved.getId());
+        return saved;
+    }
+
+    @Override
+    public void deleteTaskList(final UUID id) {
+        log.info("🗑️ Versuche TaskList mit ID {} zu löschen", id);
+
+        if (!taskListRepository.existsById(id)) {
+            throw logAndThrowNotFound(id);
         }
-        return false;
+
+        taskListRepository.deleteById(id);
+        log.info("✅ TaskList mit ID {} erfolgreich gelöscht", id);
     }
 
     @Override
-    public TaskList updateTaskList(UUID id, UpdateTaskListDto dto) {
+    public TaskList updateTaskList(final UUID id, final UpdateTaskListDto dto) {
+        log.info("✏️ Service: Aktualisiere TaskList mit ID {}", id);
+
+        // Aggregat laden oder 404
         TaskList taskList = getTaskListOrThrow(id);
-        taskList.setTitle(dto.title());
-        taskList.setDescription(dto.description());
-        return taskListRepository.save(taskList);
+
+        // Logging der Änderungen
+        logFieldChange("title", taskList.getTitle(), dto.title());
+        logFieldChange("description", taskList.getDescription(), dto.description());
+
+        // Domain-Methoden anwenden (keine Setter!)
+        taskList.rename(dto.title());
+        taskList.changeDescription(dto.description());
+
+        // Persistieren
+        TaskList updated = taskListRepository.save(taskList);
+
+        log.info("✅ Service: TaskList {} erfolgreich aktualisiert", id);
+        return updated;
+    }
+
+    @Override
+    public TaskList activateTaskList(UUID id) {
+        log.info("🔄 Aktiviere TaskList mit ID {}", id);
+
+        TaskList taskList = getTaskListOrThrow(id);
+
+        // Domain-Methode führt Statuswechsel + updated() aus
+        taskList.activate();
+
+        TaskList updated = taskListRepository.save(taskList);
+
+        log.info("✅ TaskList {} erfolgreich aktiviert", id);
+        return updated;
+    }
+
+
+
+//    Merge-logik im service für patch
+//    Damit PATCH korrekt funktioniert, eine kurze, robuste Merge-Logik:
+//    public TaskList patchTaskList(final TaskList existing, final PatchTaskListDto dto) {
+//        if (dto.title() != null) {
+//            final var trimmed = dto.title().trim();
+//            if (trimmed.isEmpty()) {
+//                throw new IllegalArgumentException("Titel darf nicht leer sein");
+//            }
+//            existing.setTitle(trimmed);
+//        }
+//        if (dto.description() != null) {
+//            existing.setDescription(dto.description().trim());
+//        }
+//        return existing;
+//    }
+
+    /**
+     * Private Hilfsmethode für konsistentes Logging + Exception Handling
+     */
+    private EntityNotFoundException logAndThrowNotFound(UUID id) {
+        log.error("❌ [Service] TaskList mit ID {} nicht gefunden – EntityNotFoundException wird hier geworfen", id);
+        return new EntityNotFoundException("TaskList " + id + " wurde nicht gefunden");
+    }
+
+    private void logFieldChange(String field, Object oldValue, Object newValue) {
+        log.debug("📋 Feld '{}' geändert: alt='{}', neu='{}'", field, oldValue, newValue);
     }
 }

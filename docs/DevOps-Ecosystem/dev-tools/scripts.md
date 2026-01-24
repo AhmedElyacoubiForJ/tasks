@@ -1,6 +1,7 @@
 # 📜 **Skriptübersicht: Docker-Workflow**
 
-> Diese Datei dokumentiert alle Shellskripte zur Steuerung der containerisierten Entwicklungsumgebung. Ziel ist eine klare Navigation, konsistente Nutzung und robuste Erweiterbarkeit.
+> Diese Datei dokumentiert alle Shellskripte zur Steuerung der containerisierten Entwicklungsumgebung.
+> Ziel ist eine klare Navigation, konsistente Nutzung und robuste Erweiterbarkeit.
 
 ---
 

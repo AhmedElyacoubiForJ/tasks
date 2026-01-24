@@ -1,4 +1,4 @@
-package edu.yacoubi.tasks.domain.validation.tasklist;
+package edu.yacoubi.tasks.domain.validation.annotations;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;

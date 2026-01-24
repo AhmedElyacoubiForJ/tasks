@@ -1,10 +1,76 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+<!-- templates/tasks/fragments/task-row.html -->
+<tr th:fragment="row(task)" xmlns:th="http://www.w3.org/1999/xhtml">
+    <td class="text-truncate" style="max-width: 200px;"
+        th:attr="title=${task.title}"
+        th:text="${task.title}">
+    </td>
+    <td class="text-truncate" style="max-width: 200px;"
+        th:attr="title=${task.description}"
+        th:text="${task.description}">
+    </td>
+
+    <!-- 📅 Fälligkeitsanzeige -->
+    <td>
+        <span th:switch="${task.dueDate != null ? task.dueDate.toLocalDate() : null}">
+            <span th:case="*"
+                  th:if="${task.status.name() != 'CLOSED' and task.dueDate != null and task.dueDate.toLocalDate().isBefore(T(java.time.LocalDate).now())}"
+                  class="text-danger"
+                  th:text="${#temporals.format(task.dueDate, 'dd.MM.yyyy')}"></span>
+
+            <span th:case="*"
+                  th:if="${task.status.name() != 'CLOSED' and task.dueDate != null and task.dueDate.toLocalDate().isEqual(T(java.time.LocalDate).now())}"
+                  class="text-warning"
+                  th:text="${#temporals.format(task.dueDate, 'dd.MM.yyyy')}"></span>
+
+            <span th:case="*"
+                  th:if="${task.status.name() != 'CLOSED' and task.dueDate != null and task.dueDate.toLocalDate().isEqual(T(java.time.LocalDate).now().plusDays(1))}"
+                  class="text-warning"
+                  th:text="${#temporals.format(task.dueDate, 'dd.MM.yyyy')}"></span>
+
+            <span th:case="*"
+                  th:if="${task.dueDate == null or task.status.name() == 'CLOSED'}"
+                  th:text="${task.dueDate != null ? #temporals.format(task.dueDate, 'dd.MM.yyyy') : ''}"></span>
+        </span>
+    </td>
+
+    <!-- 🔥 Priorität -->
+    <td>
+        <span th:switch="${task.priority.name()}">
+            <span th:case="'LOW'">🧊 Niedrig</span>
+            <span th:case="'MEDIUM'">🔥 Mittel</span>
+            <span th:case="'HIGH'">🚨 Hoch</span>
+            <span th:case="*">⚪ Unbekannt</span>
+        </span>
+    </td>
+
+    <!-- 🟢 Status -->
+    <td>
+        <span th:switch="${task.status.name()}">
+            <span th:case="'OPEN'">🟢 Offen</span>
+            <span th:case="'IN_PROGRESS'">🟡 In Bearbeitung</span>
+            <span th:case="'CLOSED'">🔵 Erledigt</span>
+            <span th:case="*">⚪ Unbekannt</span>
+        </span>
+    </td>
+
+    <!-- ✅ Aktionen -->
+    <td class="d-flex gap-2 align-items-center">
+        <button class="btn btn-sm btn-outline-success"
+                th:if="${task.status.name() != 'CLOSED'}"
+                th:attr="hx-patch=@{/tasks/{id}/status(id=${task.id})}"
+                hx-target="closest tr"
+                hx-swap="outerHTML"
+                hx-vals='{"status":"CLOSED"}'>
+            ✅ Erledigen
+        </button>
+
+        <button class="btn btn-sm btn-outline-secondary"
+                th:if="${task.status.name() == 'CLOSED'}"
+                th:attr="hx-patch=@{/tasks/{id}/status(id=${task.id})}"
+                hx-target="closest tr"
+                hx-swap="outerHTML"
+                hx-vals='{"status":"OPEN"}'>
+            ↩️ Wieder öffnen
+        </button>
+    </td>
+</tr>

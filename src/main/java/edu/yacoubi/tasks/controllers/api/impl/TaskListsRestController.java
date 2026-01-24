@@ -1,5 +1,6 @@
-package edu.yacoubi.tasks.controllers.api;
+package edu.yacoubi.tasks.controllers.api.impl;
 
+import edu.yacoubi.tasks.controllers.api.*;
 import edu.yacoubi.tasks.domain.dto.request.task.CreateTaskDto;
 import edu.yacoubi.tasks.domain.dto.request.task.UpdateTaskDto;
 import edu.yacoubi.tasks.domain.dto.request.tasklist.CreateTaskListDto;
@@ -8,6 +9,9 @@ import edu.yacoubi.tasks.domain.dto.response.task.TaskSummaryDto;
 import edu.yacoubi.tasks.domain.dto.response.tasklist.TaskListDto;
 import edu.yacoubi.tasks.domain.entities.TaskList;
 import edu.yacoubi.tasks.mappers.TaskListMapper;
+import edu.yacoubi.tasks.mappers.TaskListTransformer;
+import edu.yacoubi.tasks.mappers.TaskTransformer;
+import edu.yacoubi.tasks.mappers.TransformerUtil;
 import edu.yacoubi.tasks.services.app.ITaskListService;
 import edu.yacoubi.tasks.services.app.ITaskListsTaskOrchestrator;
 import edu.yacoubi.tasks.services.app.ITaskService;
@@ -39,14 +43,11 @@ public class TaskListsRestController implements
     public ResponseEntity<APIResponse<List<TaskListDto>>> getAllTaskLists() {
         log.info("📋 Abrufen aller TaskLists");
 
-        // Falls keine TaskLists existieren → EntityNotFoundException wird im Service geworfen
-        // und zentral im RestExceptionHandler zu einer 404-Response verarbeitet.
         List<TaskList> taskLists = taskListService.getAllTaskLists();
 
         log.debug("Gefundene TaskLists: {}", taskLists.size());
-
         List<TaskListDto> dtos = taskLists.stream()
-                .map(taskListMapper::toTaskListDto)
+                .map(TaskListTransformer.TASKLIST_TO_DTO::transform)
                 .toList();
 
         APIResponse<List<TaskListDto>> response = APIResponse.<List<TaskListDto>>builder()
@@ -226,12 +227,15 @@ public class TaskListsRestController implements
 
     @Override
     public ResponseEntity<APIResponse<TaskListDto>> archiveTaskList(UUID id) {
-        log.info("📦 Archivieren der TaskList mit ID: {}", id);
+        log.info("📦 REST: Archivieren der TaskList mit ID {}", id);
 
-        TaskList archived = null;//taskListService.archiveTaskList(id);
+        // 1. Orchestrator-UseCase ausführen
+        TaskList archived = orchestrator.archiveTaskListIfTasksCompleted(id);
 
-        TaskListDto dto = taskListMapper.toTaskListDto(archived);
+        // 2. Domain → DTO transformieren (neuer Transformer, kein MapStruct)
+        TaskListDto dto = TaskListTransformer.TASKLIST_TO_DTO.transform(archived);
 
+        // 3. API-Response bauen
         APIResponse<TaskListDto> response = APIResponse.<TaskListDto>builder()
                 .status(ResponseStatus.SUCCESS)
                 .statusCode(HttpStatus.OK.value())
@@ -240,7 +244,7 @@ public class TaskListsRestController implements
                 .timestamp(LocalDateTime.now())
                 .build();
 
-        log.info("✅ TaskList {} erfolgreich archiviert", id);
+        log.info("✅ REST: TaskList {} erfolgreich archiviert", id);
         return ResponseEntity.ok(response);
     }
 
@@ -331,5 +335,4 @@ public class TaskListsRestController implements
         log.info("✅ Task {} in TaskList {} gelöscht", taskId, taskListId);
         return ResponseEntity.ok(response);
     }
-
 }

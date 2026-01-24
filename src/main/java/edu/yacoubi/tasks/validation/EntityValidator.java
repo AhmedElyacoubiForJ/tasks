@@ -1,4 +1,4 @@
-package edu.yacoubi.tasks.services.app;
+package edu.yacoubi.tasks.validation;
 
 import edu.yacoubi.tasks.repositories.TaskListRepository;
 import edu.yacoubi.tasks.repositories.TaskRepository;
