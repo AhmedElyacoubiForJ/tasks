@@ -51,8 +51,8 @@ public interface ITaskListsCrudApi extends IBaseTaskListsApi {
     })
     @GetMapping(value = "/tasklists/{id}", produces = "application/json")
     ResponseEntity<APIResponse<TaskListDto>> getTaskList(
-            @Parameter(description = "UUID der TaskList", required = true)
-            @PathVariable UUID id
+            @Parameter(name = "id", description = "UUID der TaskList", required = true)
+            @PathVariable("id") UUID id
     );
 
     @Operation(
@@ -97,7 +97,7 @@ public interface ITaskListsCrudApi extends IBaseTaskListsApi {
     @PutMapping(value = "/tasklists/{id}", consumes = "application/json", produces = "application/json")
     ResponseEntity<APIResponse<TaskListDto>> updateTaskList(
             @Parameter(description = "UUID der TaskList", required = true)
-            @PathVariable UUID id,
+            @PathVariable("id") UUID id,
             @Parameter(description = "Daten für vollständiges Update (Title erforderlich)")
             @Valid @RequestBody UpdateTaskListDto dto
     );

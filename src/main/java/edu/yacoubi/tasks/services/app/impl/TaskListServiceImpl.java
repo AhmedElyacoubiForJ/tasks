@@ -120,51 +120,56 @@ public class TaskListServiceImpl implements ITaskListService {
     public TaskList createTaskList(final CreateTaskListDto dto) {
         log.info("🆕 Service: Erstelle neue TaskList mit Titel '{}'", dto.title());
 
-        // Aggregat über Domain-Builder erzeugen (Invarianten werden hier geprüft)
+        // 1. Aggregat erzeugen (Domain-Builder prüft Invarianten)
         TaskList taskList = TaskList.builder()
                 .title(dto.title())
                 .description(dto.description())
                 .build();
 
-        // Persistieren
-        TaskList saved = taskListRepository.save(taskList);
+        // 2. Persistieren
+        TaskList savedTaskList = taskListRepository.save(taskList);
 
-        log.info("✅ Service: TaskList {} erfolgreich erstellt", saved.getId());
-        return saved;
+        log.info("✅ Service: TaskList '{}' erfolgreich erstellt mit ID {}",
+                savedTaskList.getTitle(), savedTaskList.getId());
+
+        return savedTaskList;
     }
 
     @Override
     public void deleteTaskList(final UUID id) {
-        log.info("🗑️ Versuche TaskList mit ID {} zu löschen", id);
+        log.info("🗑️ Service: Versuche TaskList mit ID {} zu löschen", id);
 
         if (!taskListRepository.existsById(id)) {
             throw logAndThrowNotFound(id);
         }
 
         taskListRepository.deleteById(id);
-        log.info("✅ TaskList mit ID {} erfolgreich gelöscht", id);
+        log.info("✅ Service: TaskList mit ID {} erfolgreich gelöscht", id);
     }
 
     @Override
-    public TaskList updateTaskList(final UUID id, final UpdateTaskListDto dto) {
+    public TaskList updateTaskList(
+            final UUID id,
+            final UpdateTaskListDto dto
+    ) {
         log.info("✏️ Service: Aktualisiere TaskList mit ID {}", id);
 
-        // Aggregat laden oder 404
+        // 1. Aggregat laden oder 404
         TaskList taskList = getTaskListOrThrow(id);
 
-        // Logging der Änderungen
+        // 2. Logging der Änderungen
         logFieldChange("title", taskList.getTitle(), dto.title());
         logFieldChange("description", taskList.getDescription(), dto.description());
 
-        // Domain-Methoden anwenden (keine Setter!)
+        // 3. Domain-Methoden anwenden (keine Setter!)
         taskList.rename(dto.title());
         taskList.changeDescription(dto.description());
 
-        // Persistieren
-        TaskList updated = taskListRepository.save(taskList);
+        // 4. Persistieren
+        TaskList updatedTaskList = taskListRepository.save(taskList);
 
         log.info("✅ Service: TaskList {} erfolgreich aktualisiert", id);
-        return updated;
+        return updatedTaskList;
     }
 
     @Override
@@ -209,6 +214,7 @@ public class TaskListServiceImpl implements ITaskListService {
     }
 
     private void logFieldChange(String field, Object oldValue, Object newValue) {
-        log.debug("📋 Feld '{}' geändert: alt='{}', neu='{}'", field, oldValue, newValue);
+        log.info("📋 Feld '{}' geändert: alt='{}', neu='{}'", field, oldValue, newValue);
+        //log.debug("📋 Feld '{}' geändert: alt='{}', neu='{}'", field, oldValue, newValue);
     }
 }

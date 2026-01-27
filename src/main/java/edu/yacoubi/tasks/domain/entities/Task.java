@@ -1,29 +1,26 @@
 package edu.yacoubi.tasks.domain.entities;
 
 import jakarta.persistence.*;
-import lombok.*;
-
 import java.time.LocalDateTime;
 import java.util.UUID;
-
+import lombok.*;
 
 /**
  * Domain-Entity, die eine einzelne Aufgabe innerhalb einer TaskList repräsentiert.
  *
  * <p>Diese Klasse folgt den Prinzipien von Domain-Driven Design (DDD):
  * <ul>
- *     <li>Sie ist Teil des Aggregats "TaskList".</li>
+ *     <li>Sie ist Teil des Aggregats "TaskList" und darf niemals alleine existieren.</li>
  *     <li>Sie besitzt fachliches Verhalten (Domain-Methoden) statt Setter.</li>
- *     <li>Invarianten werden durch den Builder geschützt.</li>
- *     <li>Eine Task kann niemals ohne TaskList existieren.</li>
- *     <li>Status- und Prioritätsänderungen erfolgen über klar definierte Methoden.</li>
+ *     <li>Invarianten werden durch den privaten Builder geschützt.</li>
+ *     <li>Status- und Prioritätsänderungen erfolgen ausschließlich über Domain-Methoden.</li>
  * </ul>
  * </p>
  *
  * <p>Die Klasse ist vollständig JPA-kompatibel, nutzt jedoch keine Setter,
  * um unkontrollierte Mutationen zu verhindern. Änderungen erfolgen ausschließlich
- * über Domain-Methoden wie {@code complete()}, {@code reopen()} oder
- * {@code changePriority()}.</p>
+ * über Domain-Methoden wie {@code changeStatus()}, {@code changePriority()},
+ * {@code changeTitle()} oder {@code changeDueDate()}.</p>
  *
  * <p>Der Builder stellt sicher, dass Pflichtfelder wie Titel, Priority und TaskList
  * gesetzt werden und dass die Entity niemals in einem ungültigen Zustand entsteht.</p>
@@ -34,8 +31,8 @@ import java.util.UUID;
 @Entity
 @Table(name = "tasks")
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@NoArgsConstructor(access = AccessLevel.PROTECTED) // JPA only
+@AllArgsConstructor(access = AccessLevel.PRIVATE) // verhindert unkontrollierte Instanziierung
 @EqualsAndHashCode(of = "id")
 public class Task {
 
@@ -61,9 +58,13 @@ public class Task {
     @Column(name = "priority", nullable = false)
     private TaskPriority priority;
 
-    // optional = false → JPA garantiert: niemals null
+    // -----------------------------------------
+    //  DDD: Task gehört IMMER zu einer TaskList
+    //  optional = false → JPA garantiert: niemals null
+    //  nullable = false → DB garantiert: niemals null
+    //  fetch = LAZY → verhindert unnötiges Laden der TaskList
+    // -----------------------------------------
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    // nullable = false → DB garantiert: niemals null
     @JoinColumn(name = "task_list_id", nullable = false)
     private TaskList taskList;
 
@@ -73,7 +74,12 @@ public class Task {
     @Column(name = "updated", nullable = false)
     private LocalDateTime updated;
 
-    // ✅ Builder für kontrollierte Erstellung
+
+    // -----------------------------------------
+    //  DDD: Privater Builder schützt Invarianten
+    //  Nur die Domain darf Tasks erzeugen.
+    //  Controller/Service können keine inkonsistenten Tasks bauen.
+    // -----------------------------------------
     @Builder
     private Task(
             String title,
@@ -82,12 +88,17 @@ public class Task {
             TaskPriority priority,
             TaskList taskList
     ) {
+        // Pflichtfeld: TaskList
         if (taskList == null) {
             throw new IllegalArgumentException("TaskList darf nicht null sein.");
         }
+
+        // Pflichtfeld: Titel
         if (title == null || title.isBlank()) {
             throw new IllegalArgumentException("Title darf nicht leer sein.");
         }
+
+        // Pflichtfeld: Priority
         if (priority == null) {
             throw new IllegalArgumentException("Priority darf nicht null sein.");
         }
@@ -97,14 +108,28 @@ public class Task {
         this.dueDate = dueDate;
         this.priority = priority;
         this.taskList = taskList;
+
+        // DDD: Domain definiert initialen Status
         this.status = TaskStatus.OPEN;
 
+        // DDD: Domain setzt Zeitstempel
         this.created = LocalDateTime.now();
         this.updated = LocalDateTime.now();
     }
 
-    // ✅ Domain-Methoden statt Setter
 
+    // -----------------------------------------
+    //  Domain-Methoden (fachliches Verhalten)
+    //  Keine Setter → Aggregat bleibt konsistent
+    // -----------------------------------------
+
+    /**
+     * Ändert den Titel des Tasks.
+     *
+     * DDD:
+     * - Titel ist eine Invariante → darf nie leer sein.
+     * - Jede Änderung ist ein Domain-Ereignis → updated wird gesetzt.
+     */
     public void changeTitle(String newTitle) {
         if (newTitle == null || newTitle.isBlank()) {
             throw new IllegalArgumentException("Titel darf nicht leer sein.");
@@ -113,16 +138,34 @@ public class Task {
         this.updated = LocalDateTime.now();
     }
 
+    /**
+     * Ändert die Beschreibung des Tasks.
+     *
+     * DDD:
+     * - Beschreibung ist optional, aber jede Änderung ist ein Domain-Ereignis.
+     */
     public void changeDescription(String newDescription) {
         this.description = newDescription;
         this.updated = LocalDateTime.now();
     }
 
+    /**
+     * Ändert das Fälligkeitsdatum.
+     *
+     * DDD:
+     * - Keine Invariante, aber jede Änderung beeinflusst den Task-Lebenszyklus.
+     */
     public void changeDueDate(LocalDateTime newDueDate) {
         this.dueDate = newDueDate;
         this.updated = LocalDateTime.now();
     }
 
+    /**
+     * Ändert die Priorität des Tasks.
+     *
+     * DDD:
+     * - Priority ist eine Invariante → darf nie null sein.
+     */
     public void changePriority(TaskPriority newPriority) {
         if (newPriority == null) {
             throw new IllegalArgumentException("Priority darf nicht null sein.");
@@ -131,17 +174,25 @@ public class Task {
         this.updated = LocalDateTime.now();
     }
 
+    /**
+     * Ändert den Status des Tasks.
+     *
+     * DDD:
+     * - Statusänderungen sind fachlich relevant.
+     * - Ungültige Transitionen werden verhindert.
+     * - Methode ist idempotent.
+     */
     public void changeStatus(TaskStatus newStatus) {
         if (newStatus == null) {
             throw new IllegalArgumentException("Status darf nicht null sein.");
         }
 
-        // ✅ Keine Änderung → kein Update nötig
+        // Keine Änderung → kein Update nötig
         if (this.status == newStatus) {
             return;
         }
 
-        // ✅ Verbotene Transitionen
+        // Verbotene Transitionen (fachliche Regeln)
         if (this.status == TaskStatus.COMPLETED && newStatus == TaskStatus.OPEN) {
             throw new IllegalStateException("Ein abgeschlossener Task kann nicht wieder geöffnet werden.");
         }
@@ -154,11 +205,14 @@ public class Task {
             throw new IllegalStateException("Ein Task in Bearbeitung kann nicht wieder geöffnet werden.");
         }
 
-        // ✅ Erlaubte Transition
+        // Erlaubte Transition
         this.status = newStatus;
         this.updated = LocalDateTime.now();
     }
 
+    /**
+     * Hilfsmethode für Domain-Logik.
+     */
     public boolean isCompleted() {
         return this.status == TaskStatus.COMPLETED;
     }
