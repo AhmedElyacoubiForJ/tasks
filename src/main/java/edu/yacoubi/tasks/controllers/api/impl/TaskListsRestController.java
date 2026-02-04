@@ -166,6 +166,55 @@ public class TaskListsRestController
     return ResponseEntity.ok(response);
   }
 
+  ///////
+  @Override // 🎉 GET /tasklists/{taskListId}/tasks — End‑to‑End Status: DDD-Konform
+  public ResponseEntity<APIResponse<List<TaskSummaryDto>>> getTasksByListId(final UUID id) {
+    log.info("📋 Abrufen aller Tasks für TaskList {}", id);
+
+    // Service liefert bereits TaskSummaryDto → kein zusätzliches Mapping nötig
+    List<TaskSummaryDto> tasks = taskService.findByTaskListId(id);
+
+    log.debug("Gefundene Tasks für TaskList {}: {}", id, tasks.size());
+
+    APIResponse<List<TaskSummaryDto>> response =
+            APIResponse.<List<TaskSummaryDto>>builder()
+                    .status(ResponseStatus.SUCCESS)
+                    .statusCode(HttpStatus.OK.value())
+                    .message("Tasks für TaskList erfolgreich abgerufen")
+                    .data(tasks)
+                    .timestamp(LocalDateTime.now())
+                    .build();
+
+    log.info("✅ {} Tasks für TaskList {} erfolgreich abgerufen", tasks.size(), id);
+    return ResponseEntity.ok(response);
+  }
+
+  @Override // 🎉 POST /tasklists/{taskListId} — End‑to‑End Status: DDD-Konform
+  public ResponseEntity<APIResponse<TaskSummaryDto>> createTaskInList(
+          final UUID taskListId,
+          final CreateTaskDto dto
+  ) {
+    log.info("🆕 Erstelle neuen Task in TaskList {}", taskListId);
+
+    // Delegation an den Orchestrator (Use-Case)
+    TaskSummaryDto created = orchestrator.createTaskInList(taskListId, dto);
+
+    log.debug("Task nach Erstellung: {}", created);
+
+    APIResponse<TaskSummaryDto> response =
+            APIResponse.<TaskSummaryDto>builder()
+                    .status(ResponseStatus.SUCCESS)
+                    .statusCode(HttpStatus.CREATED.value())
+                    .message("Task erfolgreich erstellt")
+                    .data(created)
+                    .timestamp(LocalDateTime.now())
+                    .build();
+
+    log.info("✅ Task {} erfolgreich in TaskList {} erstellt", created.id(), taskListId);
+
+    return ResponseEntity.status(HttpStatus.CREATED).body(response);
+  }
+
   @Override
   public ResponseEntity<APIResponse<List<TaskListDto>>> getActiveTaskLists() {
     log.info("📂 Abrufen aller aktiven TaskLists");
@@ -255,52 +304,6 @@ public class TaskListsRestController
 
     log.info("✅ REST: TaskList {} erfolgreich archiviert", id);
     return ResponseEntity.ok(response);
-  }
-
-  @Override
-  public ResponseEntity<APIResponse<List<TaskSummaryDto>>> getTasksByListId(UUID id) {
-    log.info("📋 Abrufen aller Tasks für TaskList {}", id);
-
-    // Service liefert bereits TaskSummaryDto → kein zusätzliches Mapping nötig
-    List<TaskSummaryDto> tasks = taskService.findByTaskListId(id);
-
-    log.debug("Gefundene Tasks für TaskList {}: {}", id, tasks.size());
-
-    APIResponse<List<TaskSummaryDto>> response =
-        APIResponse.<List<TaskSummaryDto>>builder()
-            .status(ResponseStatus.SUCCESS)
-            .statusCode(HttpStatus.OK.value())
-            .message("Tasks für TaskList erfolgreich abgerufen")
-            .data(tasks)
-            .timestamp(LocalDateTime.now())
-            .build();
-
-    log.info("✅ {} Tasks für TaskList {} erfolgreich abgerufen", tasks.size(), id);
-    return ResponseEntity.ok(response);
-  }
-
-  @Override
-  public ResponseEntity<APIResponse<TaskSummaryDto>> createTaskInList(
-      UUID taskListId, CreateTaskDto dto) {
-
-    log.info("🆕 Erstelle neuen Task in TaskList {}", taskListId);
-
-    // Orchestrator übernimmt die Koordination zwischen TaskListService & TaskService
-    TaskSummaryDto created = orchestrator.createTaskInList(taskListId, dto);
-
-    log.debug("Task nach Erstellung: {}", created);
-
-    APIResponse<TaskSummaryDto> response =
-        APIResponse.<TaskSummaryDto>builder()
-            .status(ResponseStatus.SUCCESS)
-            .statusCode(HttpStatus.CREATED.value())
-            .message("Task erfolgreich erstellt")
-            .data(created)
-            .timestamp(LocalDateTime.now())
-            .build();
-
-    log.info("✅ Task {} erfolgreich in TaskList {} erstellt", created.id(), taskListId);
-    return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
   @Override

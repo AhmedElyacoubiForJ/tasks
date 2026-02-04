@@ -95,23 +95,6 @@ public interface ITaskListsTaskOrchestrator {
      */
     void deleteTaskInList(UUID taskListId, UUID taskId);
 
-
-    /**
-     * Liefert alle Tasks einer TaskList zurück.
-     *
-     * <p>
-     * Cross-Aggregate-Logik, weil:
-     * <ul>
-     *     <li>zuerst das TaskList-Aggregat validiert wird</li>
-     *     <li>dann Tasks aus dem Task-Aggregat geladen werden</li>
-     * </ul>
-     * </p>
-     *
-     * @param taskListId ID der TaskList
-     * @return Liste der zugehörigen Tasks
-     */
-    List<TaskSummaryDto> getTasksByListId(UUID taskListId);
-
     /**
      * Archiviert eine TaskList ausschließlich, wenn alle zugehörigen Tasks abgeschlossen sind.
      *

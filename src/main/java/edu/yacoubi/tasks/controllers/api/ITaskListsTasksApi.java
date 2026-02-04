@@ -49,7 +49,7 @@ public interface ITaskListsTasksApi extends IBaseTaskListsApi {
     )
     ResponseEntity<APIResponse<List<TaskSummaryDto>>> getTasksByListId(
             @Parameter(description = "UUID der TaskList", required = true)
-            @PathVariable UUID taskListId
+            @PathVariable("taskListId") UUID taskListId
     );
 
     @Operation(

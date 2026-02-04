@@ -39,30 +39,28 @@ public class TaskListsTaskOrchestratorImpl implements ITaskListsTaskOrchestrator
   public TaskSummaryDto createTaskInList(final UUID taskListId, final CreateTaskDto dto) {
     log.info("::createTaskInList gestartet mit taskListId={}", taskListId);
 
-    // 1. TaskList laden (Aggregat-Root)
+    // 1. Aggregat laden
     TaskList taskList = taskListService.getTaskListOrThrow(taskListId);
+    log.debug("TaskList geladen: {}", taskList);
 
-    // 2. Business-Regel: archivierte Listen akzeptieren keine neuen Tasks
-    if (taskList.isArchived()) {
-      String msg =
-          "Kann keinen Task in eine archivierte TaskList erstellen. taskListId=" + taskListId;
-      log.error("::createTaskInList Fehler: {}", msg);
-      throw new IllegalStateException(msg);
-    }
+    // 2. Domain-Regel prüfen (liegt in der TaskList-Domain)
+    taskList.assertCanAddTask();
+    log.debug("Domain-Regel geprüft: TaskList {} erlaubt neue Tasks", taskListId);
 
-    // 3. Domain-Objekt erstellen (über Factory)
+    // 3. Domain-Objekt erstellen (Factory)
     Task task = TaskFactory.create(dto, taskList);
+    log.debug("Task über Factory erstellt: {}", task);
 
-    // 4. Persistieren + Mapping
+    // 4. Persistieren über TaskService (Persistence-Service)
     TaskSummaryDto created = taskService.createTask(task);
+    log.debug("Task gespeichert: {}", created);
 
-    log.info(
-        "::createTaskInList erfolgreich abgeschlossen für taskId={} in taskListId={}",
-        created.id(),
-        taskListId);
+    log.info("::createTaskInList erfolgreich abgeschlossen für taskId={} in taskListId={}",
+            created.id(), taskListId);
 
     return created;
   }
+
 
   @Override
   public TaskSummaryDto updateTaskInList(
@@ -138,17 +136,6 @@ public class TaskListsTaskOrchestratorImpl implements ITaskListsTaskOrchestrator
     // taskListService.updateTaskList(taskList);
 
     log.debug("Orchestrator: Task {} in TaskList {} erfolgreich gelöscht", taskId, taskListId);
-  }
-
-  @Override
-  public List<TaskSummaryDto> getTasksByListId(final UUID taskListId) {
-    log.info("🎯 Orchestrator: Lade Tasks für TaskList {}", taskListId);
-
-    // 1. Sicherstellen, dass TaskList existiert
-    taskListService.getTaskListOrThrow(taskListId);
-
-    // 2. Delegation an TaskService
-    return taskService.findByTaskListId(taskListId);
   }
 
   // DDD-Konform DONE

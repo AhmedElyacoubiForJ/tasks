@@ -126,6 +126,14 @@ public class TaskList {
         return this.status == TaskListStatus.ARCHIVED;
     }
 
+    public void assertCanAddTask() {
+        if (this.isArchived()) {
+            throw new IllegalStateException(
+                    "Kann keinen Task zu einer archivierten TaskList hinzufügen."
+            );
+        }
+    }
+
     /**
      * Fügt einen Task zur TaskList hinzu.
      *
