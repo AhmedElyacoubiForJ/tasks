@@ -1,13 +1,13 @@
-# 📄 **UPDATE‑TASK‑FLOW‑QUICKREF**
+# 📄 **PATCH‑TASK‑FLOW‑QUICKREF**
 
-Kurzübersicht des vollständigen Update‑Flows für bestehende Tasks.  
+Kurzübersicht des partiellen Update‑Flows (PATCH) für bestehende Tasks.  
 Optimiert für Entwickler, die schnell Verantwortlichkeiten und Reihenfolge erfassen möchten.
 
 ---
 
 ## 1. Controller (ITaskListsTasksApi)
-- Nimmt PUT‑Request entgegen  
-- Extrahiert `taskListId`, `taskId`, `UpdateTaskDto`  
+- Nimmt PATCH‑Request entgegen  
+- Extrahiert `taskListId`, `taskId`, `PatchTaskDto`  
 - Delegiert an Orchestrator  
 - Baut `APIResponse<TaskSummaryDto>`  
 - Keine Business‑Logik
@@ -21,8 +21,8 @@ Optimiert für Entwickler, die schnell Verantwortlichkeiten und Reihenfolge erfa
    → `taskService.getTaskOrThrow(taskId)`
 3. Zugehörigkeit prüfen  
    → Task gehört zur TaskList?
-4. Update anwenden  
-   → `taskUpdater.applyFullUpdate(task, dto)`
+4. Patch anwenden  
+   → `taskUpdater.applyPatch(task, dto)`
 5. Persistieren  
    → `taskService.updateTask(task)`
 6. Ergebnis zurückgeben  
@@ -34,13 +34,13 @@ Optimiert für Entwickler, die schnell Verantwortlichkeiten und Reihenfolge erfa
 Technische Klasse für DTO → Domain‑Mapping.  
 Keine Business‑Regeln.
 
-### Setzt alle Felder (PUT):
-```text
-task.changeTitle(dto.title());
-task.changeDescription(dto.description());
-task.changeDueDate(dto.dueDate());
-task.changePriority(dto.priority());
-task.changeStatus(dto.status());
+### Aktualisiert nur gesetzte Felder (PATCH):
+```
+if (dto.title() != null)       task.changeTitle(dto.title());
+if (dto.description() != null) task.changeDescription(dto.description());
+if (dto.dueDate() != null)     task.changeDueDate(dto.dueDate());
+if (dto.priority() != null)    task.changePriority(dto.priority());
+if (dto.status() != null)      task.changeStatus(dto.status());
 ```
 
 ---
@@ -52,7 +52,7 @@ task.changeStatus(dto.status());
 - Erzwingt Status‑Transitions  
 - Keine Setter, nur Methoden wie:
 
-```text
+```
 changeTitle()
 changeDescription()
 changeDueDate()
@@ -63,10 +63,11 @@ changeStatus()
 ---
 
 ## 5. TaskService
-- Persistiert Task → `taskRepository.save(task)`  
+- Persistiert Task → `taskRepository.save(task)`
+- Transaktion → @Transactional
 - Logging  
 - Mapping → `TaskSummaryDto`  
-- Fehlerbehandlung (z.B. Optimistic Locking)  
+- Fehlerbehandlung (z.B. Optimistic Locking) *TO-DO*  
 - Keine Business‑Logik
 
 ---
@@ -78,6 +79,13 @@ changeStatus()
 ---
 
 ## TL;DR (Too Long; Didn’t Read)
-**PUT‑Update‑Flow:**  
-Controller → Orchestrator → TaskListService → TaskService (load) → TaskUpdater → Domain → TaskService (save) → Transformer → Response
-
+**PATCH‑Flow:**  
+Controller
+   → Orchestrator
+   → TaskListService
+   → TaskService (load)
+   → TaskUpdater (nur gesetzte Felder)
+   → Domain
+   → TaskService (save)
+   → Transformer
+   → Response

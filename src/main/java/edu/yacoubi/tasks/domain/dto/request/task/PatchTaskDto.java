@@ -6,12 +6,14 @@ import edu.yacoubi.tasks.domain.validation.annotations.ValidTaskDescription;
 import edu.yacoubi.tasks.domain.validation.annotations.ValidTaskDueDate;
 import edu.yacoubi.tasks.domain.validation.annotations.ValidTaskTitlePatch;
 import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.time.LocalDateTime;
 
 @Schema(description = "DTO für partielle Aktualisierung einer bestehenden Aufgabe (PATCH)")
 public record PatchTaskDto(
 
-        @Schema(description = "Neuer Titel der Aufgabe (optional)", example = "Swagger konfigurieren")
+        @Schema(description = "Neuer Titel der Aufgabe (optional)",
+                example = "Swagger konfigurieren")
         @ValidTaskTitlePatch
         String title,
 
@@ -25,9 +27,11 @@ public record PatchTaskDto(
         @ValidTaskDueDate
         LocalDateTime dueDate,
 
-        @Schema(description = "Neuer Status der Aufgabe (optional)", example = "IN_PROGRESS")
+        @Schema(description = "Neuer Status der Aufgabe (optional)",
+                example = "IN_PROGRESS")
         TaskStatus status,
 
-        @Schema(description = "Neue Priorität der Aufgabe (optional)", example = "HIGH")
+        @Schema(description = "Neue Priorität der Aufgabe (optional)",
+                example = "HIGH")
         TaskPriority priority
 ) {}

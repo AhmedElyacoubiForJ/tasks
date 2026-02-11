@@ -2,7 +2,8 @@ package edu.yacoubi.tasks.services.app.impl;
 
 import edu.yacoubi.tasks.domain.TaskUpdater;
 import edu.yacoubi.tasks.domain.dto.request.task.CreateTaskDto;
-import edu.yacoubi.tasks.domain.dto.request.task.UpdateTaskDto;
+import edu.yacoubi.tasks.domain.dto.request.task.FullUpdateTaskDto;
+import edu.yacoubi.tasks.domain.dto.request.task.PatchTaskDto;
 import edu.yacoubi.tasks.domain.dto.request.tasklist.UpdateTaskListDto;
 import edu.yacoubi.tasks.domain.dto.response.task.TaskSummaryDto;
 import edu.yacoubi.tasks.domain.entities.Task;
@@ -61,39 +62,80 @@ public class TaskListsTaskOrchestratorImpl implements ITaskListsTaskOrchestrator
     return created;
   }
 
-
   @Override
   public TaskSummaryDto updateTaskInList(
-      final UUID taskListId, final UUID taskId, final UpdateTaskDto dto) {
-
+          final UUID taskListId,
+          final UUID taskId,
+          final FullUpdateTaskDto dto
+  ) {
     log.info("::updateTaskInList gestartet mit taskListId={}, taskId={}", taskListId, taskId);
 
-    // 1. TaskList laden
+    // 1. TaskList laden (Aggregat-Root)
     TaskList taskList = taskListService.getTaskListOrThrow(taskListId);
 
+    // 2. Domain-Regel: archivierte Listen dürfen nicht verändert werden
     if (taskList.isArchived()) {
       throw new IllegalStateException("Archivierte TaskLists können nicht aktualisiert werden.");
     }
 
-    // 2. Task laden
+    // 3. Task laden
     Task task = taskService.getTaskOrThrow(taskId);
 
-    // 3. Sicherstellen, dass Task zur TaskList gehört
+    // 4. Sicherstellen, dass Task zur TaskList gehört
     if (!task.getTaskList().getId().equals(taskListId)) {
       throw new IllegalStateException(
-          "Task " + taskId + " gehört nicht zur TaskList " + taskListId);
+              "Task " + taskId + " gehört nicht zur TaskList " + taskListId
+      );
     }
 
-    // 4. Domain-Update-Methoden aufrufen
+    // 5. Domain-Update anwenden (über Updater → ruft Domain-Methoden auf)
     taskUpdater.applyFullUpdate(task, dto);
 
-    // 5. Persistieren + Mapping
+    // 6. Persistieren + Mapping
     TaskSummaryDto updated = taskService.updateTask(task);
 
     log.info("::updateTaskInList erfolgreich abgeschlossen für taskId={}", taskId);
 
     return updated;
   }
+
+  @Override
+  public TaskSummaryDto patchTaskInList(
+          final UUID taskListId,
+          final UUID taskId,
+          final PatchTaskDto dto
+  ) {
+    log.info("::patchTaskInList gestartet mit taskListId={}, taskId={}", taskListId, taskId);
+
+    // 1. TaskList laden (Aggregat-Root)
+    TaskList taskList = taskListService.getTaskListOrThrow(taskListId);
+
+    // 2. Domain-Regel: archivierte Listen dürfen nicht verändert werden
+    if (taskList.isArchived()) {
+      throw new IllegalStateException("Archivierte TaskLists können nicht aktualisiert werden.");
+    }
+
+    // 3. Task laden
+    Task task = taskService.getTaskOrThrow(taskId);
+
+    // 4. Sicherstellen, dass Task zur TaskList gehört
+    if (!task.getTaskList().getId().equals(taskListId)) {
+      throw new IllegalStateException(
+              "Task " + taskId + " gehört nicht zur TaskList " + taskListId
+      );
+    }
+
+    // 5. Partielle Änderungen anwenden
+    taskUpdater.applyPatch(task, dto);
+
+    // 6. Persistieren + Mapping
+    TaskSummaryDto updated = taskService.updateTask(task);
+
+    log.info("::patchTaskInList erfolgreich abgeschlossen für taskId={}", taskId);
+
+    return updated;
+  }
+
 
   // -----------------------------------------------------------------------------------------
   // ✔ TaskList ist das Aggregate Root

@@ -92,62 +92,35 @@ public class TaskServiceImpl implements ITaskService {
     return TransformerUtil.transform(TaskTransformer.TASK_TO_SUMMARY, saved);
   }
 
-
-  //    @Override
-  //    public TaskSummaryDto completeTask(UUID taskId) {
-  //        log.info("::completeTask gestartet für taskId={}", taskId);
-  //
-  //        Task task = getTaskOrThrow(taskId);
-  //        task.complete(); // ✅ Domain-Methode
-  //
-  //        Task saved = taskRepository.save(task);
-  //
-  //        log.info("::completeTask erfolgreich abgeschlossen für taskId={}", saved.getId());
-  //
-  //        return mapper.toSummaryDto(saved);
-  //    }
-  //
-  //    @Override
-  //    public TaskSummaryDto reopenTask(UUID taskId) {
-  //        log.info("::reopenTask gestartet für taskId={}", taskId);
-  //
-  //        Task task = getTaskOrThrow(taskId);
-  //        task.reopen(); // ✅ Domain-Methode
-  //
-  //        Task saved = taskRepository.save(task);
-  //
-  //        log.info("::reopenTask erfolgreich abgeschlossen für taskId={}", saved.getId());
-  //
-  //        return mapper.toSummaryDto(saved);
-  //    }
-
+  /**
+   * Aktualisiert einen bestehenden Task.
+   *
+   * DDD:
+   * - Keine fachliche Logik hier.
+   * - Domain-Regeln wurden bereits im Orchestrator und in der Entity geprüft.
+   *
+   * Architektur:
+   * - Reiner Persistence-Service.
+   * - Verantwortlich für: speichern + transformieren.
+   *
+   * Transactional:
+   * - Garantiert atomare Speicherung.
+   * - Rollback bei Fehlern in Domain oder DB.
+   */
   @Override
   @Transactional
-  public TaskSummaryDto updateTask(final Task task) {
+  public TaskSummaryDto updateTask(Task task) {
 
-    UUID taskId = task.getId();
-    log.info("::updateTask gestartet für taskId={}", taskId);
-
-    try {
-      // Persistieren
-      Task saved = taskRepository.save(task);
-
-      log.debug("Task erfolgreich gespeichert: {}", saved);
-
-      // Mapping
-      TaskSummaryDto dto = TransformerUtil.transform(TaskTransformer.TASK_TO_SUMMARY, saved);
-
-      log.info("::updateTask erfolgreich abgeschlossen für taskId={}", taskId);
-      return dto;
-
-    } catch (OptimisticLockException e) {
-      log.error("Optimistic Locking Fehler beim Aktualisieren von taskId={}", taskId, e);
-      throw new IllegalStateException(
-          "Die Aufgabe wurde parallel geändert. Bitte erneut versuchen.");
-    } catch (Exception e) {
-      log.error("Fehler beim Aktualisieren von taskId={}", taskId, e);
-      throw new IllegalStateException("Task konnte nicht aktualisiert werden.");
+    // Technische Validierung
+    if (task.getId() == null) {
+      throw new IllegalArgumentException("Task muss eine ID besitzen, um aktualisiert zu werden.");
     }
+
+    // Persistieren
+    Task saved = taskRepository.save(task);
+
+    // Mapping über dein Transformer-System
+    return TransformerUtil.transform(TaskTransformer.TASK_TO_SUMMARY, saved);
   }
 
   @Override

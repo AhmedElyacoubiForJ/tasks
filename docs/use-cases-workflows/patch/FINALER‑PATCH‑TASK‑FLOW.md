@@ -1,4 +1,5 @@
-# FINALER‑PATCH‑TASK‑FLOW
+[//]: # (docs/use-cases-workflows/patch/FINALER‑PATCH‑TASK‑FLOW.md)
+# ✅ FINALER‑PATCH‑TASK‑FLOW
 
 ## Ziel
 Dieser Flow beschreibt den vollständigen technischen und fachlichen Ablauf beim partiellen Aktualisieren einer bestehenden Task mittels PATCH.  
@@ -92,7 +93,7 @@ Der TaskService übernimmt:
 - Persistieren der Task (`taskRepository.save(task)`)
 - Logging
 - Mapping in `TaskSummaryDto`
-- Fehlerbehandlung (z. B. Optimistic Locking)
+- Fehlerbehandlung (z.B. Optimistic Locking)
 
 Der Service enthält **keine** Business‑Logik.
 

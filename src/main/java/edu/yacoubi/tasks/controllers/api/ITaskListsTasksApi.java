@@ -1,7 +1,8 @@
 package edu.yacoubi.tasks.controllers.api;
 
 import edu.yacoubi.tasks.domain.dto.request.task.CreateTaskDto;
-import edu.yacoubi.tasks.domain.dto.request.task.UpdateTaskDto;
+import edu.yacoubi.tasks.domain.dto.request.task.FullUpdateTaskDto;
+import edu.yacoubi.tasks.domain.dto.request.task.PatchTaskDto;
 import edu.yacoubi.tasks.domain.dto.response.task.TaskSummaryDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -135,7 +136,53 @@ public interface ITaskListsTasksApi extends IBaseTaskListsApi {
             @Parameter(description = "UUID des Tasks", required = true)
             @PathVariable UUID taskId,
             @Parameter(description = "Daten für Task-Update")
-            @Valid @RequestBody UpdateTaskDto dto
+            @Valid @RequestBody FullUpdateTaskDto dto
+    );
+
+    @Operation(
+            summary = "Task innerhalb einer TaskList teilweise aktualisieren",
+            description = "Aktualisiert einen bestehenden Task innerhalb einer TaskList partiell (PATCH)."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Task erfolgreich aktualisiert (PATCH)",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = APIResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Ungültige Eingabe",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = APIResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Task oder TaskList nicht gefunden",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = APIResponse.class)
+                    )
+            )
+    })
+    @PatchMapping(
+            value = "/tasklists/{taskListId}/tasks/{taskId}",
+            consumes = "application/json",
+            produces = "application/json"
+    )
+    ResponseEntity<APIResponse<TaskSummaryDto>> patchTaskInList(
+            @Parameter(description = "UUID der TaskList", required = true)
+            @PathVariable UUID taskListId,
+
+            @Parameter(description = "UUID des Tasks", required = true)
+            @PathVariable UUID taskId,
+
+            @Parameter(description = "Daten für partielle Aktualisierung des Tasks")
+            @Valid @RequestBody PatchTaskDto dto
     );
 
     @Operation(

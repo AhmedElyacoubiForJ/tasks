@@ -2,7 +2,8 @@ package edu.yacoubi.tasks.controllers.api.impl;
 
 import edu.yacoubi.tasks.controllers.api.*;
 import edu.yacoubi.tasks.domain.dto.request.task.CreateTaskDto;
-import edu.yacoubi.tasks.domain.dto.request.task.UpdateTaskDto;
+import edu.yacoubi.tasks.domain.dto.request.task.FullUpdateTaskDto;
+import edu.yacoubi.tasks.domain.dto.request.task.PatchTaskDto;
 import edu.yacoubi.tasks.domain.dto.request.tasklist.CreateTaskListDto;
 import edu.yacoubi.tasks.domain.dto.request.tasklist.UpdateTaskListDto;
 import edu.yacoubi.tasks.domain.dto.response.task.TaskSummaryDto;
@@ -143,6 +144,29 @@ public class TaskListsRestController
     return ResponseEntity.ok(response);
   }
 
+  @Override // 🎉 PATCH UPDATE ENDPOINT = DONE
+  public ResponseEntity<APIResponse<TaskSummaryDto>> patchTaskInList(
+          final UUID taskListId,
+          final UUID taskId,
+          final PatchTaskDto dto
+  ) {
+    log.info("🔧 PATCH Task {} in TaskList {}", taskId, taskListId);
+
+    TaskSummaryDto updated =
+            orchestrator.patchTaskInList(taskListId, taskId, dto);
+
+    APIResponse<TaskSummaryDto> response =
+            APIResponse.<TaskSummaryDto>builder()
+                    .status(ResponseStatus.SUCCESS)
+                    .statusCode(HttpStatus.OK.value())
+                    .message("Task erfolgreich aktualisiert (PATCH)")
+                    .data(updated)
+                    .timestamp(LocalDateTime.now())
+                    .build();
+
+    return ResponseEntity.ok(response);
+  }
+
   @Override // 🎉 DELETE /tasklists/{id} — End‑to‑End Status: DDD-Konform
   public ResponseEntity<APIResponse<Void>> deleteTaskList(final UUID id)
   {
@@ -213,6 +237,32 @@ public class TaskListsRestController
     log.info("✅ Task {} erfolgreich in TaskList {} erstellt", created.id(), taskListId);
 
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
+  }
+
+  @Override // 🎉 PUT /tasklists/{taskListId} — End‑to‑End Status: DDD-Konform
+  public ResponseEntity<APIResponse<TaskSummaryDto>> updateTaskInList(
+          final UUID taskListId,
+          final UUID taskId,
+          final FullUpdateTaskDto dto
+  ) {
+
+    log.info("🔄 Full Update Task {} in TaskList {}", taskId, taskListId);
+
+    // Delegation an den Orchestrator (Use-Case)
+    TaskSummaryDto updated = orchestrator.updateTaskInList(taskListId, taskId, dto);
+
+    log.debug("Task nach Full-Update: {}", updated);
+
+    APIResponse<TaskSummaryDto> response =
+            APIResponse.<TaskSummaryDto>builder()
+                    .status(ResponseStatus.SUCCESS)
+                    .statusCode(HttpStatus.OK.value())
+                    .message("Task erfolgreich aktualisiert (Full Update)")
+                    .data(updated)
+                    .timestamp(LocalDateTime.now())
+                    .build();
+
+    return ResponseEntity.ok(response);
   }
 
   @Override
@@ -303,28 +353,6 @@ public class TaskListsRestController
                     .build();
 
     log.info("✅ REST: TaskList {} erfolgreich archiviert", id);
-    return ResponseEntity.ok(response);
-  }
-
-  @Override
-  public ResponseEntity<APIResponse<TaskSummaryDto>> updateTaskInList(
-      final UUID taskListId, final UUID taskId, final UpdateTaskDto dto) {
-
-    log.info("🔄 Update Task {} in TaskList {}", taskId, taskListId);
-
-    TaskSummaryDto updated = orchestrator.updateTaskInList(taskListId, taskId, dto);
-
-    log.debug("Task nach Aktualisierung: {}", updated);
-
-    APIResponse<TaskSummaryDto> response =
-        APIResponse.<TaskSummaryDto>builder()
-            .status(ResponseStatus.SUCCESS)
-            .statusCode(HttpStatus.OK.value())
-            .message("Task erfolgreich aktualisiert")
-            .data(updated)
-            .timestamp(LocalDateTime.now())
-            .build();
-
     return ResponseEntity.ok(response);
   }
 

@@ -1,11 +1,11 @@
 package edu.yacoubi.tasks.services.app;
 
 import edu.yacoubi.tasks.domain.dto.request.task.CreateTaskDto;
-import edu.yacoubi.tasks.domain.dto.request.task.UpdateTaskDto;
+import edu.yacoubi.tasks.domain.dto.request.task.FullUpdateTaskDto;
+import edu.yacoubi.tasks.domain.dto.request.task.PatchTaskDto;
 import edu.yacoubi.tasks.domain.dto.response.task.TaskSummaryDto;
 import edu.yacoubi.tasks.domain.entities.TaskList;
 
-import java.util.List;
 import java.util.UUID;
 
 /**
@@ -76,7 +76,9 @@ public interface ITaskListsTaskOrchestrator {
 //     * @throws NotFoundException   wenn TaskList oder Task nicht existieren
 //     * @throws DomainException     wenn der Task nicht zur TaskList gehört oder fachliche Regeln verletzt
      */
-    TaskSummaryDto updateTaskInList(UUID taskListId, UUID taskId, UpdateTaskDto dto);
+    TaskSummaryDto updateTaskInList(UUID taskListId, UUID taskId, FullUpdateTaskDto dto);
+
+    TaskSummaryDto patchTaskInList(UUID taskListId, UUID taskId, PatchTaskDto dto);
 
     /**
      * Löscht einen bestehenden Task aus einer bestimmten TaskList.

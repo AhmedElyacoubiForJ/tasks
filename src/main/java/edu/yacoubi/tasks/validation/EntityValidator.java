@@ -21,7 +21,7 @@ import java.util.UUID;
  *
  * <p>
  * Wichtiger Hinweis: Dieser Validator prüft ausschließlich die Existenz.
- * Fachliche Regeln (z. B. "TaskList darf nicht archiviert sein") gehören
+ * Fachliche Regeln (z.B. "TaskList darf nicht archiviert sein") gehören
  * weiterhin in den Orchestrator oder in die Domain-Logik.
  * </p>
  *
