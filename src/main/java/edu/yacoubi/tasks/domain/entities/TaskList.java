@@ -86,19 +86,85 @@ public class TaskList {
     //  in einem gültigen Zustand bleibt.
     // -----------------------------------------
 
+//    /**
+//     * Archiviert die TaskList.
+//     *
+//     * DDD:
+//     * - Statusänderungen dürfen nur über Domain-Methoden erfolgen. ✔️ korrekt
+//     * - Die Methode ist idempotent: mehrfaches Aufrufen ändert nichts. ✔️ gut
+//     * - updated wird automatisch gesetzt, um den Lebenszyklus zu dokumentieren. ✔️ sinnvoll
+//     *
+//     * ❗ PROBLEM:
+//     * Diese Methode prüft NICHT, ob die TaskList überhaupt archivierbar ist.
+//     *
+//     * Das bedeutet:
+//     * - Die Domain akzeptiert aktuell JEDE Archivierung.
+//     * - Auch wenn Tasks noch offen sind.
+//     * - Die Business-Regel liegt NICHT in der Domain → DDD-Verstoß.
+//     *
+//     * In DDD gilt:
+//     * 👉 Die Domain schützt ihre eigenen Invarianten.
+//     * 👉 Die Domain entscheidet, ob ein Zustand erlaubt ist.
+//     * 👉 Der Orchestrator darf NICHT prüfen, ob archivieren erlaubt ist.
+//     *
+//     * Die fehlende Regel ist:
+//     * "Eine TaskList darf nur archiviert werden, wenn alle Tasks abgeschlossen sind."
+//     *
+//     * Diese Regel MUSS hier stehen, nicht im Orchestrator.
+//     */
+//    public void archive() {
+//
+//        // ✔️ Idempotenz: Wenn bereits archiviert, nichts tun
+//        if (this.status == TaskListStatus.ARCHIVED) {
+//            return;
+//        }
+//
+//        // ❌ FEHLER: Hier fehlt die fachliche Prüfung:
+//        // if (!isArchivable()) {
+//        //     throw new IllegalStateException("TaskList kann nicht archiviert werden, da noch offene Tasks existieren.");
+//        // }
+//        //
+//        // Warum MUSS das hier stehen?
+//        // - Die Domain schützt ihre eigenen Regeln
+//        // - Die Domain ist die einzige Quelle der Wahrheit
+//        // - Der Orchestrator darf keine Business-Entscheidungen treffen
+//        // - Tests werden einfacher und stabiler
+//        // - Aggregat bleibt konsistent
+//
+//        // ✔️ Statusänderung gehört in die Domain
+//        this.status = TaskListStatus.ARCHIVED;
+//
+//        // ✔️ Lifecycle-Update ist korrekt
+//        this.updated = LocalDateTime.now();
+//    }
+
     /**
-     * Archiviert die TaskList.
+     * Archiviert die TaskList, falls alle Tasks abgeschlossen sind.
      *
      * DDD:
-     * - Statusänderungen dürfen nur über Domain-Methoden erfolgen.
-     * - Die Methode ist idempotent: mehrfaches Aufrufen ändert nichts.
-     * - updated wird automatisch gesetzt, um den Lebenszyklus zu dokumentieren.
+     * - Domain schützt ihre eigenen Invarianten.
+     * - Orchestrator darf NICHT prüfen, ob archivieren erlaubt ist.
+     * - Statusänderungen gehören ausschließlich in die Domain.
+     * - Methode ist idempotent.
      */
     public void archive() {
+
+        // Idempotenz
         if (this.status == TaskListStatus.ARCHIVED) {
-            return; // idempotent
+            return;
         }
+
+        // Fachliche Regel: Nur archivierbar, wenn alle Tasks abgeschlossen sind
+        if (!isArchivable()) {
+            throw new IllegalStateException(
+                    "TaskList kann nicht archiviert werden, da noch offene Tasks existieren."
+            );
+        }
+
+        // Status ändern
         this.status = TaskListStatus.ARCHIVED;
+
+        // Lifecycle aktualisieren
         this.updated = LocalDateTime.now();
     }
 
@@ -200,6 +266,25 @@ public class TaskList {
         this.description = newDescription;
         this.updated = LocalDateTime.now();
     }
+
+    /**
+     * Prüft, ob alle Tasks abgeschlossen sind.
+     *
+     * DDD:
+     * - Diese Methode ist eine fachliche Regel (Business Rule).
+     * - Sie darf NICHT von außen aufgerufen werden.
+     * - Sie dient ausschließlich der Domain-Methode archive().
+     * - Deshalb MUSS sie private sein.
+     *
+     * Warum private?
+     * - Der Orchestrator darf NICHT prüfen, ob archivieren erlaubt ist.
+     * - Nur die Domain schützt ihre eigenen Invarianten.
+     * - Die Regel gehört vollständig in die Domain.
+     */
+    private boolean isArchivable() {
+        return tasks.stream().allMatch(Task::isCompleted);
+    }
+
 
     @Override
     public String toString() {

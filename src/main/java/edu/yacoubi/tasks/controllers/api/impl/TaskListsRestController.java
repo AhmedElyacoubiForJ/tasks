@@ -9,7 +9,6 @@ import edu.yacoubi.tasks.domain.dto.request.tasklist.UpdateTaskListDto;
 import edu.yacoubi.tasks.domain.dto.response.task.TaskSummaryDto;
 import edu.yacoubi.tasks.domain.dto.response.tasklist.TaskListDto;
 import edu.yacoubi.tasks.domain.entities.TaskList;
-import edu.yacoubi.tasks.mappers.TaskListMapper;
 import edu.yacoubi.tasks.mappers.TaskListTransformer;
 import edu.yacoubi.tasks.services.app.ITaskListService;
 import edu.yacoubi.tasks.services.app.ITaskListsTaskOrchestrator;
@@ -34,7 +33,6 @@ public class TaskListsRestController
 
   private final ITaskListService taskListService;
   private final ITaskService taskService;
-  private final TaskListMapper taskListMapper;
   private final ITaskListsTaskOrchestrator orchestrator;
 
   @Override // 🎉 GET /tasklists — End‑to‑End Status: DDD-Konform
@@ -190,7 +188,6 @@ public class TaskListsRestController
     return ResponseEntity.ok(response);
   }
 
-  ///////
   @Override // 🎉 GET /tasklists/{taskListId}/tasks — End‑to‑End Status: DDD-Konform
   public ResponseEntity<APIResponse<List<TaskSummaryDto>>> getTasksByListId(final UUID id) {
     log.info("📋 Abrufen aller Tasks für TaskList {}", id);
@@ -265,7 +262,35 @@ public class TaskListsRestController
     return ResponseEntity.ok(response);
   }
 
-  @Override
+  // Controller → Orchestrator → Services → Domain → Persistenz → Transformer/Response
+  @Override // DDD-Konform DONE
+  public ResponseEntity<APIResponse<Void>> deleteTaskInList(
+          final UUID taskListId,
+          final UUID taskId
+  ) {
+    log.info("🗑️ Lösche Task {} in TaskList {}", taskId, taskListId);
+
+    orchestrator.deleteTaskInList(taskListId, taskId);
+
+    log.debug(
+            "Task {} in TaskList {} erfolgreich gelöscht (Orchestrator abgeschlossen)",
+            taskId,
+            taskListId
+    );
+
+    APIResponse<Void> response =
+            APIResponse.<Void>builder()
+                    .status(ResponseStatus.SUCCESS)
+                    .statusCode(HttpStatus.OK.value()) // ← HTMX-kompatibel
+                    .message("Task erfolgreich gelöscht")
+                    .timestamp(LocalDateTime.now())
+                    .build();
+
+    log.info("✅ Task {} in TaskList {} gelöscht", taskId, taskListId);
+    return ResponseEntity.ok(response);
+  }
+
+  @Override // DDD-Konform DONE
   public ResponseEntity<APIResponse<List<TaskListDto>>> getActiveTaskLists() {
     log.info("📂 Abrufen aller aktiven TaskLists");
 
@@ -273,7 +298,9 @@ public class TaskListsRestController
 
     log.debug("Gefundene aktive TaskLists: {}", activeLists.size());
 
-    List<TaskListDto> dtos = activeLists.stream().map(taskListMapper::toTaskListDto).toList();
+    List<TaskListDto> dtos = activeLists.stream()
+            .map(TaskListTransformer.TASKLIST_TO_DTO::transform)
+            .toList();
 
     APIResponse<List<TaskListDto>> response =
         APIResponse.<List<TaskListDto>>builder()
@@ -288,7 +315,7 @@ public class TaskListsRestController
     return ResponseEntity.ok(response);
   }
 
-  @Override
+  @Override // DDD-Konform DONE
   public ResponseEntity<APIResponse<List<TaskListDto>>> getArchivedTaskLists() {
     log.info("📦 Abrufen aller archivierten TaskLists");
 
@@ -296,7 +323,9 @@ public class TaskListsRestController
 
     log.debug("Gefundene archivierte TaskLists: {}", archivedLists.size());
 
-    List<TaskListDto> dtos = archivedLists.stream().map(taskListMapper::toTaskListDto).toList();
+    List<TaskListDto> dtos = archivedLists.stream()
+            .map(TaskListTransformer.TASKLIST_TO_DTO::transform)
+            .toList();
 
     APIResponse<List<TaskListDto>> response =
         APIResponse.<List<TaskListDto>>builder()
@@ -312,35 +341,14 @@ public class TaskListsRestController
   }
 
   @Override
-  public ResponseEntity<APIResponse<Boolean>> isArchivable(UUID id) {
-    log.info("🔎 Prüfen ob TaskList {} archivierbar ist", id);
-
-    boolean archivable = true; // taskListService.isArchivable(id);
-
-    log.debug("Archivierbarkeit für TaskList {}: {}", id, archivable);
-
-    APIResponse<Boolean> response =
-        APIResponse.<Boolean>builder()
-            .status(ResponseStatus.SUCCESS)
-            .statusCode(HttpStatus.OK.value())
-            .message("Archivierbarkeit erfolgreich geprüft")
-            .data(archivable)
-            .timestamp(LocalDateTime.now())
-            .build();
-
-    log.info("✅ Archivierbarkeit für TaskList {} = {}", id, archivable);
-    return ResponseEntity.ok(response);
-  }
-
-  @Override // DDD-Konform DONE
-  public ResponseEntity<APIResponse<TaskListDto>> archiveTaskList(UUID id) {
+  public ResponseEntity<APIResponse<TaskListDto>> archiveTaskList(final UUID id) {
     log.info("📦 REST: Archivieren der TaskList mit ID {}", id);
 
     // 1. Orchestrator-UseCase ausführen
-    TaskList archived = orchestrator.archiveTaskListIfTasksCompleted(id);
+    final TaskList archived = orchestrator.archiveTaskList(id);
 
     // 2. Domain → DTO transformieren (neuer Transformer, kein MapStruct)
-    TaskListDto dto = TaskListTransformer.TASKLIST_TO_DTO.transform(archived);
+    final TaskListDto dto = TaskListTransformer.TASKLIST_TO_DTO.transform(archived);
 
     // 3. API-Response bauen
     APIResponse<TaskListDto> response =
@@ -353,31 +361,6 @@ public class TaskListsRestController
                     .build();
 
     log.info("✅ REST: TaskList {} erfolgreich archiviert", id);
-    return ResponseEntity.ok(response);
-  }
-
-  // Controller → Orchestrator → Services → Domain → Persistenz → Transformer/Response
-  @Override
-  public ResponseEntity<APIResponse<Void>> deleteTaskInList(
-      final UUID taskListId, final UUID taskId) {
-    log.info("🗑️ Lösche Task {} in TaskList {}", taskId, taskListId);
-
-    orchestrator.deleteTaskInList(taskListId, taskId);
-
-    log.debug(
-        "Task {} in TaskList {} erfolgreich gelöscht (Orchestrator abgeschlossen)",
-        taskId,
-        taskListId);
-
-    APIResponse<Void> response =
-        APIResponse.<Void>builder()
-            .status(ResponseStatus.SUCCESS)
-            .statusCode(HttpStatus.OK.value()) // ← HTMX-kompatibel
-            .message("Task erfolgreich gelöscht")
-            .timestamp(LocalDateTime.now())
-            .build();
-
-    log.info("✅ Task {} in TaskList {} gelöscht", taskId, taskListId);
     return ResponseEntity.ok(response);
   }
 }

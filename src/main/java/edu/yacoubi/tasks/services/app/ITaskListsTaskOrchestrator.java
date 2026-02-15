@@ -117,26 +117,5 @@ public interface ITaskListsTaskOrchestrator {
      * @param taskListId ID der TaskList
      * @return die archivierte TaskList
      */
-    TaskList archiveTaskListIfTasksCompleted(UUID taskListId);
-
-    /**
-     * Prüft, ob eine TaskList archiviert werden darf.
-     *
-     * <p>
-     * Cross-Aggregate-Logik, weil:
-     * <ul>
-     *     <li>die Entscheidung vom Zustand der Tasks abhängt</li>
-     *     <li>aber das Archivieren selbst eine Operation des TaskList-Aggregats ist</li>
-     * </ul>
-     * </p>
-     *
-     * <p>
-     * Diese Methode wird häufig vom Controller oder anderen Services genutzt,
-     * um UI- oder API-Entscheidungen zu treffen (z.B. "Archivieren"-Button anzeigen).
-     * </p>
-     *
-     * @param taskListId ID der TaskList
-     * @return true, wenn alle Tasks abgeschlossen sind
-     */
-    boolean isArchivable(UUID taskListId);
+    TaskList archiveTaskList(UUID taskListId);
 }

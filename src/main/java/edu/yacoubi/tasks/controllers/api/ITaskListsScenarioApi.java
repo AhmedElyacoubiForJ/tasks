@@ -51,24 +51,6 @@ public interface ITaskListsScenarioApi extends IBaseTaskListsApi {
     ResponseEntity<APIResponse<List<TaskListDto>>> getArchivedTaskLists();
 
     @Operation(
-            summary = "Prüfen ob TaskList archivierbar ist",
-            description = "Überprüft, ob alle Tasks abgeschlossen sind und die TaskList archiviert werden kann."
-    )
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Archivierbarkeit erfolgreich geprüft",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = APIResponse.class))),
-            @ApiResponse(responseCode = "404", description = "TaskList nicht gefunden",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = APIResponse.class))),
-            @ApiResponse(responseCode = "500", description = "Interner Serverfehler",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = APIResponse.class)))
-    })
-    @GetMapping(value = "/tasklists/{id}/archivable", produces = "application/json")
-    ResponseEntity<APIResponse<Boolean>> isArchivable(@Parameter(description = "UUID der TaskList") UUID id);
-
-    @Operation(
             summary = "TaskList archivieren",
             description = "Archiviert eine TaskList, wenn alle enthaltenen Tasks abgeschlossen sind."
     )

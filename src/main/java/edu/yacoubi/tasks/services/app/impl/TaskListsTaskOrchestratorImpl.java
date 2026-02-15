@@ -19,6 +19,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Implementierung des Orchestrators für Cross-Aggregate-UseCases, die sowohl das TaskList- als auch
@@ -136,26 +137,11 @@ public class TaskListsTaskOrchestratorImpl implements ITaskListsTaskOrchestrator
     return updated;
   }
 
-
-  // -----------------------------------------------------------------------------------------
-  // ✔ TaskList ist das Aggregate Root
-  //   Nur das Root darf entscheiden, ob ein Task entfernt werden darf.
-  //
-  // ✔ Zugehörigkeit wird im Orchestrator geprüft
-  //   Weil es ein Use‑Case‑Schritt ist, keine Domain‑Regel.
-  //
-  // ✔ Domain führt die eigentliche Operation aus
-  //   taskList.removeTask(task) ist die fachliche Aktion.
-  //
-  // ✔ Persistenz erfolgt über das Root
-  //   taskListService.updateTaskList(taskList) ist korrekt.
-  //
-  // ✔ Orchestrator enthält keine Business‑Logik
-  //   Er steuert nur den Ablauf und ruft Domain-Methoden auf.
-  // -----------------------------------------------------------------------------------------
-
   @Override
-  public void deleteTaskInList(final UUID taskListId, final UUID taskId) {
+  public void deleteTaskInList(
+          final UUID taskListId,
+          final UUID taskId
+  ) {
 
     log.debug("Orchestrator: Lösche Task {} in TaskList {}", taskId, taskListId);
 
@@ -165,70 +151,92 @@ public class TaskListsTaskOrchestratorImpl implements ITaskListsTaskOrchestrator
     // 2. Task laden
     final Task task = taskService.getTaskOrThrow(taskId);
 
-    // 3. Zugehörigkeit prüfen (fachliche Regel)
+    // 3. Zugehörigkeit prüfen
     if (!taskList.ownsTask(task)) {
       throw new DomainException("Task does not belong to TaskList");
     }
 
-    // 4. Domain-Operation ausführen
+    // 4. Domain-Operation
     taskList.removeTask(task);
 
-    // 5. Persistieren (Aggregate Root speichern)
-    // TODO
-    // taskListService.updateTaskList(taskList);
+    // 5. Persistieren des Aggregate Roots
+    taskListService.save(taskList);
 
     log.debug("Orchestrator: Task {} in TaskList {} erfolgreich gelöscht", taskId, taskListId);
   }
 
-  // DDD-Konform DONE
+//  @Override
+//  @org.springframework.transaction.annotation.Transactional
+//  public TaskList archiveTaskList(final UUID taskListId) {
+//    log.info(
+//            "🎯 Orchestrator: 📦 Versuche TaskList {} zu archivieren (nur wenn alle Tasks abgeschlossen sind)",
+//            taskListId
+//    );
+//
+//    // 1. TaskList laden → ✔️ korrekt
+//    // Der Orchestrator darf die Aggregate Root laden.
+//    final TaskList taskList = taskListService.getTaskListOrThrow(taskListId);
+//
+//    // ❌ 2. Tasks laden → DDD-Verstoß
+//    // Der Orchestrator darf NICHT Tasks separat laden.
+//    // Tasks gehören zum TaskList-Aggregat und müssen über taskList.getTasks() kommen.
+//    // Außerdem: TaskService im Orchestrator ist ein Architekturfehler.
+//    final List<TaskSummaryDto> tasks = taskService.findByTaskListId(taskListId);
+//
+//    // ❌ 3. Prüfen, ob alle Tasks abgeschlossen sind → Domain-Logik im Orchestrator
+//    // Diese Regel gehört 100% in die Domain (TaskList.isArchivable()).
+//    // Der Orchestrator darf KEINE fachlichen Regeln implementieren.
+//    final boolean allCompleted = tasks.stream()
+//            .allMatch(t -> t.status() == TaskStatus.COMPLETED);
+//
+//    if (!allCompleted) {
+//      // ❌ Orchestrator entscheidet über Business-Regel
+//      // Das ist Aufgabe der Domain (taskList.archive() sollte selbst prüfen).
+//      log.warn(
+//              "❌ TaskList {} kann nicht archiviert werden: Es existieren noch offene Tasks",
+//              taskListId);
+//      throw new IllegalStateException(
+//              "TaskList kann nicht archiviert werden, da noch offene Tasks existieren.");
+//    }
+//
+//    // ✔️ 4. Domain-Methode aufrufen → richtig
+//    // ABER: Die Domain-Methode sollte SELBST prüfen, ob archivierbar.
+//    // Der Orchestrator sollte NICHT vorher prüfen.
+//    taskList.archive();
+//
+//    // ❌ 5. Über Aggregat-Service speichern (NICHT Repository!) → Idee gut, Umsetzung falsch
+//    // ABER: Der Orchestrator darf KEINE DTOs bauen.
+//    // UpdateTaskListDto ist ein API-Objekt und hat im Orchestrator nichts verloren.
+//    final UpdateTaskListDto dto = new UpdateTaskListDto(
+//            taskList.getTitle(),
+//            taskList.getDescription(),
+//            taskList.getStatus()
+//    );
+//
+//    // ❌ 6. updateTaskList() aufrufen → falscher UseCase
+//    // Der Orchestrator soll einfach taskListService.save(taskList) aufrufen.
+//    // updateTaskList() ist ein API-UseCase, kein Aggregat-Speichermechanismus.
+//    final TaskList archived = taskListService.updateTaskList(taskListId, dto);
+//
+//    log.info("✅ Orchestrator: TaskList {} erfolgreich archiviert", taskListId);
+//    return archived;
+//  }
+
   @Override
-  @org.springframework.transaction.annotation.Transactional
-  public TaskList archiveTaskListIfTasksCompleted(UUID taskListId) {
-    log.info(
-            "🎯 Orchestrator: 📦 Versuche TaskList {} zu archivieren (nur wenn alle Tasks abgeschlossen sind)",
-            taskListId);
+  @Transactional
+  public TaskList archiveTaskList(UUID taskListId) {
+    log.info("🎯 Orchestrator: Archivieren der TaskList {}", taskListId);
 
-    // 1. TaskList laden
-    TaskList taskList = taskListService.getTaskListOrThrow(taskListId);
+    TaskList list = taskListService.getTaskListOrThrow(taskListId);
 
-    // 2. Tasks laden
-    List<TaskSummaryDto> tasks = taskService.findByTaskListId(taskListId);
+    // Domain entscheidet, ob archivieren erlaubt ist
+    list.archive();
 
-    // 3. Prüfen, ob alle Tasks abgeschlossen sind
-    boolean allCompleted = tasks.stream().allMatch(t -> t.status() == TaskStatus.COMPLETED);
-
-    if (!allCompleted) {
-      log.warn(
-              "❌ TaskList {} kann nicht archiviert werden: Es existieren noch offene Tasks",
-              taskListId);
-      throw new IllegalStateException(
-              "TaskList kann nicht archiviert werden, da noch offene Tasks existieren.");
-    }
-
-    // 4. Domain-Methode aufrufen
-    taskList.archive();
-
-    // 5. Über Aggregat-Service speichern (NICHT Repository!)
-    UpdateTaskListDto dto =
-            new UpdateTaskListDto(taskList.getTitle(), taskList.getDescription(), taskList.getStatus());
-
-    TaskList archived = taskListService.updateTaskList(taskListId, dto);
+    // Aggregat speichern
+    TaskList saved = taskListService.save(list);
 
     log.info("✅ Orchestrator: TaskList {} erfolgreich archiviert", taskListId);
-    return archived;
-  }
 
-  @Override
-  public boolean isArchivable(UUID taskListId) {
-    log.info("🎯 Orchestrator: Prüfe, ob TaskList {} archivierbar ist", taskListId);
-
-    // 1. TaskList existiert?
-    taskListService.getTaskListOrThrow(taskListId);
-
-    // 2. Tasks laden
-    List<TaskSummaryDto> tasks = taskService.findByTaskListId(taskListId);
-
-    // 3. Regel: Nur archivierbar, wenn alle Tasks abgeschlossen sind
-    return tasks.stream().allMatch(t -> t.status() == TaskStatus.COMPLETED);
+    return saved;
   }
 }

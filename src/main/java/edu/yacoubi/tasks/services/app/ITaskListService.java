@@ -157,12 +157,7 @@ public interface ITaskListService {
    *
    * @throws EntityNotFoundException wenn keine TaskList mit der angegebenen UUID existiert
    */
-  // Diese Methode gehört korrekt in den Aggregat‑Service, weil: Aktivieren betrifft nur TaskList
-  //
-  // Keine Cross‑Aggregate‑Regel
-  //
-  // Keine Task‑Prüfung
-  //
-  // Reiner Zustandswechsel → Domain‑Logik
   TaskList activateTaskList(UUID id);
+
+  TaskList save(TaskList taskList);
 }

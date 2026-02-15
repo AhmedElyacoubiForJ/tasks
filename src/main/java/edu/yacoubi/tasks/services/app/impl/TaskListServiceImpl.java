@@ -18,6 +18,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -58,43 +59,6 @@ public class TaskListServiceImpl implements ITaskListService {
         log.info("✅ Service: {} archivierte TaskLists gefunden", taskLists.size());
         return taskLists;
     }
-
-//    @Override
-//    public TaskList archiveTaskList(final UUID taskListId) {
-//        log.info("📋 Service: Archivieren der TaskList {}", taskListId);
-//
-//        final TaskList taskList = taskListRepository.findById(taskListId)
-//                .orElseThrow(() -> logAndThrowNotFound(taskListId));
-//
-//        final boolean allCompleted = isArchivable(taskListId);
-//
-//        if (allCompleted) {
-//            taskList.setStatus(TaskListStatus.ARCHIVED);
-//            taskList.setUpdated(LocalDateTime.now());
-//
-//            final TaskList saved = taskListRepository.save(taskList);
-//
-//            log.info("✅ Service: TaskList {} erfolgreich archiviert", taskListId);
-//            return saved;
-//        } else {
-//            log.warn("⚠️ Service: TaskList {} konnte nicht archiviert werden (Tasks nicht abgeschlossen)", taskListId);
-//            throw new IllegalStateException("Cannot archive TaskList: not all tasks are completed");
-//        }
-//    }
-//
-//    @Override
-//    public boolean isArchivable(UUID taskListId) {
-//        log.info("📋 Service: Prüfen ob TaskList {} archivierbar ist", taskListId);
-//
-//        TaskList taskList = taskListRepository.findById(taskListId)
-//                .orElseThrow(() -> logAndThrowNotFound(taskListId));
-//
-//        boolean archivable = taskList.getTasks().stream()
-//                .allMatch(task -> task.getStatus() == TaskStatus.CLOSED);
-//
-//        log.info("✅ Service: TaskList {} archivierbar = {}", taskListId, archivable);
-//        return archivable;
-//    }
 
     @Override
     public Page<TaskListDto> getFilteredTaskLists(final TaskListFilterDto params) {
@@ -187,23 +151,11 @@ public class TaskListServiceImpl implements ITaskListService {
         return updated;
     }
 
-
-
-//    Merge-logik im service für patch
-//    Damit PATCH korrekt funktioniert, eine kurze, robuste Merge-Logik:
-//    public TaskList patchTaskList(final TaskList existing, final PatchTaskListDto dto) {
-//        if (dto.title() != null) {
-//            final var trimmed = dto.title().trim();
-//            if (trimmed.isEmpty()) {
-//                throw new IllegalArgumentException("Titel darf nicht leer sein");
-//            }
-//            existing.setTitle(trimmed);
-//        }
-//        if (dto.description() != null) {
-//            existing.setDescription(dto.description().trim());
-//        }
-//        return existing;
-//    }
+    @Transactional
+    public TaskList save(final TaskList taskList) {
+        log.debug("TaskListService: Speichere TaskList {}", taskList.getId());
+        return taskListRepository.save(taskList);
+    }
 
     /**
      * Private Hilfsmethode für konsistentes Logging + Exception Handling
