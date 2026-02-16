@@ -20,3 +20,19 @@
 ## 🧬 JPA-Models Analyse
 → [README](./jpa-models-analyse/README.md)  
 → [TODOs](./jpa-models-analyse/index.md)
+
+---
+
+## 🧩 DDD-Guideline (Tasks-Projekt)
+→ [README](./DDD‑Guideline/README.md)  
+→ [Index / Navigation](./DDD‑Guideline/index.md)
+
+### Inhalte
+- DDD für Dummies
+- DDD für Juniors
+- DDD für Fortgeschrittene
+- DDD für Experten
+- DDD Humor-Version
+- DDD Checkliste
+- DDD One-Pager
+- DDD Architektur-Diagramm  

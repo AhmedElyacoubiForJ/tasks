@@ -12,4 +12,4 @@ Diese Sammlung enthält technische Rezepte, charmante Menüs und tiefgehende Ged
 - ⚙️ DevOps-Ecosystem – CI/CD, Profile & Tools
 - 🏗️ Architektur – Gedanken zur Produktivreise
 - 🧬 JPA-Models Analyse – Reflektion und Optimierung der Datenmodelle
-
+- 🧩 DDD-Guideline – Domain-Driven Design für das Tasks-Projekt (mehrstufig, von Dummies bis Enterprise)
