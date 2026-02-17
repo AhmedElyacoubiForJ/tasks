@@ -1,4 +1,4 @@
-package edu.yacoubi.tasks.htmxdemos.config;
+package edu.yacoubi.tasks.config;
 
 import nz.net.ultraq.thymeleaf.layoutdialect.LayoutDialect;
 import org.springframework.context.annotation.Bean;
