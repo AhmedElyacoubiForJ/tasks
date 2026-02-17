@@ -4,7 +4,7 @@ import edu.yacoubi.tasks.domain.dto.request.tasklist.CreateTaskListDto;
 import edu.yacoubi.tasks.domain.dto.request.tasklist.UpdateTaskListDto;
 import edu.yacoubi.tasks.domain.dto.response.tasklist.TaskListDto;
 import edu.yacoubi.tasks.domain.entities.TaskList;
-import edu.yacoubi.tasks.mappers.TaskListMapper;
+import edu.yacoubi.tasks.mappers.TaskListTransformer;
 import edu.yacoubi.tasks.services.app.ITaskListService;
 import edu.yacoubi.tasks.services.ui.IProgressColorService;
 import jakarta.validation.Valid;
@@ -30,14 +30,13 @@ import java.util.UUID;
 public class TaskListViewController {
 
     private final ITaskListService taskListService;
-    private final TaskListMapper taskListMapper;
     private final IProgressColorService progressColorService;
 
     @GetMapping()
     public String showTaskLists(Model model) {
         List<TaskList> lists = taskListService.getAllTaskLists();
         List<TaskListDto> dtos = lists.stream()
-                .map(taskListMapper::toTaskListDto)
+                .map(TaskListTransformer.TASKLIST_TO_DTO::transform)
                 .toList();
 
         model.addAttribute("taskLists", dtos);
@@ -78,7 +77,11 @@ public class TaskListViewController {
     @GetMapping("/{id}")
     public String getDisplayRow(@PathVariable UUID id, Model model) {
         log.info("❌ GET /tasklists/{} aufgerufen", id);
-        TaskListDto dto = taskListMapper.toTaskListDto(taskListService.getTaskListOrThrow(id));
+
+        TaskListDto dto = TaskListTransformer.TASKLIST_TO_DTO.transform(
+                taskListService.getTaskListOrThrow(id)
+        );
+
         model.addAttribute("taskList", dto);
         model.addAttribute("progressColorService", progressColorService);
         return "tasklists/fragments/tasklist-row :: row";
@@ -89,7 +92,10 @@ public class TaskListViewController {
     public String getEditRow(@PathVariable UUID id, Model model) {
         log.info("🔧 GET /tasklists/{}/edit aufgerufen", id);
         TaskList taskList = taskListService.getTaskListOrThrow(id);
-        TaskListDto dto = taskListMapper.toTaskListDto(taskList);
+        TaskListDto dto = TaskListTransformer.TASKLIST_TO_DTO.transform(
+                taskListService.getTaskListOrThrow(id)
+        );
+
         model.addAttribute("taskList", dto);
         model.addAttribute("progressColorService", progressColorService);
         return "tasklists/fragments/tasklist-edit-row :: row";
@@ -108,7 +114,8 @@ public class TaskListViewController {
         }
 
         TaskList updated = taskListService.updateTaskList(id, dto);
-        TaskListDto updatedDto = taskListMapper.toTaskListDto(updated);
+        TaskListDto updatedDto = TaskListTransformer.TASKLIST_TO_DTO.transform(updated);
+
 
         model.addAttribute("taskList", updatedDto);
         model.addAttribute("progressColorService", progressColorService);
@@ -121,7 +128,7 @@ public class TaskListViewController {
 
         List<Map<String, String>> formattedTaskLists = taskListService.getAllTaskLists().stream()
                 .map(taskList -> {
-                    TaskListDto dto = taskListMapper.toTaskListDto(taskList);
+                    TaskListDto dto = TaskListTransformer.TASKLIST_TO_DTO.transform(taskList);
                     Map<String, String> map = new LinkedHashMap<>();
                     map.put("id", dto.id().toString());
                     map.put("title", dto.title());

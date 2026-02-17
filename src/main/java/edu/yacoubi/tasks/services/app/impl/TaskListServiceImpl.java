@@ -6,7 +6,8 @@ import edu.yacoubi.tasks.domain.dto.request.tasklist.UpdateTaskListDto;
 import edu.yacoubi.tasks.domain.dto.response.tasklist.TaskListDto;
 import edu.yacoubi.tasks.domain.entities.TaskList;
 import edu.yacoubi.tasks.domain.entities.TaskListStatus;
-import edu.yacoubi.tasks.mappers.TaskListMapper;
+import edu.yacoubi.tasks.mappers.TaskListTransformer;
+import edu.yacoubi.tasks.mappers.TransformerUtil;
 import edu.yacoubi.tasks.repositories.TaskListRepository;
 import edu.yacoubi.tasks.services.app.ITaskListService;
 import jakarta.persistence.EntityNotFoundException;
@@ -26,7 +27,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class TaskListServiceImpl implements ITaskListService {
 
     private final TaskListRepository taskListRepository;
-    private final TaskListMapper mapper;
 
     @Override
     public List<TaskList> getAllTaskLists() {
@@ -63,13 +63,17 @@ public class TaskListServiceImpl implements ITaskListService {
     @Override
     public Page<TaskListDto> getFilteredTaskLists(final TaskListFilterDto params) {
         final Pageable pageable = PageRequest.of(params.page(), params.size());
+
         if (params.query() != null && !params.query().isBlank()) {
             return taskListRepository.findByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCase(
                     params.query(), params.query(), pageable
-            ).map(mapper::toTaskListDto);
-        }
+            ).map(taskList -> TransformerUtil.transform(TaskListTransformer.TASKLIST_TO_DTO, taskList));
+      // .map(TaskListTransformer.TASKLIST_TO_DTO::transform)
 
-        return taskListRepository.findAll(pageable).map(mapper::toTaskListDto);
+    }
+
+        return taskListRepository.findAll(pageable)
+                .map(taskList -> TransformerUtil.transform(TaskListTransformer.TASKLIST_TO_DTO, taskList));
     }
 
     @Override

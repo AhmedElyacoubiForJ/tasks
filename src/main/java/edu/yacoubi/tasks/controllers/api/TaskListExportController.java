@@ -1,7 +1,7 @@
 package edu.yacoubi.tasks.controllers.api;
 
 import edu.yacoubi.tasks.domain.dto.response.tasklist.TaskListDto;
-import edu.yacoubi.tasks.mappers.TaskListMapper;
+import edu.yacoubi.tasks.mappers.TaskListTransformer;
 import edu.yacoubi.tasks.services.app.ITaskListService;
 import edu.yacoubi.tasks.services.export.IExportService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -24,7 +24,6 @@ public class TaskListExportController {
 
     private final ITaskListService taskListService;
     private final IExportService<TaskListDto> pdfExportService;
-    private final TaskListMapper taskListMapper;
 
     @Operation(
             summary = "📄 Exportiere alle Task-Listen als PDF",
@@ -35,7 +34,7 @@ public class TaskListExportController {
     public ResponseEntity<byte[]> exportAsPdf() {
         List<TaskListDto> taskLists = taskListService.getAllTaskLists()
                 .stream()
-                .map(taskListMapper::toTaskListDto)
+                .map(TaskListTransformer.TASKLIST_TO_DTO::transform)
                 .toList();
         byte[] pdf = pdfExportService.exportAsPdf(taskLists);
 

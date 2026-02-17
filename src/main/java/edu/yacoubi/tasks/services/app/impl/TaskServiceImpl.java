@@ -4,7 +4,6 @@ import edu.yacoubi.tasks.domain.dto.response.task.TaskSummaryDto;
 import edu.yacoubi.tasks.domain.entities.Task;
 import edu.yacoubi.tasks.domain.entities.TaskPriority;
 import edu.yacoubi.tasks.domain.entities.TaskStatus;
-import edu.yacoubi.tasks.mappers.TaskMapper;
 import edu.yacoubi.tasks.mappers.TaskTransformer;
 import edu.yacoubi.tasks.mappers.TransformerUtil;
 import edu.yacoubi.tasks.repositories.TaskRepository;
@@ -24,7 +23,6 @@ import org.springframework.stereotype.Service;
 public class TaskServiceImpl implements ITaskService {
 
   private final TaskRepository taskRepository;
-  private final TaskMapper mapper;
   private final EntityValidator entityValidator;
 
   @Override
@@ -134,6 +132,7 @@ public class TaskServiceImpl implements ITaskService {
 
     log.info("::changePriority erfolgreich abgeschlossen für taskId={}", saved.getId());
 
-    return mapper.toSummaryDto(saved);
+    return TaskTransformer.TASK_TO_SUMMARY.transform(saved);
+    // return TransformerUtil.transform(TaskTransformer.TASK_TO_SUMMARY, saved);
   }
 }
