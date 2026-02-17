@@ -24,7 +24,6 @@ db-config/container/dev/.env.dev
 db-config/container/test/.env.test
 db-config/container/prod/.env.prod
 db-config/local/prod/.env
-htmx/
 # git rm -r --cached -f makefiles/
 makefiles/
 
