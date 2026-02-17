@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.*;
         name = "Tasks in TaskLists",
         description = "Endpunkte für Tasks innerhalb einer TaskList"
 )
-public interface ITaskListsTasksApi extends IBaseTaskListsApi {
+public interface ITaskListsTasksApi extends IApiPrefix {
 
     @Operation(
             summary = "Alle Tasks einer TaskList abrufen",
@@ -95,7 +95,7 @@ public interface ITaskListsTasksApi extends IBaseTaskListsApi {
     )
     ResponseEntity<APIResponse<TaskSummaryDto>> createTaskInList(
             @Parameter(description = "UUID der TaskList", required = true)
-            @PathVariable UUID taskListId,
+            @PathVariable("taskListId") UUID taskListId,
             @Parameter(description = "Daten für neuen Task")
             @Valid @RequestBody CreateTaskDto dto
     );
@@ -137,9 +137,9 @@ public interface ITaskListsTasksApi extends IBaseTaskListsApi {
     )
     ResponseEntity<APIResponse<TaskSummaryDto>> updateTaskInList(
             @Parameter(description = "UUID der TaskList", required = true)
-            @PathVariable UUID taskListId,
+            @PathVariable("taskListId") UUID taskListId,
             @Parameter(description = "UUID des Tasks", required = true)
-            @PathVariable UUID taskId,
+            @PathVariable("taskId") UUID taskId,
             @Parameter(description = "Daten für Task-Update")
             @Valid @RequestBody FullUpdateTaskDto dto
     );
@@ -181,11 +181,9 @@ public interface ITaskListsTasksApi extends IBaseTaskListsApi {
     )
     ResponseEntity<APIResponse<TaskSummaryDto>> patchTaskInList(
             @Parameter(description = "UUID der TaskList", required = true)
-            @PathVariable UUID taskListId,
-
+            @PathVariable("taskListId") UUID taskListId,
             @Parameter(description = "UUID des Tasks", required = true)
-            @PathVariable UUID taskId,
-
+            @PathVariable("taskId") UUID taskId,
             @Parameter(description = "Daten für partielle Aktualisierung des Tasks")
             @Valid @RequestBody PatchTaskDto dto
     );
@@ -219,8 +217,8 @@ public interface ITaskListsTasksApi extends IBaseTaskListsApi {
     )
     ResponseEntity<APIResponse<Void>> deleteTaskInList(
             @Parameter(description = "UUID der TaskList", required = true)
-            @PathVariable UUID taskListId,
+            @PathVariable("taskListId") UUID taskListId,
             @Parameter(description = "UUID des Tasks", required = true)
-            @PathVariable UUID taskId
+            @PathVariable("taskId") UUID taskId
     );
 }

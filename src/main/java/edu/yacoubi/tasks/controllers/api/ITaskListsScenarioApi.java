@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 
 import java.util.List;
@@ -23,7 +24,7 @@ import java.util.UUID;
         name = "TaskLists – Szenarien",
         description = "Spezial- und Szenario-Endpunkte wie Archivierung oder Statusfilter"
 )
-public interface ITaskListsScenarioApi extends IBaseTaskListsApi {
+public interface ITaskListsScenarioApi extends IApiPrefix {
 
     @Operation(
             summary = "Aktive TaskLists abrufen",
@@ -74,5 +75,8 @@ public interface ITaskListsScenarioApi extends IBaseTaskListsApi {
                             schema = @Schema(implementation = APIResponse.class)))
     })
     @PutMapping(value = "/tasklists/{id}/archive", produces = "application/json")
-    ResponseEntity<APIResponse<TaskListDto>> archiveTaskList(@Parameter(description = "UUID der TaskList") UUID id);
+    ResponseEntity<APIResponse<TaskListDto>> archiveTaskList(
+            @Parameter(description = "UUID der TaskList")
+            @PathVariable("id") UUID id
+    );
 }

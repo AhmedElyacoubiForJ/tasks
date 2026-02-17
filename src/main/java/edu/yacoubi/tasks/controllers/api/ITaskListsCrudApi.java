@@ -22,7 +22,7 @@ import java.util.UUID;
         name = "TaskLists – CRUD",
         description = "Basisoperationen für TaskLists: erstellen, abrufen, aktualisieren, löschen"
 )
-public interface ITaskListsCrudApi extends IBaseTaskListsApi {
+public interface ITaskListsCrudApi extends IApiPrefix {
 
     @Operation(
             summary = "Alle TaskLists abrufen",
