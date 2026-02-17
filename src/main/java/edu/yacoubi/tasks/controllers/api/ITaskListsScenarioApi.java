@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -18,6 +19,10 @@ import java.util.UUID;
  * Szenario-Endpunkte für TaskLists (z. B. Archivierung, Status-Prüfung).
  * Erbt zentrale Metadaten aus IBaseTaskListsApi.
  */
+@Tag(
+        name = "TaskLists – Szenarien",
+        description = "Spezial- und Szenario-Endpunkte wie Archivierung oder Statusfilter"
+)
 public interface ITaskListsScenarioApi extends IBaseTaskListsApi {
 
     @Operation(

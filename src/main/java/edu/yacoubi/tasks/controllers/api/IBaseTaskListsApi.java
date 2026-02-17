@@ -8,10 +8,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
  * Enthält zentrale Metadaten wie den Hauptpfad und Swagger-Tag.
  */
 @RequestMapping(path = "/api")
-@Tag(
-        name = "TaskLists",
-        description = "REST-Endpunkte für TaskLists"
-)
+//@Tag(
+//        name = "TaskLists",
+//        description = "REST-Endpunkte für TaskLists"
+//)
 public interface IBaseTaskListsApi {
     // Keine Methoden – nur zentrale Annotationen
 }

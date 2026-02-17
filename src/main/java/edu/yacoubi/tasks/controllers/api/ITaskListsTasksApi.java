@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
@@ -20,6 +21,10 @@ import org.springframework.web.bind.annotation.*;
  * Subresource-Endpunkte für Tasks innerhalb einer TaskList.
  * Erbt zentrale Metadaten aus IBaseTaskListsApi.
  */
+@Tag(
+        name = "Tasks in TaskLists",
+        description = "Endpunkte für Tasks innerhalb einer TaskList"
+)
 public interface ITaskListsTasksApi extends IBaseTaskListsApi {
 
     @Operation(
