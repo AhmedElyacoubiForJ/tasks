@@ -1,21 +1,18 @@
 package edu.yacoubi.tasks.controllers.api;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import edu.yacoubi.tasks.exceptions.ApiErrorResponse;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
+@Getter
+@Setter
+@SuperBuilder
+@NoArgsConstructor @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Builder
 @Schema(description = "Standardisierte API-Antwortstruktur mit Erfolgs-/Fehlermeldung und Payload")
 public class APIResponse<T> {
 

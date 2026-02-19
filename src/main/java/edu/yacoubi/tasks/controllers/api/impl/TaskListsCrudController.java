@@ -1,8 +1,10 @@
 package edu.yacoubi.tasks.controllers.api.impl;
 
-import edu.yacoubi.tasks.controllers.api.APIResponse;
-import edu.yacoubi.tasks.controllers.api.ITaskListsCrudApi;
+import edu.yacoubi.tasks.controllers.api.contract.ITaskListsCrudApi;
 import edu.yacoubi.tasks.controllers.api.ResponseStatus;
+import edu.yacoubi.tasks.controllers.api.wrappers.APIResponseListTaskListDto;
+import edu.yacoubi.tasks.controllers.api.wrappers.APIResponseTaskListDto;
+import edu.yacoubi.tasks.controllers.api.wrappers.APIResponseVoid;
 import edu.yacoubi.tasks.domain.dto.request.tasklist.CreateTaskListDto;
 import edu.yacoubi.tasks.domain.dto.request.tasklist.UpdateTaskListDto;
 import edu.yacoubi.tasks.domain.dto.response.tasklist.TaskListDto;
@@ -30,17 +32,18 @@ public class TaskListsCrudController implements ITaskListsCrudApi {
     private final ITaskListService taskListService;
 
     @Override // 🎉 GET /tasklists — End‑to‑End Status: DDD-Konform
-    public ResponseEntity<APIResponse<List<TaskListDto>>> getAllTaskLists() {
+    public ResponseEntity<APIResponseListTaskListDto> getAllTaskLists() {
         log.info("📋 Abrufen aller TaskLists");
 
         List<TaskList> taskLists = taskListService.getAllTaskLists();
 
         log.debug("Gefundene TaskLists: {}", taskLists.size());
-        List<TaskListDto> dtos =
-                taskLists.stream().map(TaskListTransformer.TASKLIST_TO_DTO::transform).toList();
+        List<TaskListDto> dtos = taskLists.stream()
+                .map(TaskListTransformer.TASKLIST_TO_DTO::transform)
+                .toList();
 
-        APIResponse<List<TaskListDto>> response =
-                APIResponse.<List<TaskListDto>>builder()
+        APIResponseListTaskListDto response =
+                APIResponseListTaskListDto.builder()
                         .status(ResponseStatus.SUCCESS)
                         .statusCode(HttpStatus.OK.value())
                         .message("Alle TaskLists erfolgreich abgerufen")
@@ -53,7 +56,7 @@ public class TaskListsCrudController implements ITaskListsCrudApi {
     }
 
     @Override // 🎉 GET /tasklists/{id} — End‑to‑End Status: DDD-Konform
-    public ResponseEntity<APIResponse<TaskListDto>> getTaskList(final @PathVariable("id") UUID id) {
+    public ResponseEntity<APIResponseTaskListDto> getTaskList(final @PathVariable("id") UUID id) {
         log.info("📥 REST: Abrufen der TaskList mit ID {}", id);
 
         // 1. TaskList laden (wirft EntityNotFoundException → handled by RestExceptionHandler)
@@ -65,8 +68,8 @@ public class TaskListsCrudController implements ITaskListsCrudApi {
         final TaskListDto dto = TaskListTransformer.TASKLIST_TO_DTO.transform(taskList);
 
         // 3. API-Response bauen
-        final APIResponse<TaskListDto> response =
-                APIResponse.<TaskListDto>builder()
+        final APIResponseTaskListDto response =
+                APIResponseTaskListDto.builder()
                         .status(ResponseStatus.SUCCESS)
                         .statusCode(HttpStatus.OK.value())
                         .message("TaskList erfolgreich abgerufen")
@@ -79,7 +82,7 @@ public class TaskListsCrudController implements ITaskListsCrudApi {
     }
 
     @Override // 🎉 POST /tasklists — End‑to‑End Status: DDD-Konform
-    public ResponseEntity<APIResponse<TaskListDto>> createTaskList(
+    public ResponseEntity<APIResponseTaskListDto> createTaskList(
             @Valid @RequestBody CreateTaskListDto dto
     ) {
         log.info("🆕 REST: Erstellen einer neuen TaskList mit Titel: {}", dto.title());
@@ -93,8 +96,8 @@ public class TaskListsCrudController implements ITaskListsCrudApi {
         TaskListDto taskListDto = TaskListTransformer.TASKLIST_TO_DTO.transform(taskList);
 
         // 3. API-Response bauen
-        APIResponse<TaskListDto> response =
-                APIResponse.<TaskListDto>builder()
+        APIResponseTaskListDto response =
+                APIResponseTaskListDto.builder()
                         .status(ResponseStatus.SUCCESS)
                         .statusCode(HttpStatus.CREATED.value())
                         .message("TaskList erfolgreich erstellt")
@@ -107,7 +110,7 @@ public class TaskListsCrudController implements ITaskListsCrudApi {
     }
 
     @Override // 🎉 PUT /tasklists/{id} — End‑to‑End Status: DDD-Konform
-    public ResponseEntity<APIResponse<TaskListDto>> updateTaskList(
+    public ResponseEntity<APIResponseTaskListDto> updateTaskList(
             final UUID id,
             final UpdateTaskListDto dto
     ) {
@@ -123,8 +126,8 @@ public class TaskListsCrudController implements ITaskListsCrudApi {
                 TaskListTransformer.TASKLIST_TO_DTO.transform(updated);
 
         // 3. API-Response bauen
-        final APIResponse<TaskListDto> response =
-                APIResponse.<TaskListDto>builder()
+        final APIResponseTaskListDto response =
+                APIResponseTaskListDto.builder()
                         .status(ResponseStatus.SUCCESS)
                         .statusCode(HttpStatus.OK.value())
                         .message("TaskList erfolgreich aktualisiert")
@@ -137,7 +140,7 @@ public class TaskListsCrudController implements ITaskListsCrudApi {
     }
 
     @Override // 🎉 DELETE /tasklists/{id} — End‑to‑End Status: DDD-Konform
-    public ResponseEntity<APIResponse<Void>> deleteTaskList(final UUID id)
+    public ResponseEntity<APIResponseVoid> deleteTaskList(final UUID id)
     {
         log.info("🗑️ Löschen der TaskList mit ID: {}", id);
 
@@ -147,8 +150,8 @@ public class TaskListsCrudController implements ITaskListsCrudApi {
 
         log.debug("TaskList {} wurde erfolgreich aus der Datenbank entfernt", id);
 
-        APIResponse<Void> response =
-                APIResponse.<Void>builder()
+        APIResponseVoid response =
+                APIResponseVoid.builder()
                         .status(ResponseStatus.SUCCESS)
                         .statusCode(HttpStatus.OK.value())
                         .message("TaskList erfolgreich gelöscht")

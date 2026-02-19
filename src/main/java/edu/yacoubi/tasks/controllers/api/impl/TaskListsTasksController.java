@@ -1,6 +1,10 @@
 package edu.yacoubi.tasks.controllers.api.impl;
 
 import edu.yacoubi.tasks.controllers.api.*;
+import edu.yacoubi.tasks.controllers.api.contract.ITaskListsTasksApi;
+import edu.yacoubi.tasks.controllers.api.wrappers.APIResponseListTaskSummaryDto;
+import edu.yacoubi.tasks.controllers.api.wrappers.APIResponseTaskSummaryDto;
+import edu.yacoubi.tasks.controllers.api.wrappers.APIResponseVoid;
 import edu.yacoubi.tasks.domain.dto.request.task.CreateTaskDto;
 import edu.yacoubi.tasks.domain.dto.request.task.FullUpdateTaskDto;
 import edu.yacoubi.tasks.domain.dto.request.task.PatchTaskDto;
@@ -27,7 +31,7 @@ public class TaskListsTasksController implements ITaskListsTasksApi {
 
 
   @Override // 🎉 PATCH UPDATE ENDPOINT = DONE
-  public ResponseEntity<APIResponse<TaskSummaryDto>> patchTaskInList(
+  public ResponseEntity<APIResponseTaskSummaryDto> patchTaskInList(
           final UUID taskListId,
           final UUID taskId,
           final PatchTaskDto dto
@@ -37,8 +41,8 @@ public class TaskListsTasksController implements ITaskListsTasksApi {
     TaskSummaryDto updated =
             orchestrator.patchTaskInList(taskListId, taskId, dto);
 
-    APIResponse<TaskSummaryDto> response =
-            APIResponse.<TaskSummaryDto>builder()
+    APIResponseTaskSummaryDto response =
+            APIResponseTaskSummaryDto.builder()
                     .status(ResponseStatus.SUCCESS)
                     .statusCode(HttpStatus.OK.value())
                     .message("Task erfolgreich aktualisiert (PATCH)")
@@ -50,7 +54,7 @@ public class TaskListsTasksController implements ITaskListsTasksApi {
   }
 
   @Override // 🎉 GET /tasklists/{taskListId}/tasks — End‑to‑End Status: DDD-Konform
-  public ResponseEntity<APIResponse<List<TaskSummaryDto>>> getTasksByListId(final UUID id) {
+  public ResponseEntity<APIResponseListTaskSummaryDto> getTasksByListId(final UUID id) {
     log.info("📋 Abrufen aller Tasks für TaskList {}", id);
 
     // Service liefert bereits TaskSummaryDto → kein zusätzliches Mapping nötig
@@ -58,8 +62,8 @@ public class TaskListsTasksController implements ITaskListsTasksApi {
 
     log.debug("Gefundene Tasks für TaskList {}: {}", id, tasks.size());
 
-    APIResponse<List<TaskSummaryDto>> response =
-            APIResponse.<List<TaskSummaryDto>>builder()
+    APIResponseListTaskSummaryDto response =
+            APIResponseListTaskSummaryDto.builder()
                     .status(ResponseStatus.SUCCESS)
                     .statusCode(HttpStatus.OK.value())
                     .message("Tasks für TaskList erfolgreich abgerufen")
@@ -72,7 +76,7 @@ public class TaskListsTasksController implements ITaskListsTasksApi {
   }
 
   @Override // 🎉 POST /tasklists/{taskListId} — End‑to‑End Status: DDD-Konform
-  public ResponseEntity<APIResponse<TaskSummaryDto>> createTaskInList(
+  public ResponseEntity<APIResponseTaskSummaryDto> createTaskInList(
           final UUID taskListId,
           final CreateTaskDto dto
   ) {
@@ -83,8 +87,8 @@ public class TaskListsTasksController implements ITaskListsTasksApi {
 
     log.debug("Task nach Erstellung: {}", created);
 
-    APIResponse<TaskSummaryDto> response =
-            APIResponse.<TaskSummaryDto>builder()
+    APIResponseTaskSummaryDto response =
+            APIResponseTaskSummaryDto.builder()
                     .status(ResponseStatus.SUCCESS)
                     .statusCode(HttpStatus.CREATED.value())
                     .message("Task erfolgreich erstellt")
@@ -98,7 +102,7 @@ public class TaskListsTasksController implements ITaskListsTasksApi {
   }
 
   @Override // 🎉 PUT /tasklists/{taskListId} — End‑to‑End Status: DDD-Konform
-  public ResponseEntity<APIResponse<TaskSummaryDto>> updateTaskInList(
+  public ResponseEntity<APIResponseTaskSummaryDto> updateTaskInList(
           final UUID taskListId,
           final UUID taskId,
           final FullUpdateTaskDto dto
@@ -111,8 +115,8 @@ public class TaskListsTasksController implements ITaskListsTasksApi {
 
     log.debug("Task nach Full-Update: {}", updated);
 
-    APIResponse<TaskSummaryDto> response =
-            APIResponse.<TaskSummaryDto>builder()
+    APIResponseTaskSummaryDto response =
+            APIResponseTaskSummaryDto.builder()
                     .status(ResponseStatus.SUCCESS)
                     .statusCode(HttpStatus.OK.value())
                     .message("Task erfolgreich aktualisiert (Full Update)")
@@ -125,7 +129,7 @@ public class TaskListsTasksController implements ITaskListsTasksApi {
 
   // Controller → Orchestrator → Services → Domain → Persistenz → Transformer/Response
   @Override // DDD-Konform DONE
-  public ResponseEntity<APIResponse<Void>> deleteTaskInList(
+  public ResponseEntity<APIResponseVoid> deleteTaskInList(
           final UUID taskListId,
           final UUID taskId
   ) {
@@ -139,8 +143,8 @@ public class TaskListsTasksController implements ITaskListsTasksApi {
             taskListId
     );
 
-    APIResponse<Void> response =
-            APIResponse.<Void>builder()
+    APIResponseVoid response =
+            APIResponseVoid.builder()
                     .status(ResponseStatus.SUCCESS)
                     .statusCode(HttpStatus.OK.value()) // ← HTMX-kompatibel
                     .message("Task erfolgreich gelöscht")

@@ -1,4 +1,4 @@
-package edu.yacoubi.tasks.config;
+package edu.yacoubi.tasks.config.swagger;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;

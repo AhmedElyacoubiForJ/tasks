@@ -1,8 +1,10 @@
 package edu.yacoubi.tasks.controllers.api.impl;
 
 import edu.yacoubi.tasks.controllers.api.APIResponse;
-import edu.yacoubi.tasks.controllers.api.ITaskListsScenarioApi;
+import edu.yacoubi.tasks.controllers.api.contract.ITaskListsScenarioApi;
 import edu.yacoubi.tasks.controllers.api.ResponseStatus;
+import edu.yacoubi.tasks.controllers.api.wrappers.APIResponseListTaskListDto;
+import edu.yacoubi.tasks.controllers.api.wrappers.APIResponseTaskListDto;
 import edu.yacoubi.tasks.domain.dto.response.tasklist.TaskListDto;
 import edu.yacoubi.tasks.domain.entities.TaskList;
 import edu.yacoubi.tasks.mappers.TaskListTransformer;
@@ -27,7 +29,7 @@ public class TaskListsScenarioController implements ITaskListsScenarioApi {
     private final ITaskListsTaskOrchestrator orchestrator;
 
     @Override // DDD-Konform DONE
-    public ResponseEntity<APIResponse<List<TaskListDto>>> getActiveTaskLists() {
+    public ResponseEntity<APIResponseListTaskListDto> getActiveTaskLists() {
         log.info("📂 Abrufen aller aktiven TaskLists");
 
         List<TaskList> activeLists = taskListService.getActiveTaskLists();
@@ -38,8 +40,8 @@ public class TaskListsScenarioController implements ITaskListsScenarioApi {
                 .map(TaskListTransformer.TASKLIST_TO_DTO::transform)
                 .toList();
 
-        APIResponse<List<TaskListDto>> response =
-                APIResponse.<List<TaskListDto>>builder()
+        APIResponseListTaskListDto response =
+                APIResponseListTaskListDto.builder()
                         .status(ResponseStatus.SUCCESS)
                         .statusCode(HttpStatus.OK.value())
                         .message("Aktive TaskLists erfolgreich abgerufen")
@@ -52,7 +54,7 @@ public class TaskListsScenarioController implements ITaskListsScenarioApi {
     }
 
     @Override // DDD-Konform DONE
-    public ResponseEntity<APIResponse<List<TaskListDto>>> getArchivedTaskLists() {
+    public ResponseEntity<APIResponseListTaskListDto> getArchivedTaskLists() {
         log.info("📦 Abrufen aller archivierten TaskLists");
 
         List<TaskList> archivedLists = taskListService.getArchivedTaskLists();
@@ -63,8 +65,8 @@ public class TaskListsScenarioController implements ITaskListsScenarioApi {
                 .map(TaskListTransformer.TASKLIST_TO_DTO::transform)
                 .toList();
 
-        APIResponse<List<TaskListDto>> response =
-                APIResponse.<List<TaskListDto>>builder()
+        APIResponseListTaskListDto response =
+                APIResponseListTaskListDto.builder()
                         .status(ResponseStatus.SUCCESS)
                         .statusCode(HttpStatus.OK.value())
                         .message("Archivierte TaskLists erfolgreich abgerufen")
@@ -77,7 +79,7 @@ public class TaskListsScenarioController implements ITaskListsScenarioApi {
     }
 
     @Override
-    public ResponseEntity<APIResponse<TaskListDto>> archiveTaskList(final UUID id) {
+    public ResponseEntity<APIResponseTaskListDto> archiveTaskList(final UUID id) {
         log.info("📦 REST: Archivieren der TaskList mit ID {}", id);
 
         // 1. Orchestrator-UseCase ausführen
@@ -87,8 +89,8 @@ public class TaskListsScenarioController implements ITaskListsScenarioApi {
         final TaskListDto dto = TaskListTransformer.TASKLIST_TO_DTO.transform(archived);
 
         // 3. API-Response bauen
-        APIResponse<TaskListDto> response =
-                APIResponse.<TaskListDto>builder()
+        APIResponseTaskListDto response =
+                APIResponseTaskListDto.builder()
                         .status(ResponseStatus.SUCCESS)
                         .statusCode(HttpStatus.OK.value())
                         .message("TaskList erfolgreich archiviert")

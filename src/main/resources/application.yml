@@ -17,3 +17,9 @@ application:
 logging:
   interceptor:
     enabled: console  # Mögliche Werte: json oder console
+
+# Swagger‑UI Operationen sortieren
+springdoc:
+  swagger-ui:
+  operationsSorter: method
+

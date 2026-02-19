@@ -1,4 +1,4 @@
-package edu.yacoubi.tasks.controllers.api;
+package edu.yacoubi.tasks.controllers.api.contract;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 

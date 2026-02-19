@@ -1,4 +1,4 @@
-package edu.yacoubi.tasks.exceptions;
+package edu.yacoubi.tasks.controllers.api;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;

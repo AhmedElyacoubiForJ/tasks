@@ -33,14 +33,12 @@ paths:
       parameters:
       - name: taskListId
         in: path
-        description: UUID der TaskList
         required: true
         schema:
           type: string
           format: uuid
       - name: taskId
         in: path
-        description: UUID des Tasks
         required: true
         schema:
           type: string
@@ -52,42 +50,39 @@ paths:
               $ref: "#/components/schemas/FullUpdateTaskDto"
         required: true
       responses:
-        "400":
-          description: Ungültige Eingabe
+        "422":
+          description: Domain-Validierung fehlgeschlagen
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIResponse"
+                $ref: "#/components/schemas/APIResponseTaskSummaryDto"
+        "409":
+          description: Konflikt – Domainregel verletzt
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIResponseTaskSummaryDto"
         "200":
           description: Task erfolgreich aktualisiert
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIResponse"
-        "404":
-          description: Task oder TaskList nicht gefunden
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIResponse"
+                $ref: "#/components/schemas/APIResponseTaskSummaryDto"
     delete:
       tags:
       - Tasks in TaskLists
       summary: Task innerhalb einer TaskList löschen
-      description: "Löscht einen Task aus einer bestimmten TaskList. Gibt eine APIResponse\
-        \ zurück, die den Erfolg bestätigt."
+      description: Löscht einen Task aus einer bestimmten TaskList.
       operationId: deleteTaskInList
       parameters:
       - name: taskListId
         in: path
-        description: UUID der TaskList
         required: true
         schema:
           type: string
           format: uuid
       - name: taskId
         in: path
-        description: UUID des Tasks
         required: true
         schema:
           type: string
@@ -98,13 +93,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIResponse"
-        "404":
-          description: Task oder TaskList nicht gefunden
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIResponse"
+                $ref: "#/components/schemas/APIResponseVoid"
     patch:
       tags:
       - Tasks in TaskLists
@@ -115,14 +104,12 @@ paths:
       parameters:
       - name: taskListId
         in: path
-        description: UUID der TaskList
         required: true
         schema:
           type: string
           format: uuid
       - name: taskId
         in: path
-        description: UUID des Tasks
         required: true
         schema:
           type: string
@@ -139,19 +126,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIResponse"
-        "400":
-          description: Ungültige Eingabe
+                $ref: "#/components/schemas/APIResponseTaskSummaryDto"
+        "422":
+          description: Domain-Validierung fehlgeschlagen
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIResponse"
-        "404":
-          description: Task oder TaskList nicht gefunden
+                $ref: "#/components/schemas/APIResponseTaskSummaryDto"
+        "409":
+          description: Konflikt – Domainregel verletzt
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIResponse"
+                $ref: "#/components/schemas/APIResponseTaskSummaryDto"
   /api/tasklists/{id}:
     get:
       tags:
@@ -173,30 +160,16 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIResponse"
-        "500":
-          description: Interner Serverfehler
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIResponse"
-        "404":
-          description: TaskList nicht gefunden
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIResponse"
+                $ref: "#/components/schemas/APIResponseTaskListDto"
     put:
       tags:
       - TaskLists – CRUD
-      summary: TaskList vollständig aktualisieren (Title erforderlich)
-      description: Ersetzt die vorhandene TaskList vollständig. Title ist erforderlich;
-        Description optional.
+      summary: TaskList vollständig aktualisieren
+      description: Ersetzt die vorhandene TaskList vollständig.
       operationId: updateTaskList
       parameters:
       - name: id
         in: path
-        description: UUID der TaskList
         required: true
         schema:
           type: string
@@ -213,58 +186,27 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIResponse"
-        "500":
-          description: Interner Serverfehler
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIResponse"
-        "400":
-          description: Ungültige Eingabe (z. B. leerer Titel)
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIResponse"
-        "404":
-          description: TaskList nicht gefunden
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIResponse"
+                $ref: "#/components/schemas/APIResponseTaskListDto"
     delete:
       tags:
       - TaskLists – CRUD
-      summary: TaskList löschen anhand der UUID
-      description: Löscht eine bestehende TaskList. Gibt ein APIResponse<Void> zurück.
+      summary: TaskList löschen
+      description: Löscht eine bestehende TaskList.
       operationId: deleteTaskList
       parameters:
       - name: id
         in: path
-        description: UUID der TaskList
         required: true
         schema:
           type: string
           format: uuid
       responses:
         "200":
-          description: TaskList erfolgreich gelöscht
+          description: Task erfolgreich gelöscht
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIResponse"
-        "500":
-          description: Interner Serverfehler
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIResponse"
-        "404":
-          description: TaskList nicht gefunden
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIResponse"
+                $ref: "#/components/schemas/APIResponseVoid"
   /api/tasklists/{id}/archive:
     put:
       tags:
@@ -275,64 +217,50 @@ paths:
       operationId: archiveTaskList
       parameters:
       - name: id
-        in: query
+        in: path
         description: UUID der TaskList
         required: true
         schema:
           type: string
           format: uuid
       responses:
-        "500":
-          description: Interner Serverfehler
+        "422":
+          description: Domain-Validierung fehlgeschlagen
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIResponse"
+                $ref: "#/components/schemas/APIResponseTaskListDto"
+        "409":
+          description: Konflikt – Domainregel verletzt
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIResponseTaskListDto"
         "200":
           description: TaskList erfolgreich archiviert
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIResponse"
-        "400":
-          description: TaskList konnte nicht archiviert werden (Tasks nicht abgeschlossen)
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIResponse"
-        "404":
-          description: TaskList nicht gefunden
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIResponse"
+                $ref: "#/components/schemas/APIResponseTaskListDto"
   /api/tasklists:
     get:
       tags:
       - TaskLists – CRUD
       summary: Alle TaskLists abrufen
-      description: "Gibt eine Liste aller vorhandenen TaskLists zurück. Leere Liste,\
-        \ wenn keine vorhanden."
+      description: Gibt eine Liste aller vorhandenen TaskLists zurück.
       operationId: getAllTaskLists
       responses:
-        "500":
-          description: Interner Serverfehler
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIResponse"
         "200":
           description: Liste aller TaskLists
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIResponse"
+                $ref: "#/components/schemas/APIResponseListTaskListDto"
     post:
       tags:
       - TaskLists – CRUD
       summary: Neue TaskList erstellen
-      description: "Erstellt eine neue TaskList. Title ist erforderlich, Description\
-        \ optional."
+      description: Erstellt eine neue TaskList. Title ist erforderlich.
       operationId: createTaskList
       requestBody:
         content:
@@ -341,24 +269,12 @@ paths:
               $ref: "#/components/schemas/CreateTaskListDto"
         required: true
       responses:
-        "500":
-          description: Interner Serverfehler
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIResponse"
-        "400":
-          description: Ungültige Eingabe (z. B. fehlender oder leerer Titel)
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIResponse"
         "201":
           description: TaskList erfolgreich erstellt
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIResponse"
+                $ref: "#/components/schemas/APIResponseTaskListDto"
   /api/tasklists/{taskListId}/tasks:
     get:
       tags:
@@ -381,13 +297,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIResponse"
-        "404":
-          description: TaskList nicht gefunden
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIResponse"
+                $ref: "#/components/schemas/APIResponseListTaskSummaryDto"
     post:
       tags:
       - Tasks in TaskLists
@@ -397,7 +307,6 @@ paths:
       parameters:
       - name: taskListId
         in: path
-        description: UUID der TaskList
         required: true
         schema:
           type: string
@@ -414,61 +323,35 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIResponse"
-        "400":
-          description: Ungültige Eingabe
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIResponse"
-        "404":
-          description: TaskList nicht gefunden
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIResponse"
+                $ref: "#/components/schemas/APIResponseTaskSummaryDto"
   /api/tasklists/archived:
     get:
       tags:
       - TaskLists – Szenarien
       summary: Archivierte TaskLists abrufen
-      description: "Gibt eine Liste aller archivierten TaskLists zurück. Leere Liste,\
-        \ wenn keine vorhanden."
+      description: Gibt eine Liste aller archivierten TaskLists zurück.
       operationId: getArchivedTaskLists
       responses:
-        "500":
-          description: Interner Serverfehler
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIResponse"
         "200":
           description: Liste aller archivierten TaskLists
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIResponse"
+                $ref: "#/components/schemas/APIResponseListTaskListDto"
   /api/tasklists/active:
     get:
       tags:
       - TaskLists – Szenarien
       summary: Aktive TaskLists abrufen
-      description: "Gibt eine Liste aller aktiven TaskLists zurück. Leere Liste, wenn\
-        \ keine vorhanden."
+      description: Gibt eine Liste aller aktiven TaskLists zurück.
       operationId: getActiveTaskLists
       responses:
-        "500":
-          description: Interner Serverfehler
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIResponse"
         "200":
           description: Liste aller aktiven TaskLists
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIResponse"
+                $ref: "#/components/schemas/APIResponseListTaskListDto"
 components:
   schemas:
     FullUpdateTaskDto:
@@ -516,8 +399,9 @@ components:
           - HIGH
           - MEDIUM
           - LOW
-      description: Daten für Task-Update
-    APIResponse:
+      description: DTO für ein vollständiges Update einer bestehenden Aufgabe (Full
+        Update / PUT)
+    APIResponseTaskSummaryDto:
       type: object
       properties:
         status:
@@ -542,14 +426,12 @@ components:
           items:
             $ref: "#/components/schemas/ApiErrorResponse"
         data:
-          type: object
-          description: Antwortdaten bei erfolgreicher Anfrage
+          $ref: "#/components/schemas/TaskSummaryDto"
         timestamp:
           type: string
           description: Zeitstempel der Antwort
           format: date-time
-      description: Standardisierte API-Antwortstruktur mit Erfolgs-/Fehlermeldung
-        und Payload
+      description: APIResponse mit TaskSummaryDto als Payload
     ApiErrorResponse:
       type: object
       properties:
@@ -563,6 +445,48 @@ components:
           description: Fehlermeldung
           example: Ein unerwarteter Fehler ist aufgetreten
       description: Fehlermeldung als API-Antwort
+    TaskSummaryDto:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID der Aufgabe
+          format: uuid
+          example: 639de273-4ad7-4367-8771-37b6f4ee030b
+        title:
+          type: string
+          description: Titel der Aufgabe
+          example: Swagger konfigurieren
+        description:
+          type: string
+          description: Beschreibung der Aufgabe
+          example: Swagger-Dokumentation für Task-Endpunkte erstellen
+        dueDate:
+          type: string
+          description: Fälligkeitsdatum der Aufgabe
+          format: date-time
+        priority:
+          type: string
+          description: Priorität der Aufgabe
+          example: HIGH
+          enum:
+          - HIGH
+          - MEDIUM
+          - LOW
+        status:
+          type: string
+          description: Status der Aufgabe
+          example: OPEN
+          enum:
+          - OPEN
+          - IN_PROGRESS
+          - COMPLETED
+        taskListId:
+          type: string
+          description: ID der zugehörigen Task-Liste
+          format: uuid
+          example: 640eb884-723b-408a-869d-59b38ca44b84
+      description: Zusammenfassende Informationen zu einer Aufgabe
     UpdateTaskListDto:
       type: object
       properties:
@@ -585,7 +509,73 @@ components:
           enum:
           - ACTIVE
           - ARCHIVED
-      description: Daten für vollständiges Update (Title erforderlich)
+      description: DTO zur Aktualisierung einer bestehenden Task-Liste
+    APIResponseTaskListDto:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Status der API-Antwort
+          example: success
+          enum:
+          - SUCCESS
+          - ERROR
+        statusCode:
+          type: integer
+          description: HTTP Statuscode
+          format: int32
+          example: 200
+        message:
+          type: string
+          description: Zusätzliche Nachricht zur Antwort
+          example: Liste erfolgreich zurückgegeben
+        errors:
+          type: array
+          description: Fehlerdetails bei fehlgeschlagener Anfrage
+          items:
+            $ref: "#/components/schemas/ApiErrorResponse"
+        data:
+          $ref: "#/components/schemas/TaskListDto"
+        timestamp:
+          type: string
+          description: Zeitstempel der Antwort
+          format: date-time
+      description: APIResponse mit TaskListDto als Payload
+    TaskListDto:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID der Task-Liste
+          format: uuid
+          example: 640eb884-723b-408a-869d-59b38ca44b84
+        title:
+          type: string
+          description: Titel der Task-Liste
+          example: 🏁 Demo-Liste
+        description:
+          type: string
+          description: Beschreibung der Task-Liste
+          example: Beispielhafte Aufgaben für Swagger & Seeding
+        created:
+          type: string
+          description: Erstellungszeitpunkt der Liste
+          format: date-time
+        updated:
+          type: string
+          description: Zeitpunkt der letzten Aktualisierung
+          format: date-time
+        count:
+          type: integer
+          description: Anzahl der enthaltenen Aufgaben
+          format: int32
+          example: 2
+        progress:
+          type: number
+          description: Fortschritt in Prozent
+          format: double
+          example: 50.0
+      description: Metadaten einer Task-Liste ohne Aufgaben
     CreateTaskListDto:
       type: object
       properties:
@@ -601,7 +591,7 @@ components:
           type: string
           description: Beschreibung der Task-Liste
           example: Beispielhafte Aufgaben für Swagger & Seeding
-      description: Daten für neue TaskList (Title erforderlich)
+      description: DTO zur Erstellung einer neuen Task-Liste
     CreateTaskDto:
       required:
       - priority
@@ -641,7 +631,7 @@ components:
           description: ID der zugehörigen Task-Liste
           format: uuid
           example: 640eb884-723b-408a-869d-59b38ca44b84
-      description: Daten für neuen Task
+      description: DTO zur Erstellung einer neuen Aufgabe
     PatchTaskDto:
       type: object
       properties:
@@ -679,4 +669,104 @@ components:
           - HIGH
           - MEDIUM
           - LOW
-      description: Daten für partielle Aktualisierung des Tasks
+      description: DTO für partielle Aktualisierung einer bestehenden Aufgabe (PATCH)
+    APIResponseListTaskListDto:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Status der API-Antwort
+          example: success
+          enum:
+          - SUCCESS
+          - ERROR
+        statusCode:
+          type: integer
+          description: HTTP Statuscode
+          format: int32
+          example: 200
+        message:
+          type: string
+          description: Zusätzliche Nachricht zur Antwort
+          example: Liste erfolgreich zurückgegeben
+        errors:
+          type: array
+          description: Fehlerdetails bei fehlgeschlagener Anfrage
+          items:
+            $ref: "#/components/schemas/ApiErrorResponse"
+        data:
+          type: array
+          description: Antwortdaten bei erfolgreicher Anfrage
+          items:
+            $ref: "#/components/schemas/TaskListDto"
+        timestamp:
+          type: string
+          description: Zeitstempel der Antwort
+          format: date-time
+      description: APIResponse mit Liste von TaskListDto
+    APIResponseListTaskSummaryDto:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Status der API-Antwort
+          example: success
+          enum:
+          - SUCCESS
+          - ERROR
+        statusCode:
+          type: integer
+          description: HTTP Statuscode
+          format: int32
+          example: 200
+        message:
+          type: string
+          description: Zusätzliche Nachricht zur Antwort
+          example: Liste erfolgreich zurückgegeben
+        errors:
+          type: array
+          description: Fehlerdetails bei fehlgeschlagener Anfrage
+          items:
+            $ref: "#/components/schemas/ApiErrorResponse"
+        data:
+          type: array
+          description: Antwortdaten bei erfolgreicher Anfrage
+          items:
+            $ref: "#/components/schemas/TaskSummaryDto"
+        timestamp:
+          type: string
+          description: Zeitstempel der Antwort
+          format: date-time
+      description: APIResponse mit Liste von TaskSummaryDto
+    APIResponseVoid:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Status der API-Antwort
+          example: success
+          enum:
+          - SUCCESS
+          - ERROR
+        statusCode:
+          type: integer
+          description: HTTP Statuscode
+          format: int32
+          example: 200
+        message:
+          type: string
+          description: Zusätzliche Nachricht zur Antwort
+          example: Liste erfolgreich zurückgegeben
+        errors:
+          type: array
+          description: Fehlerdetails bei fehlgeschlagener Anfrage
+          items:
+            $ref: "#/components/schemas/ApiErrorResponse"
+        data:
+          type: object
+          description: Antwortdaten bei erfolgreicher Anfrage
+        timestamp:
+          type: string
+          description: Zeitstempel der Antwort
+          format: date-time
+      description: APIResponse ohne Payload (z. B. für DELETE)
