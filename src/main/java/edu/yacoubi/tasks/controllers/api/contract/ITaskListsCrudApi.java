@@ -4,6 +4,7 @@ import edu.yacoubi.tasks.controllers.api.wrappers.APIResponseListTaskListDto;
 import edu.yacoubi.tasks.controllers.api.wrappers.APIResponseTaskListDto;
 import edu.yacoubi.tasks.controllers.api.wrappers.APIResponseVoid;
 import edu.yacoubi.tasks.domain.dto.request.tasklist.CreateTaskListDto;
+import edu.yacoubi.tasks.domain.dto.request.tasklist.PatchTaskListDto;
 import edu.yacoubi.tasks.domain.dto.request.tasklist.UpdateTaskListDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -88,6 +89,30 @@ public interface ITaskListsCrudApi extends IApiPrefix {
     ResponseEntity<APIResponseTaskListDto> updateTaskList(
             @PathVariable("id") UUID id,
             @RequestBody UpdateTaskListDto dto
+    );
+
+    @Operation(
+            summary = "TaskList teilweise aktualisieren (PATCH)",
+            description = "Aktualisiert nur die Felder, die im DTO gesetzt sind. "
+                    + "Null-Werte werden ignoriert."
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "TaskList erfolgreich aktualisiert (PATCH)",
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = APIResponseTaskListDto.class)
+            )
+    )
+    @PatchMapping(
+            value = "/tasklists/{id}",
+            consumes = "application/json",
+            produces = "application/json"
+    )
+    ResponseEntity<APIResponseTaskListDto> patchTaskList(
+            @Parameter(description = "UUID der TaskList")
+            @PathVariable("id") UUID id,
+            @RequestBody PatchTaskListDto dto
     );
 
     @Operation(

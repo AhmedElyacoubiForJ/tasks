@@ -4,17 +4,13 @@ import edu.yacoubi.tasks.domain.TaskUpdater;
 import edu.yacoubi.tasks.domain.dto.request.task.CreateTaskDto;
 import edu.yacoubi.tasks.domain.dto.request.task.FullUpdateTaskDto;
 import edu.yacoubi.tasks.domain.dto.request.task.PatchTaskDto;
-import edu.yacoubi.tasks.domain.dto.request.tasklist.UpdateTaskListDto;
 import edu.yacoubi.tasks.domain.dto.response.task.TaskSummaryDto;
 import edu.yacoubi.tasks.domain.entities.Task;
 import edu.yacoubi.tasks.domain.entities.TaskList;
-import edu.yacoubi.tasks.domain.entities.TaskStatus;
-import edu.yacoubi.tasks.domain.exception.DomainException;
-import edu.yacoubi.tasks.domain.factory.TaskFactory;
+import edu.yacoubi.tasks.domain.entities.TaskPriority;
+import edu.yacoubi.tasks.mappers.TaskTransformer;
 import edu.yacoubi.tasks.services.app.ITaskListService;
 import edu.yacoubi.tasks.services.app.ITaskListsTaskOrchestrator;
-import edu.yacoubi.tasks.services.app.ITaskService;
-import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,40 +18,89 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Implementierung des Orchestrators für Cross-Aggregate-UseCases, die sowohl das TaskList- als auch
- * das Task-Aggregat betreffen.
+ * ============================================================
+ * 🧠 DDD-GEBOTE FÜR DEN TASKLISTS–TASK–ORCHESTRATOR
+ * ============================================================
  *
- * <p>Dieser Service stellt sicher, dass Aggregatsgrenzen nicht verletzt werden und dass fachliche
- * Regeln, die mehrere Aggregates betreffen, zentral implementiert sind.
+ * ✔ Der Orchestrator ist der EINZIGE Ort für Use-Cases,
+ *   die mehrere Aggregate betreffen
+ *   → z. B. "Task in TaskList erstellen"
+ *   → z. B. "Task in TaskList aktualisieren"
+ *   → z. B. "Task in TaskList löschen"
+ *   → z. B. "TaskList archivieren"
+ *
+ * ✔ Der Orchestrator enthält KEINE fachliche Logik
+ *   → keine Statusregeln
+ *   → keine Archivierungsregeln
+ *   → keine Task- oder TaskList-Regeln
+ *   → keine Validierungen außer Existenzprüfungen
+ *
+ * ✔ Der Orchestrator ruft ausschließlich Domain-Methoden auf
+ *   → taskList.createTask(...)
+ *   → taskUpdater.applyFullUpdate(...)
+ *   → taskUpdater.applyPatch(...)
+ *   → taskList.removeTask(...)
+ *   → taskList.archive()
+ *
+ * ✔ Der Orchestrator entscheidet NICHT über Business-Regeln
+ *   → Domain schützt ihre eigenen Invarianten
+ *   → Domain entscheidet über Statuswechsel
+ *   → Domain entscheidet über Archivierung
+ *
+ * ✔ Der Orchestrator lädt Aggregate über Services,
+ *   aber manipuliert sie niemals direkt
+ *   → TaskListService.getTaskListOrThrow(...)
+ *   → TaskListService.save(...)
+ *
+ * ✔ Der Orchestrator ist TRANSACTIONAL
+ *   → garantiert atomare Use-Cases
+ *   → Domain-Methoden + Persistenz = eine Einheit
+ *
+ * ✔ Der Orchestrator ist extrem DÜNN
+ *   → keine Mapping-Logik außer DTO-Ausgabe
+ *   → keine Repository-Zugriffe
+ *   → keine Setter
+ *   → keine Aggregat-Regeln
+ *
+ * ✔ Der Orchestrator ist der "Application Layer"
+ *   → koordiniert Use-Cases
+ *   → verbindet Domain + Persistence + DTOs
+ *   → aber enthält selbst KEINE Logik
+ *
+ * Dies ist DDD in Reinform.
+ * ============================================================
  */
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class TaskListsTaskOrchestratorImpl implements ITaskListsTaskOrchestrator {
+public class TaskListsTaskOrchestratorImpl
+        implements ITaskListsTaskOrchestrator {
 
   private final ITaskListService taskListService;
-  private final ITaskService taskService;
   private final TaskUpdater taskUpdater;
 
   @Override
-  public TaskSummaryDto createTaskInList(final UUID taskListId, final CreateTaskDto dto) {
+  @Transactional
+  public TaskSummaryDto createTaskInList(
+          final UUID taskListId,
+          final CreateTaskDto dto
+  ) {
     log.info("::createTaskInList gestartet mit taskListId={}", taskListId);
 
-    // 1. Aggregat laden
     TaskList taskList = taskListService.getTaskListOrThrow(taskListId);
-    log.debug("TaskList geladen: {}", taskList);
 
-    // 2. Domain-Regel prüfen (liegt in der TaskList-Domain)
-    taskList.assertCanAddTask();
-    log.debug("Domain-Regel geprüft: TaskList {} erlaubt neue Tasks", taskListId);
+    // Domain erstellt Task über Aggregat-Root
+    Task task = taskList.createTask(
+            dto.title(),
+            dto.description(),
+            dto.dueDate(),
+            dto.priority() != null ? dto.priority() : TaskPriority.MEDIUM
+    );
 
-    // 3. Domain-Objekt erstellen (Factory)
-    Task task = TaskFactory.create(dto, taskList);
-    log.debug("Task über Factory erstellt: {}", task);
+    // Aggregat speichern (Task wird per Cascade mitgespeichert)
+    taskListService.save(taskList);
 
-    // 4. Persistieren über TaskService (Persistence-Service)
-    TaskSummaryDto created = taskService.createTask(task);
-    log.debug("Task gespeichert: {}", created);
+    TaskSummaryDto created = TaskTransformer.TASK_TO_SUMMARY.transform(task);
 
     log.info("::createTaskInList erfolgreich abgeschlossen für taskId={} in taskListId={}",
             created.id(), taskListId);
@@ -64,6 +109,7 @@ public class TaskListsTaskOrchestratorImpl implements ITaskListsTaskOrchestrator
   }
 
   @Override
+  @Transactional
   public TaskSummaryDto updateTaskInList(
           final UUID taskListId,
           final UUID taskId,
@@ -71,29 +117,23 @@ public class TaskListsTaskOrchestratorImpl implements ITaskListsTaskOrchestrator
   ) {
     log.info("::updateTaskInList gestartet mit taskListId={}, taskId={}", taskListId, taskId);
 
-    // 1. TaskList laden (Aggregat-Root)
     TaskList taskList = taskListService.getTaskListOrThrow(taskListId);
 
-    // 2. Domain-Regel: archivierte Listen dürfen nicht verändert werden
-    if (taskList.isArchived()) {
-      throw new IllegalStateException("Archivierte TaskLists können nicht aktualisiert werden.");
-    }
+    // Task aus dem Aggregat holen (nicht separat über TaskService)
+    Task task = taskList.getTasks().stream()
+            .filter(t -> t.getId().equals(taskId))
+            .findFirst()
+            .orElseThrow(() -> new IllegalStateException(
+                    "Task " + taskId + " gehört nicht zur TaskList " + taskListId
+            ));
 
-    // 3. Task laden
-    Task task = taskService.getTaskOrThrow(taskId);
-
-    // 4. Sicherstellen, dass Task zur TaskList gehört
-    if (!task.getTaskList().getId().equals(taskListId)) {
-      throw new IllegalStateException(
-              "Task " + taskId + " gehört nicht zur TaskList " + taskListId
-      );
-    }
-
-    // 5. Domain-Update anwenden (über Updater → ruft Domain-Methoden auf)
+    // Domain-Update (ruft Domain-Methoden auf)
     taskUpdater.applyFullUpdate(task, dto);
 
-    // 6. Persistieren + Mapping
-    TaskSummaryDto updated = taskService.updateTask(task);
+    // Aggregat speichern
+    taskListService.save(taskList);
+
+    TaskSummaryDto updated = TaskTransformer.TASK_TO_SUMMARY.transform(task);
 
     log.info("::updateTaskInList erfolgreich abgeschlossen für taskId={}", taskId);
 
@@ -101,6 +141,7 @@ public class TaskListsTaskOrchestratorImpl implements ITaskListsTaskOrchestrator
   }
 
   @Override
+  @Transactional
   public TaskSummaryDto patchTaskInList(
           final UUID taskListId,
           final UUID taskId,
@@ -108,29 +149,20 @@ public class TaskListsTaskOrchestratorImpl implements ITaskListsTaskOrchestrator
   ) {
     log.info("::patchTaskInList gestartet mit taskListId={}, taskId={}", taskListId, taskId);
 
-    // 1. TaskList laden (Aggregat-Root)
     TaskList taskList = taskListService.getTaskListOrThrow(taskListId);
 
-    // 2. Domain-Regel: archivierte Listen dürfen nicht verändert werden
-    if (taskList.isArchived()) {
-      throw new IllegalStateException("Archivierte TaskLists können nicht aktualisiert werden.");
-    }
+    Task task = taskList.getTasks().stream()
+            .filter(t -> t.getId().equals(taskId))
+            .findFirst()
+            .orElseThrow(() -> new IllegalStateException(
+                    "Task " + taskId + " gehört nicht zur TaskList " + taskListId
+            ));
 
-    // 3. Task laden
-    Task task = taskService.getTaskOrThrow(taskId);
-
-    // 4. Sicherstellen, dass Task zur TaskList gehört
-    if (!task.getTaskList().getId().equals(taskListId)) {
-      throw new IllegalStateException(
-              "Task " + taskId + " gehört nicht zur TaskList " + taskListId
-      );
-    }
-
-    // 5. Partielle Änderungen anwenden
     taskUpdater.applyPatch(task, dto);
 
-    // 6. Persistieren + Mapping
-    TaskSummaryDto updated = taskService.updateTask(task);
+    taskListService.save(taskList);
+
+    TaskSummaryDto updated = TaskTransformer.TASK_TO_SUMMARY.transform(task);
 
     log.info("::patchTaskInList erfolgreich abgeschlossen für taskId={}", taskId);
 
@@ -138,104 +170,43 @@ public class TaskListsTaskOrchestratorImpl implements ITaskListsTaskOrchestrator
   }
 
   @Override
+  @Transactional
   public void deleteTaskInList(
           final UUID taskListId,
           final UUID taskId
   ) {
+    log.debug("::deleteTaskInList Lösche Task {} in TaskList {}", taskId, taskListId);
 
-    log.debug("Orchestrator: Lösche Task {} in TaskList {}", taskId, taskListId);
+    TaskList taskList = taskListService.getTaskListOrThrow(taskListId);
 
-    // 1. TaskList laden (Aggregate Root)
-    final TaskList taskList = taskListService.getTaskListOrThrow(taskListId);
+    Task task = taskList.getTasks().stream()
+            .filter(t -> t.getId().equals(taskId))
+            .findFirst()
+            .orElseThrow(() -> new IllegalStateException(
+                    "Task " + taskId + " gehört nicht zur TaskList " + taskListId
+            ));
 
-    // 2. Task laden
-    final Task task = taskService.getTaskOrThrow(taskId);
-
-    // 3. Zugehörigkeit prüfen
-    if (!taskList.ownsTask(task)) {
-      throw new DomainException("Task does not belong to TaskList");
-    }
-
-    // 4. Domain-Operation
     taskList.removeTask(task);
 
-    // 5. Persistieren des Aggregate Roots
     taskListService.save(taskList);
 
-    log.debug("Orchestrator: Task {} in TaskList {} erfolgreich gelöscht", taskId, taskListId);
+    log.debug("::deleteTaskInList Task {} in TaskList {} erfolgreich gelöscht", taskId, taskListId);
   }
-
-//  @Override
-//  @org.springframework.transaction.annotation.Transactional
-//  public TaskList archiveTaskList(final UUID taskListId) {
-//    log.info(
-//            "🎯 Orchestrator: 📦 Versuche TaskList {} zu archivieren (nur wenn alle Tasks abgeschlossen sind)",
-//            taskListId
-//    );
-//
-//    // 1. TaskList laden → ✔️ korrekt
-//    // Der Orchestrator darf die Aggregate Root laden.
-//    final TaskList taskList = taskListService.getTaskListOrThrow(taskListId);
-//
-//    // ❌ 2. Tasks laden → DDD-Verstoß
-//    // Der Orchestrator darf NICHT Tasks separat laden.
-//    // Tasks gehören zum TaskList-Aggregat und müssen über taskList.getTasks() kommen.
-//    // Außerdem: TaskService im Orchestrator ist ein Architekturfehler.
-//    final List<TaskSummaryDto> tasks = taskService.findByTaskListId(taskListId);
-//
-//    // ❌ 3. Prüfen, ob alle Tasks abgeschlossen sind → Domain-Logik im Orchestrator
-//    // Diese Regel gehört 100% in die Domain (TaskList.isArchivable()).
-//    // Der Orchestrator darf KEINE fachlichen Regeln implementieren.
-//    final boolean allCompleted = tasks.stream()
-//            .allMatch(t -> t.status() == TaskStatus.COMPLETED);
-//
-//    if (!allCompleted) {
-//      // ❌ Orchestrator entscheidet über Business-Regel
-//      // Das ist Aufgabe der Domain (taskList.archive() sollte selbst prüfen).
-//      log.warn(
-//              "❌ TaskList {} kann nicht archiviert werden: Es existieren noch offene Tasks",
-//              taskListId);
-//      throw new IllegalStateException(
-//              "TaskList kann nicht archiviert werden, da noch offene Tasks existieren.");
-//    }
-//
-//    // ✔️ 4. Domain-Methode aufrufen → richtig
-//    // ABER: Die Domain-Methode sollte SELBST prüfen, ob archivierbar.
-//    // Der Orchestrator sollte NICHT vorher prüfen.
-//    taskList.archive();
-//
-//    // ❌ 5. Über Aggregat-Service speichern (NICHT Repository!) → Idee gut, Umsetzung falsch
-//    // ABER: Der Orchestrator darf KEINE DTOs bauen.
-//    // UpdateTaskListDto ist ein API-Objekt und hat im Orchestrator nichts verloren.
-//    final UpdateTaskListDto dto = new UpdateTaskListDto(
-//            taskList.getTitle(),
-//            taskList.getDescription(),
-//            taskList.getStatus()
-//    );
-//
-//    // ❌ 6. updateTaskList() aufrufen → falscher UseCase
-//    // Der Orchestrator soll einfach taskListService.save(taskList) aufrufen.
-//    // updateTaskList() ist ein API-UseCase, kein Aggregat-Speichermechanismus.
-//    final TaskList archived = taskListService.updateTaskList(taskListId, dto);
-//
-//    log.info("✅ Orchestrator: TaskList {} erfolgreich archiviert", taskListId);
-//    return archived;
-//  }
 
   @Override
   @Transactional
-  public TaskList archiveTaskList(UUID taskListId) {
-    log.info("🎯 Orchestrator: Archivieren der TaskList {}", taskListId);
+  public TaskList archiveTaskList(
+          final UUID taskListId
+  ) {
+    log.info("::archiveTaskList Archivieren der TaskList {}", taskListId);
 
     TaskList list = taskListService.getTaskListOrThrow(taskListId);
 
-    // Domain entscheidet, ob archivieren erlaubt ist
     list.archive();
 
-    // Aggregat speichern
     TaskList saved = taskListService.save(list);
 
-    log.info("✅ Orchestrator: TaskList {} erfolgreich archiviert", taskListId);
+    log.info("::archiveTaskList TaskList {} erfolgreich archiviert", taskListId);
 
     return saved;
   }

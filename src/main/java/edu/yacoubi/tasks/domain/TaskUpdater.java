@@ -6,16 +6,24 @@ import edu.yacoubi.tasks.domain.entities.Task;
 import org.springframework.stereotype.Component;
 
 /**
- * Verantwortlich für das Anwenden von Update-DTOs auf die Task-Domain-Entity.
+ * ============================================================
+ * 🧠 DDD-GEBOTE FÜR DEN TASK-UPDATER
+ * ============================================================
  *
- * DDD:
- * - Der Updater ruft ausschließlich Domain-Methoden auf (keine Setter!).
- * - Die Domain bleibt der einzige Ort, an dem Regeln und Invarianten geprüft werden.
- * - Der Updater selbst enthält KEINE fachliche Logik.
+ * ✔ Der Updater ruft ausschließlich Domain-Methoden auf
+ *   → keine Setter, keine direkte Feldmanipulation.
  *
- * Architektur:
- * - Der Orchestrator entscheidet, ob Full- oder Patch-Update angewendet wird.
- * - Der Updater ist ein reiner "Mapper" zwischen DTO und Domain-Methoden.
+ * ✔ Der Updater enthält KEINE fachliche Logik
+ *   → keine Statusregeln, keine Validierungen.
+ *
+ * ✔ Der Updater entscheidet NICHT, ob ein Update erlaubt ist
+ *   → das macht die Domain (Task-Entity).
+ *
+ * ✔ Der Updater ist ein reiner "DTO → Domain"-Mapper
+ *   → er überträgt nur Werte, die sich wirklich geändert haben.
+ *
+ * Dies ist DDD in Reinform.
+ * ============================================================
  */
 @Component
 public class TaskUpdater {
@@ -25,34 +33,32 @@ public class TaskUpdater {
      *
      * Regeln:
      * - Alle Felder im DTO sind Pflichtfelder.
-     * - Es werden nur Änderungen angewendet, wenn sich der Wert tatsächlich unterscheidet.
-     *   → verhindert unnötige Domain-Events, updated-Timestamps, etc.
-     * - Statusänderungen laufen über task.changeStatus(), das selbst Domain-Regeln prüft.
+     * - Es werden nur echte Änderungen angewendet.
+     * - Statusänderungen laufen über task.changeStatus().
      */
     public void applyFullUpdate(Task task, FullUpdateTaskDto dto) {
 
-        // Titel aktualisieren
+        // Titel
         if (!dto.title().equals(task.getTitle())) {
             task.changeTitle(dto.title());
         }
 
-        // Beschreibung aktualisieren
-        if (!dto.description().equals(task.getDescription())) {
+        // Beschreibung
+        if (!safeEquals(dto.description(), task.getDescription())) {
             task.changeDescription(dto.description());
         }
 
-        // Fälligkeitsdatum aktualisieren
-        if (!dto.dueDate().equals(task.getDueDate())) {
+        // Fälligkeitsdatum
+        if (!safeEquals(dto.dueDate(), task.getDueDate())) {
             task.changeDueDate(dto.dueDate());
         }
 
-        // Priorität aktualisieren
+        // Priorität
         if (!dto.priority().equals(task.getPriority())) {
             task.changePriority(dto.priority());
         }
 
-        // Status aktualisieren (immer zuletzt)
-        // Domain-Methode prüft selbst ungültige Transitionen
+        // Status (immer zuletzt)
         if (!dto.status().equals(task.getStatus())) {
             task.changeStatus(dto.status());
         }
@@ -63,8 +69,7 @@ public class TaskUpdater {
      *
      * Regeln:
      * - Nur Felder, die im DTO gesetzt sind (nicht null), werden aktualisiert.
-     * - Auch hier werden nur echte Änderungen angewendet.
-     * - Statusänderungen laufen über task.changeStatus().
+     * - Nur echte Änderungen werden angewendet.
      */
     public void applyPatch(Task task, PatchTaskDto dto) {
 
@@ -72,11 +77,11 @@ public class TaskUpdater {
             task.changeTitle(dto.title());
         }
 
-        if (dto.description() != null && !dto.description().equals(task.getDescription())) {
+        if (dto.description() != null && !safeEquals(dto.description(), task.getDescription())) {
             task.changeDescription(dto.description());
         }
 
-        if (dto.dueDate() != null && !dto.dueDate().equals(task.getDueDate())) {
+        if (dto.dueDate() != null && !safeEquals(dto.dueDate(), task.getDueDate())) {
             task.changeDueDate(dto.dueDate());
         }
 
@@ -87,5 +92,14 @@ public class TaskUpdater {
         if (dto.status() != null && !dto.status().equals(task.getStatus())) {
             task.changeStatus(dto.status());
         }
+    }
+
+    /**
+     * Null-sicherer Vergleich für optionale Felder.
+     */
+    private boolean safeEquals(Object a, Object b) {
+        if (a == null && b == null) return true;
+        if (a == null || b == null) return false;
+        return a.equals(b);
     }
 }

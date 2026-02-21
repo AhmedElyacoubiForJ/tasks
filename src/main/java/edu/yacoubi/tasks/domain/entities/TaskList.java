@@ -1,5 +1,7 @@
 package edu.yacoubi.tasks.domain.entities;
 
+import edu.yacoubi.tasks.exceptions.DomainRuleViolationException;
+import edu.yacoubi.tasks.exceptions.DomainValidationException;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -11,13 +13,30 @@ import lombok.*;
  * Aggregat-Root des Task-Management-Systems.
  *
  * <p>Diese Klasse folgt den Prinzipien von Domain-Driven Design (DDD):
+ *
  * <ul>
- *     <li>Sie ist der Aggregat-Root des TaskList-Aggregats.</li>
- *     <li>Sie kapselt fachliches Verhalten und schützt Invarianten.</li>
- *     <li>Tasks können nur über Domain-Methoden hinzugefügt oder entfernt werden.</li>
- *     <li>Statusänderungen erfolgen kontrolliert über Methoden wie {@code archive()}.</li>
+ *   <li>Sie ist der Aggregat-Root des TaskList-Aggregats.
+ *   <li>Sie kapselt fachliches Verhalten und schützt Invarianten.
+ *   <li>Tasks können nur über Domain-Methoden hinzugefügt oder entfernt werden.
+ *   <li>Statusänderungen erfolgen kontrolliert über Methoden wie {@code archive()}.
  * </ul>
- * </p>
+ *
+ * ============================================================
+ * 🧠 DDD-GEBOTE FÜR DAS TASKLIST-AGGREGAT
+ * ============================================================
+ *
+ * <p>✔ TaskList ist der EINZIGE Einstiegspunkt ins Aggregat → Tasks können nur über TaskList
+ * erstellt, geändert, archiviert oder entfernt werden.
+ *
+ * <p>✔ Task schützt seine EIGENEN Regeln → Statuswechsel → Titel → Priority → DueDate
+ *
+ * <p>✔ TaskList schützt die AGGREGAT-REGELN → Archivierung → Änderungen im ARCHIVED-Status →
+ * Task-Zugehörigkeit → Task-Erstellung → Task-Statusänderung
+ *
+ * <p>✔ Das Aggregat garantiert IMMER Konsistenz → Keine TaskList ohne Titel → Keine Tasks ohne
+ * TaskList → Keine Änderungen an archivierten Listen → Keine Tasks, die nicht zur Liste gehören
+ *
+ * <p>Dies ist DDD in Reinform. ============================================================
  */
 @Entity
 @Table(name = "task_lists")
@@ -26,275 +45,258 @@ import lombok.*;
 @EqualsAndHashCode(of = "id")
 public class TaskList {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "id", updatable = false, nullable = false)
-    private UUID id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.UUID)
+  @Column(name = "id", updatable = false, nullable = false)
+  private UUID id;
 
-    @Column(name = "title", nullable = false, length = 100)
-    private String title;
+  @Column(name = "title", nullable = false, length = 100)
+  private String title;
 
-    @Column(name = "description", length = 255)
-    private String description;
+  @Column(name = "description", length = 255)
+  private String description;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
-    private TaskListStatus status;
+  @Enumerated(EnumType.STRING)
+  @Column(name = "status", nullable = false)
+  private TaskListStatus status;
 
-    @OneToMany(mappedBy = "taskList", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Task> tasks = new ArrayList<>();
+  @OneToMany(mappedBy = "taskList", cascade = CascadeType.ALL, orphanRemoval = true)
+  private final List<Task> tasks = new ArrayList<>();
 
-    @Column(name = "created", nullable = false)
-    private LocalDateTime created;
+  @Column(name = "created", nullable = false)
+  private LocalDateTime created;
 
-    @Column(name = "updated", nullable = false)
-    private LocalDateTime updated;
+  @Column(name = "updated", nullable = false)
+  private LocalDateTime updated;
 
+  // ============================================================
+  // 🧱 BUILDER – schützt alle Invarianten
+  // ============================================================
+  @Builder
+  private TaskList(String title, String description) {
 
-    // -----------------------------------------
-    //  DDD: Builder setzt alle Invarianten
-    //  Der Builder ist bewusst PRIVATE, damit:
-    //   - keine andere Schicht (Controller/Service/Mapper) das Aggregat direkt erzeugen kann
-    //   - die Domain selbst kontrolliert, wie gültige TaskLists entstehen
-    //   - alle Invarianten (z. B. Titel darf nicht leer sein) garantiert geprüft werden
-    //   - das Aggregat nur über definierte Fabriken/Builder erzeugt wird
-    // -----------------------------------------
-    @Builder
-    private TaskList(String title, String description) {
-
-        // DDD: Invariante – eine TaskList muss immer einen gültigen Titel haben
-        if (title == null || title.isBlank()) {
-            throw new IllegalArgumentException("Title darf nicht leer sein.");
-        }
-
-        this.title = title;
-        this.description = description;
-
-        // DDD: Domain definiert den initialen Zustand
-        this.status = TaskListStatus.ACTIVE;
-
-        // DDD: Domain entscheidet über Zeitstempel, nicht der Client
-        this.created = LocalDateTime.now();
-        this.updated = LocalDateTime.now();
+    if (title == null || title.isBlank()) {
+      throw new DomainValidationException("Title darf nicht leer sein.");
     }
 
+    this.title = title;
+    this.description = description;
+    this.status = TaskListStatus.ACTIVE;
+    this.created = LocalDateTime.now();
+    this.updated = LocalDateTime.now();
+  }
 
-    // -----------------------------------------
-    //  Domain-Methoden (fachliches Verhalten)
-    //  Jede Methode schützt Invarianten und
-    //  stellt sicher, dass das Aggregat immer
-    //  in einem gültigen Zustand bleibt.
-    // -----------------------------------------
+  // ============================================================
+  // 📌 DOMAIN-METHODEN – fachliches Verhalten
+  // ============================================================
 
-//    /**
-//     * Archiviert die TaskList.
-//     *
-//     * DDD:
-//     * - Statusänderungen dürfen nur über Domain-Methoden erfolgen. ✔️ korrekt
-//     * - Die Methode ist idempotent: mehrfaches Aufrufen ändert nichts. ✔️ gut
-//     * - updated wird automatisch gesetzt, um den Lebenszyklus zu dokumentieren. ✔️ sinnvoll
-//     *
-//     * ❗ PROBLEM:
-//     * Diese Methode prüft NICHT, ob die TaskList überhaupt archivierbar ist.
-//     *
-//     * Das bedeutet:
-//     * - Die Domain akzeptiert aktuell JEDE Archivierung.
-//     * - Auch wenn Tasks noch offen sind.
-//     * - Die Business-Regel liegt NICHT in der Domain → DDD-Verstoß.
-//     *
-//     * In DDD gilt:
-//     * 👉 Die Domain schützt ihre eigenen Invarianten.
-//     * 👉 Die Domain entscheidet, ob ein Zustand erlaubt ist.
-//     * 👉 Der Orchestrator darf NICHT prüfen, ob archivieren erlaubt ist.
-//     *
-//     * Die fehlende Regel ist:
-//     * "Eine TaskList darf nur archiviert werden, wenn alle Tasks abgeschlossen sind."
-//     *
-//     * Diese Regel MUSS hier stehen, nicht im Orchestrator.
-//     */
-//    public void archive() {
-//
-//        // ✔️ Idempotenz: Wenn bereits archiviert, nichts tun
-//        if (this.status == TaskListStatus.ARCHIVED) {
-//            return;
-//        }
-//
-//        // ❌ FEHLER: Hier fehlt die fachliche Prüfung:
-//        // if (!isArchivable()) {
-//        //     throw new IllegalStateException("TaskList kann nicht archiviert werden, da noch offene Tasks existieren.");
-//        // }
-//        //
-//        // Warum MUSS das hier stehen?
-//        // - Die Domain schützt ihre eigenen Regeln
-//        // - Die Domain ist die einzige Quelle der Wahrheit
-//        // - Der Orchestrator darf keine Business-Entscheidungen treffen
-//        // - Tests werden einfacher und stabiler
-//        // - Aggregat bleibt konsistent
-//
-//        // ✔️ Statusänderung gehört in die Domain
-//        this.status = TaskListStatus.ARCHIVED;
-//
-//        // ✔️ Lifecycle-Update ist korrekt
-//        this.updated = LocalDateTime.now();
-//    }
+  /** Archiviert die TaskList, falls alle Tasks abgeschlossen sind. */
+  public void archive() {
 
-    /**
-     * Archiviert die TaskList, falls alle Tasks abgeschlossen sind.
-     *
-     * DDD:
-     * - Domain schützt ihre eigenen Invarianten.
-     * - Orchestrator darf NICHT prüfen, ob archivieren erlaubt ist.
-     * - Statusänderungen gehören ausschließlich in die Domain.
-     * - Methode ist idempotent.
-     */
-    public void archive() {
-
-        // Idempotenz
-        if (this.status == TaskListStatus.ARCHIVED) {
-            return;
-        }
-
-        // Fachliche Regel: Nur archivierbar, wenn alle Tasks abgeschlossen sind
-        if (!isArchivable()) {
-            throw new IllegalStateException(
-                    "TaskList kann nicht archiviert werden, da noch offene Tasks existieren."
-            );
-        }
-
-        // Status ändern
-        this.status = TaskListStatus.ARCHIVED;
-
-        // Lifecycle aktualisieren
-        this.updated = LocalDateTime.now();
+    if (this.status == TaskListStatus.ARCHIVED) {
+      return; // idempotent
     }
 
-    /**
-     * Aktiviert eine archivierte TaskList wieder.
-     *
-     * DDD:
-     * - Nur die Domain entscheidet, wann eine Liste aktiv sein darf.
-     * - Auch diese Methode ist idempotent.
-     */
-    public void activate() {
-        if (this.status == TaskListStatus.ACTIVE) {
-            return;
-        }
-        this.status = TaskListStatus.ACTIVE;
-        this.updated = LocalDateTime.now();
+    if (!isArchivable()) {
+      throw new DomainRuleViolationException(
+          "TaskList kann nicht archiviert werden, da noch offene Tasks existieren.");
     }
 
-    /**
-     * Hilfsmethode für Domain-Logik.
-     * Kein Getter für Status, sondern eine semantische Frage:
-     * "Ist die Liste archiviert?"
-     */
-    public boolean isArchived() {
-        return this.status == TaskListStatus.ARCHIVED;
+    this.status = TaskListStatus.ARCHIVED;
+    this.updated = LocalDateTime.now();
+  }
+
+  /** Aktiviert eine archivierte TaskList wieder. */
+  public void activate() {
+    if (this.status == TaskListStatus.ACTIVE) {
+      return;
+    }
+    this.status = TaskListStatus.ACTIVE;
+    this.updated = LocalDateTime.now();
+  }
+
+  /**
+   * ============================================================
+   * 🧠 DDD-GEBOTE FÜR STATUSWECHSEL IM TASKLIST-AGGREGAT
+   * ============================================================
+   *
+   * ✔ Statuswechsel sind fachliche Operationen
+   *   → sie gehören ausschließlich in die Domain (TaskList-Entity)
+   *   → niemals in Controller, Service, Updater oder Orchestrator
+   *
+   * ✔ Archivierung ist ein eigener Use-Case
+   *   → darf NICHT über changeStatus() erfolgen
+   *   → nur über archive(), da dort die Regel "alle Tasks abgeschlossen" geprüft wird
+   *
+   * ✔ Reaktivierung ist ein eigener Use-Case
+   *   → darf NICHT über changeStatus() erfolgen
+   *   → nur über activate(), da Domain entscheidet, ob erlaubt
+   *
+   * ✔ changeStatus() ist nur für NEUTRALE Statuswechsel gedacht
+   *   → z. B. zukünftige Stati wie: PLANNED, ON_HOLD, IN_REVIEW
+   *   → Domain schützt sich selbst vor ungültigen Wechseln
+   *
+   * ✔ Statuswechsel müssen INVARIANTEN schützen
+   *   → archivierte Listen dürfen nicht verändert werden
+   *   → Tasks dürfen nicht zu archivierten Listen hinzugefügt werden
+   *   → Statuswechsel dürfen keine Regeln umgehen (z. B. Archivierungsregeln)
+   *
+   * ✔ Statuswechsel müssen idempotent sein
+   *   → gleicher Status = keine Änderung
+   *   → updated-Timestamp nur bei echten Änderungen
+   *
+   * ✔ Statuswechsel müssen atomar sein
+   *   → Domain-Methode + Persistenz = eine Transaktion
+   *
+   * ✔ Statuswechsel dürfen niemals Tasks inkonsistent machen
+   *   → Domain garantiert: TaskListStatus und TaskStatus widersprechen sich nicht
+   *
+   * Dies ist DDD in Reinform.
+   * ============================================================
+   */
+  public void changeStatus(TaskListStatus newStatus) {
+
+    if (newStatus == null) {
+      throw new DomainValidationException("Status darf nicht null sein.");
     }
 
-    public void assertCanAddTask() {
-        if (this.isArchived()) {
-            throw new IllegalStateException(
-                    "Kann keinen Task zu einer archivierten TaskList hinzufügen."
-            );
-        }
+    // Idempotenz: gleicher Status → nichts tun
+    if (this.status == newStatus) {
+      return;
     }
 
-    /**
-     * Fügt einen Task zur TaskList hinzu.
-     *
-     * DDD:
-     * - Tasks dürfen nur über das Aggregat hinzugefügt werden.
-     * - Dadurch wird sichergestellt, dass die Beziehung konsistent bleibt.
-     * - updated wird gesetzt, da sich der Zustand des Aggregats ändert.
-     */
-    public void addTask(Task task) {
-        if (task == null) {
-            throw new IllegalArgumentException("Task darf nicht null sein.");
-        }
-        tasks.add(task);
-        this.updated = LocalDateTime.now();
+    // Archivieren darf NICHT über changeStatus erfolgen
+    if (newStatus == TaskListStatus.ARCHIVED) {
+      throw new DomainRuleViolationException(
+              "Archivierung muss über archive() erfolgen, nicht über changeStatus()."
+      );
     }
 
-    /**
-     * Entfernt einen Task aus der TaskList.
-     *
-     * DDD:
-     * - Entfernen ist nur erlaubt, wenn der Task wirklich dazugehört.
-     * - Aggregat schützt seine Konsistenz.
-     */
-    public void removeTask(final Task task) {
-        if (!tasks.contains(task)) {
-            throw new EntityNotFoundException("Task does not belong to TaskList");
-        }
-        tasks.remove(task);
-        this.updated = LocalDateTime.now();
+    // Reaktivieren darf NICHT über changeStatus erfolgen
+    if (newStatus == TaskListStatus.ACTIVE && this.status == TaskListStatus.ARCHIVED) {
+      throw new DomainRuleViolationException(
+              "Reaktivierung muss über activate() erfolgen, nicht über changeStatus()."
+      );
     }
 
-    /**
-     * Prüft, ob ein Task zu dieser TaskList gehört.
-     *
-     * DDD:
-     * - Hilfsmethode für Orchestratoren/Services.
-     */
-    public boolean ownsTask(Task task) {
-        return this.getTasks().contains(task);
-    }
-
-    /**
-     * Ändert den Titel der TaskList.
-     *
-     * DDD:
-     * - Titel ist eine Invariante → darf nie leer sein.
-     * - Nur die Domain darf Titel ändern.
-     */
-    public void rename(String newTitle) {
-        if (newTitle == null || newTitle.isBlank()) {
-            throw new IllegalArgumentException("Title darf nicht leer sein.");
-        }
-        this.title = newTitle;
-        this.updated = LocalDateTime.now();
-    }
-
-    /**
-     * Ändert die Beschreibung der TaskList.
-     *
-     * DDD:
-     * - Beschreibung ist optional, aber jede Änderung ist ein Domain-Ereignis.
-     */
-    public void changeDescription(String newDescription) {
-        this.description = newDescription;
-        this.updated = LocalDateTime.now();
-    }
-
-    /**
-     * Prüft, ob alle Tasks abgeschlossen sind.
-     *
-     * DDD:
-     * - Diese Methode ist eine fachliche Regel (Business Rule).
-     * - Sie darf NICHT von außen aufgerufen werden.
-     * - Sie dient ausschließlich der Domain-Methode archive().
-     * - Deshalb MUSS sie private sein.
-     *
-     * Warum private?
-     * - Der Orchestrator darf NICHT prüfen, ob archivieren erlaubt ist.
-     * - Nur die Domain schützt ihre eigenen Invarianten.
-     * - Die Regel gehört vollständig in die Domain.
-     */
-    private boolean isArchivable() {
-        return tasks.stream().allMatch(Task::isCompleted);
-    }
+    // Allgemeiner Statuswechsel (falls du später mehr Status hast)
+    this.status = newStatus;
+    this.updated = LocalDateTime.now();
+  }
 
 
-    @Override
-    public String toString() {
-        return "TaskList{" +
-                "id=" + id +
-                ", title='" + title + '\'' +
-                ", status=" + status +
-                ", created=" + created +
-                ", updated=" + updated +
-                ", taskCount=" + tasks.size() +
-                '}';
+  public boolean isArchived() {
+    return this.status == TaskListStatus.ARCHIVED;
+  }
+
+  public void rename(String newTitle) {
+    if (newTitle == null || newTitle.isBlank()) {
+      throw new DomainValidationException("Title darf nicht leer sein.");
     }
+    this.title = newTitle;
+    this.updated = LocalDateTime.now();
+  }
+
+  public void changeDescription(String newDescription) {
+    this.description = newDescription;
+    this.updated = LocalDateTime.now();
+  }
+
+  // ============================================================
+  // 🧱 TASK-MANAGEMENT – nur über die Root erlaubt
+  // ============================================================
+
+  /** Erstellt einen neuen Task innerhalb der TaskList. */
+  public Task createTask(
+      String title, String description, LocalDateTime dueDate, TaskPriority priority) {
+    assertCanAddTask();
+
+    Task task =
+        Task.builder()
+            .title(title)
+            .description(description)
+            .dueDate(dueDate)
+            .priority(priority)
+            .taskList(this)
+            .build();
+
+    tasks.add(task);
+    this.updated = LocalDateTime.now();
+
+    return task;
+  }
+
+  /** Fügt einen bestehenden Task hinzu (z. B. bei Rehydration). */
+  public void addTask(Task task) {
+    if (task == null) {
+      throw new DomainValidationException("Task darf nicht null sein.");
+    }
+
+    assertCanAddTask();
+
+    if (task.getTaskList() != this) {
+      throw new DomainRuleViolationException("Task gehört nicht zu dieser TaskList.");
+    }
+
+    tasks.add(task);
+    this.updated = LocalDateTime.now();
+  }
+
+  /** Entfernt einen Task aus der TaskList. */
+  public void removeTask(Task task) {
+    if (!tasks.contains(task)) {
+      throw new DomainRuleViolationException("Task gehört nicht zu dieser TaskList.");
+    }
+
+    tasks.remove(task);
+    this.updated = LocalDateTime.now();
+  }
+
+  /** Ändert den Status eines Tasks über die Root. */
+  public void changeTaskStatus(UUID taskId, TaskStatus newStatus) {
+
+    if (this.isArchived()) {
+      throw new DomainRuleViolationException("Archivierte TaskLists können nicht geändert werden.");
+    }
+
+    Task task =
+        tasks.stream()
+            .filter(t -> t.getId().equals(taskId))
+            .findFirst()
+            .orElseThrow(
+                () -> new DomainRuleViolationException("Task gehört nicht zu dieser TaskList."));
+
+    task.changeStatus(newStatus);
+    this.updated = LocalDateTime.now();
+  }
+
+  // ============================================================
+  // 🔒 INVARIANTEN & HILFSMETHODEN
+  // ============================================================
+
+  private void assertCanAddTask() {
+    if (this.isArchived()) {
+      throw new DomainRuleViolationException(
+          "Kann keinen Task zu einer archivierten TaskList hinzufügen.");
+    }
+  }
+
+  private boolean isArchivable() {
+    return tasks.stream().allMatch(Task::isCompleted);
+  }
+
+  // ============================================================
+  // 📝 toString – ohne rekursive Serialisierung
+  // ============================================================
+  @Override
+  public String toString() {
+    return "TaskList{" +
+            "id=" + id +
+            ", title='" + title + '\'' +
+            ", status=" + status +
+            ", created=" + created +
+            ", updated=" + updated +
+            ", taskCount=" + tasks.size() +
+            '}';
+  }
 }

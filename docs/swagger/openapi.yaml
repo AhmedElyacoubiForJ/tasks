@@ -121,14 +121,14 @@ paths:
               $ref: "#/components/schemas/PatchTaskDto"
         required: true
       responses:
-        "200":
-          description: Task erfolgreich aktualisiert (PATCH)
+        "422":
+          description: Domain-Validierung fehlgeschlagen
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/APIResponseTaskSummaryDto"
-        "422":
-          description: Domain-Validierung fehlgeschlagen
+        "200":
+          description: Task erfolgreich aktualisiert (PATCH)
           content:
             application/json:
               schema:
@@ -230,14 +230,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/APIResponseTaskListDto"
-        "409":
-          description: Konflikt – Domainregel verletzt
+        "200":
+          description: TaskList erfolgreich archiviert
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/APIResponseTaskListDto"
-        "200":
-          description: TaskList erfolgreich archiviert
+        "409":
+          description: Konflikt – Domainregel verletzt
           content:
             application/json:
               schema:

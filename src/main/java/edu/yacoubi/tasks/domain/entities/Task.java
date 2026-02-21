@@ -1,5 +1,7 @@
 package edu.yacoubi.tasks.domain.entities;
 
+import edu.yacoubi.tasks.exceptions.DomainRuleViolationException;
+import edu.yacoubi.tasks.exceptions.DomainValidationException;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -90,17 +92,17 @@ public class Task {
     ) {
         // Pflichtfeld: TaskList
         if (taskList == null) {
-            throw new IllegalArgumentException("TaskList darf nicht null sein.");
+            throw new DomainValidationException("TaskList darf nicht null sein.");
         }
 
         // Pflichtfeld: Titel
         if (title == null || title.isBlank()) {
-            throw new IllegalArgumentException("Title darf nicht leer sein.");
+            throw new DomainValidationException("Title darf nicht leer sein.");
         }
 
         // Pflichtfeld: Priority
         if (priority == null) {
-            throw new IllegalArgumentException("Priority darf nicht null sein.");
+            throw new DomainValidationException("Priority darf nicht null sein.");
         }
 
         this.title = title;
@@ -117,7 +119,6 @@ public class Task {
         this.updated = LocalDateTime.now();
     }
 
-
     // -----------------------------------------
     //  Domain-Methoden (fachliches Verhalten)
     //  Keine Setter → Aggregat bleibt konsistent
@@ -132,7 +133,7 @@ public class Task {
      */
     public void changeTitle(String newTitle) {
         if (newTitle == null || newTitle.isBlank()) {
-            throw new IllegalArgumentException("Titel darf nicht leer sein.");
+            throw new DomainValidationException("Titel darf nicht leer sein.");
         }
         this.title = newTitle;
         this.updated = LocalDateTime.now();
@@ -168,7 +169,7 @@ public class Task {
      */
     public void changePriority(TaskPriority newPriority) {
         if (newPriority == null) {
-            throw new IllegalArgumentException("Priority darf nicht null sein.");
+            throw new DomainValidationException("Priority darf nicht null sein.");
         }
         this.priority = newPriority;
         this.updated = LocalDateTime.now();
@@ -184,7 +185,7 @@ public class Task {
      */
     public void changeStatus(TaskStatus newStatus) {
         if (newStatus == null) {
-            throw new IllegalArgumentException("Status darf nicht null sein.");
+            throw new DomainValidationException("Status darf nicht null sein.");
         }
 
         // Keine Änderung → kein Update nötig
@@ -192,27 +193,41 @@ public class Task {
             return;
         }
 
-        // Verbotene Transitionen (fachliche Regeln)
+        // Verbotene Transitionen (fachliche Regeln).
+        // Diese Regeln sind fachlich korrekt und absolut sinnvoll.
+        // TODO ist solche Regeln mathematisch/fachlich äquivalent komprimiert und zusammen fasst
         if (this.status == TaskStatus.COMPLETED && newStatus == TaskStatus.OPEN) {
-            throw new IllegalStateException("Ein abgeschlossener Task kann nicht wieder geöffnet werden.");
+            throw new DomainRuleViolationException("Ein abgeschlossener Task kann nicht wieder geöffnet werden.");
         }
 
         if (this.status == TaskStatus.COMPLETED && newStatus == TaskStatus.IN_PROGRESS) {
-            throw new IllegalStateException("Ein abgeschlossener Task kann nicht wieder in Bearbeitung gesetzt werden.");
+            throw new DomainRuleViolationException("Ein abgeschlossener Task kann nicht wieder in Bearbeitung gesetzt werden.");
         }
 
         if (this.status == TaskStatus.IN_PROGRESS && newStatus == TaskStatus.OPEN) {
-            throw new IllegalStateException("Ein Task in Bearbeitung kann nicht wieder geöffnet werden.");
+            throw new DomainRuleViolationException("Ein Task in Bearbeitung kann nicht wieder geöffnet werden.");
         }
+
+        // TODO ist erst zu verstehen d.h wie man darauf kommt
+        // s.h TaskStausRegelnKomprimieren.md
+        /*
+        * if (this.status == TaskStatus.COMPLETED && newStatus != TaskStatus.COMPLETED) {
+            throw new DomainRuleViolationException(
+            "Ein abgeschlossener Task kann nicht in einen früheren Status zurückgesetzt werden.");
+        }
+
+        if (this.status == TaskStatus.IN_PROGRESS && newStatus == TaskStatus.OPEN) {
+        throw new DomainRuleViolationException(
+            "Ein Task in Bearbeitung kann nicht wieder geöffnet werden.");
+        }
+
+        * */
 
         // Erlaubte Transition
         this.status = newStatus;
         this.updated = LocalDateTime.now();
     }
 
-    /**
-     * Hilfsmethode für Domain-Logik.
-     */
     public boolean isCompleted() {
         return this.status == TaskStatus.COMPLETED;
     }
@@ -231,3 +246,23 @@ public class Task {
                 '}';
     }
 }
+
+
+/*
+* public void start() {
+    changeStatus(TaskStatus.IN_PROGRESS);
+}
+
+public void complete() {
+    changeStatus(TaskStatus.COMPLETED);
+}
+
+public void validateBeforeArchive() {
+    if (!isCompleted()) {
+        throw new DomainRuleViolationException(
+                "Task '" + title + "' ist nicht abgeschlossen und verhindert das Archivieren der TaskList."
+        );
+    }
+}
+
+* */

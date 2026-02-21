@@ -9,14 +9,9 @@ import edu.yacoubi.tasks.domain.entities.TaskList;
 import java.util.UUID;
 
 public interface ITaskListsTaskOrchestrator {
-
-  TaskSummaryDto createTaskInList(UUID taskListId, CreateTaskDto dto);
-
-  TaskSummaryDto updateTaskInList(UUID taskListId, UUID taskId, FullUpdateTaskDto dto);
-
-  TaskSummaryDto patchTaskInList(UUID taskListId, UUID taskId, PatchTaskDto dto);
-
-  void deleteTaskInList(UUID taskListId, UUID taskId);
-
-  TaskList archiveTaskList(UUID taskListId);
+    TaskSummaryDto createTaskInList(UUID taskListId, CreateTaskDto dto);
+    TaskSummaryDto updateTaskInList(UUID taskListId, UUID taskId, FullUpdateTaskDto dto);
+    TaskSummaryDto patchTaskInList(UUID taskListId, UUID taskId, PatchTaskDto dto);
+    void deleteTaskInList(UUID taskListId, UUID taskId);
+    TaskList archiveTaskList(UUID taskListId);
 }
