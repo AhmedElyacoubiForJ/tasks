@@ -45,24 +45,19 @@ import lombok.*;
 @EqualsAndHashCode(of = "id")
 public class TaskList {
 
+  @OneToMany(mappedBy = "taskList", cascade = CascadeType.ALL, orphanRemoval = true)
+  private final List<Task> tasks = new ArrayList<>();
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
   @Column(name = "id", updatable = false, nullable = false)
   private UUID id;
-
   @Column(name = "title", nullable = false, length = 100)
   private String title;
-
   @Column(name = "description", length = 255)
   private String description;
-
   @Enumerated(EnumType.STRING)
   @Column(name = "status", nullable = false)
   private TaskListStatus status;
-
-  @OneToMany(mappedBy = "taskList", cascade = CascadeType.ALL, orphanRemoval = true)
-  private final List<Task> tasks = new ArrayList<>();
-
   @Column(name = "created", nullable = false)
   private LocalDateTime created;
 
@@ -208,7 +203,11 @@ public class TaskList {
 
   /** Erstellt einen neuen Task innerhalb der TaskList. */
   public Task createTask(
-      String title, String description, LocalDateTime dueDate, TaskPriority priority) {
+      String title,
+      String description,
+      LocalDateTime dueDate,
+      TaskPriority priority
+  ) {
     assertCanAddTask();
 
     Task task =
@@ -220,9 +219,10 @@ public class TaskList {
             .taskList(this)
             .build();
 
-    tasks.add(task);
-    this.updated = LocalDateTime.now();
+    // 🔥 Beziehung beidseitig setzen
+    this.addTask(task);
 
+    this.updated = LocalDateTime.now();
     return task;
   }
 
@@ -238,7 +238,10 @@ public class TaskList {
       throw new DomainRuleViolationException("Task gehört nicht zu dieser TaskList.");
     }
 
+    // 🔥 Beziehung beidseitig setzen
     tasks.add(task);
+    task.assignTo(this);
+
     this.updated = LocalDateTime.now();
   }
 
@@ -248,7 +251,14 @@ public class TaskList {
       throw new DomainRuleViolationException("Task gehört nicht zu dieser TaskList.");
     }
 
-    tasks.remove(task);
+//    if (!task.getTaskList().getId().equals(this.id)) {
+//      throw new DomainRuleViolationException(
+//              "Task " + task.getId() + " gehört nicht zur TaskList " + this.id
+//      );
+//    }
+
+    this.tasks.remove(task);
+    task.assignTo(null);
     this.updated = LocalDateTime.now();
   }
 

@@ -148,9 +148,12 @@ public class TaskListServiceImpl implements ITaskListService {
     return taskListRepository.save(taskList);
   }
 
+  @Override
   @Transactional
   public TaskList save(TaskList taskList) {
-    return taskListRepository.save(taskList);
+    TaskList saved = taskListRepository.save(taskList);
+    taskListRepository.flush(); // <-- WICHTIG
+    return saved;
   }
 
   private EntityNotFoundException logAndThrowNotFound(UUID id) {

@@ -29,10 +29,10 @@ public record CreateTaskDto(
 
         @NotNull(message = "Priorität darf nicht null sein")
         @Schema(description = "Priorität der Aufgabe", example = "HIGH")
-        TaskPriority priority,
+        TaskPriority priority
 
-        @NotNull(message = "ID der zugehörigen Task-Liste darf nicht null sein")
-        @Schema(description = "ID der zugehörigen Task-Liste", example = "640eb884-723b-408a-869d-59b38ca44b84")
-        UUID taskListId
+        //@NotNull(message = "ID der zugehörigen Task-Liste darf nicht null sein")
+        //@Schema(description = "ID der zugehörigen Task-Liste", example = "640eb884-723b-408a-869d-59b38ca44b84")
+        //UUID taskListId
 ) {
 }

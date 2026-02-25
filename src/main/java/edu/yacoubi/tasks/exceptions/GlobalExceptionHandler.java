@@ -13,84 +13,108 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @RestControllerAdvice
 @Hidden
 @Slf4j
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<APIResponseVoid> handleNotFound(EntityNotFoundException ex,
-                                                          HttpServletRequest request) {
+  @ExceptionHandler(EntityNotFoundException.class)
+  public ResponseEntity<APIResponseVoid> handleNotFound(
+      EntityNotFoundException ex, HttpServletRequest request) {
 
-        APIResponseVoid body = APIResponseVoid.builder()
-                .status(ResponseStatus.ERROR)
-                .statusCode(404)
-                .message("Ressource nicht gefunden")
-                .errors(List.of(new ApiErrorResponse(404, ex.getMessage())))
-                .timestamp(LocalDateTime.now())
-                .build();
+    APIResponseVoid body =
+        APIResponseVoid.builder()
+            .status(ResponseStatus.ERROR)
+            .statusCode(404)
+            .message("Ressource nicht gefunden")
+            .errors(List.of(new ApiErrorResponse(404, ex.getMessage())))
+            .timestamp(LocalDateTime.now())
+            .build();
 
-        return ResponseEntity.status(404).body(body);
-    }
+    return ResponseEntity.status(404).body(body);
+  }
 
-    @ExceptionHandler(DomainValidationException.class)
-    public ResponseEntity<APIResponseVoid> handleDomainValidation(DomainValidationException ex) {
+  @ExceptionHandler(DomainValidationException.class)
+  public ResponseEntity<APIResponseVoid> handleDomainValidation(DomainValidationException ex) {
 
-        APIResponseVoid body = APIResponseVoid.builder()
-                .status(ResponseStatus.ERROR)
-                .statusCode(422)
-                .message("Domain-Validierung fehlgeschlagen")
-                .errors(List.of(new ApiErrorResponse(422, ex.getMessage())))
-                .timestamp(LocalDateTime.now())
-                .build();
+    APIResponseVoid body =
+        APIResponseVoid.builder()
+            .status(ResponseStatus.ERROR)
+            .statusCode(422)
+            .message("Domain-Validierung fehlgeschlagen")
+            .errors(List.of(new ApiErrorResponse(422, ex.getMessage())))
+            .timestamp(LocalDateTime.now())
+            .build();
 
-        return ResponseEntity.status(422).body(body);
-    }
+    return ResponseEntity.status(422).body(body);
+  }
 
-    @ExceptionHandler(DomainRuleViolationException.class)
-    public ResponseEntity<APIResponseVoid> handleDomainRule(DomainRuleViolationException ex) {
+  @ExceptionHandler(DomainRuleViolationException.class)
+  public ResponseEntity<APIResponseVoid> handleDomainRule(DomainRuleViolationException ex) {
 
-        APIResponseVoid body = APIResponseVoid.builder()
-                .status(ResponseStatus.ERROR)
-                .statusCode(409)
-                .message("Domainregel verletzt")
-                .errors(List.of(new ApiErrorResponse(409, ex.getMessage())))
-                .timestamp(LocalDateTime.now())
-                .build();
+    APIResponseVoid body =
+        APIResponseVoid.builder()
+            .status(ResponseStatus.ERROR)
+            .statusCode(409)
+            .message("Domainregel verletzt")
+            .errors(List.of(new ApiErrorResponse(409, ex.getMessage())))
+            .timestamp(LocalDateTime.now())
+            .build();
 
-        return ResponseEntity.status(409).body(body);
-    }
+    return ResponseEntity.status(409).body(body);
+  }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<APIResponseVoid> handleMethodArgInvalid(MethodArgumentNotValidException ex) {
+  @ExceptionHandler(MethodArgumentNotValidException.class)
+  public ResponseEntity<APIResponseVoid> handleMethodArgInvalid(
+      MethodArgumentNotValidException ex) {
 
-        List<ApiErrorResponse> errors = ex.getBindingResult().getFieldErrors().stream()
-                .map(fe -> new ApiErrorResponse(400, fe.getField() + ": " + fe.getDefaultMessage()))
-                .toList();
+    List<ApiErrorResponse> errors =
+        ex.getBindingResult().getFieldErrors().stream()
+            .map(fe -> new ApiErrorResponse(400, fe.getField() + ": " + fe.getDefaultMessage()))
+            .toList();
 
-        APIResponseVoid body = APIResponseVoid.builder()
-                .status(ResponseStatus.ERROR)
-                .statusCode(400)
-                .message("Validierungsfehler")
-                .errors(errors)
-                .timestamp(LocalDateTime.now())
-                .build();
+    APIResponseVoid body =
+        APIResponseVoid.builder()
+            .status(ResponseStatus.ERROR)
+            .statusCode(400)
+            .message("Validierungsfehler")
+            .errors(errors)
+            .timestamp(LocalDateTime.now())
+            .build();
 
-        return ResponseEntity.badRequest().body(body);
-    }
+    return ResponseEntity.badRequest().body(body);
+  }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<APIResponseVoid> handleInternalServerError(Exception ex) {
+  @ExceptionHandler(Exception.class)
+  public ResponseEntity<APIResponseVoid> handleInternalServerError(Exception ex) {
 
-        APIResponseVoid body = APIResponseVoid.builder()
-                .status(ResponseStatus.ERROR)
-                .statusCode(500)
-                .message("Interner Serverfehler")
-                .errors(List.of(new ApiErrorResponse(500, "Ein unerwarteter Fehler ist aufgetreten")))
-                .timestamp(LocalDateTime.now())
-                .build();
+    APIResponseVoid body =
+        APIResponseVoid.builder()
+            .status(ResponseStatus.ERROR)
+            .statusCode(500)
+            .message("Interner Serverfehler")
+            .errors(List.of(new ApiErrorResponse(500, "Ein unerwarteter Fehler ist aufgetreten")))
+            .timestamp(LocalDateTime.now())
+            .build();
 
-        return ResponseEntity.status(500).body(body);
-    }
+    return ResponseEntity.status(500).body(body);
+  }
+
+  @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+  public ResponseEntity<APIResponseVoid> handleTypeMismatch(
+      MethodArgumentTypeMismatchException ex) {
+
+    APIResponseVoid body =
+        APIResponseVoid.builder()
+            .status(ResponseStatus.ERROR)
+            .statusCode(400)
+            .message("Ungültiger Parameter")
+            .errors(List.of(new ApiErrorResponse(400, ex.getMessage())))
+            .timestamp(LocalDateTime.now())
+            .build();
+
+    return ResponseEntity.badRequest().body(body);
+  }
 }

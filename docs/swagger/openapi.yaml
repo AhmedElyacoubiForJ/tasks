@@ -50,6 +50,12 @@ paths:
               $ref: "#/components/schemas/FullUpdateTaskDto"
         required: true
       responses:
+        "200":
+          description: Task erfolgreich aktualisiert
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIResponseTaskSummaryDto"
         "422":
           description: Domain-Validierung fehlgeschlagen
           content:
@@ -58,12 +64,6 @@ paths:
                 $ref: "#/components/schemas/APIResponseTaskSummaryDto"
         "409":
           description: Konflikt – Domainregel verletzt
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIResponseTaskSummaryDto"
-        "200":
-          description: Task erfolgreich aktualisiert
           content:
             application/json:
               schema:
@@ -207,6 +207,34 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/APIResponseVoid"
+    patch:
+      tags:
+      - TaskLists – CRUD
+      summary: TaskList teilweise aktualisieren (PATCH)
+      description: "Aktualisiert nur die Felder, die im DTO gesetzt sind. Null-Werte\
+        \ werden ignoriert."
+      operationId: patchTaskList
+      parameters:
+      - name: id
+        in: path
+        description: UUID der TaskList
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PatchTaskListDto"
+        required: true
+      responses:
+        "200":
+          description: TaskList erfolgreich aktualisiert (PATCH)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIResponseTaskListDto"
   /api/tasklists/{id}/archive:
     put:
       tags:
@@ -230,14 +258,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/APIResponseTaskListDto"
-        "200":
-          description: TaskList erfolgreich archiviert
+        "409":
+          description: Konflikt – Domainregel verletzt
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/APIResponseTaskListDto"
-        "409":
-          description: Konflikt – Domainregel verletzt
+        "200":
+          description: TaskList erfolgreich archiviert
           content:
             application/json:
               schema:
@@ -670,6 +698,29 @@ components:
           - MEDIUM
           - LOW
       description: DTO für partielle Aktualisierung einer bestehenden Aufgabe (PATCH)
+    PatchTaskListDto:
+      type: object
+      properties:
+        title:
+          maxLength: 100
+          minLength: 3
+          type: string
+          description: Neuer Titel der Task-Liste (optional)
+          nullable: false
+          example: 📝 Überarbeitete Planung
+        description:
+          maxLength: 255
+          type: string
+          description: Neue Beschreibung der Task-Liste (optional)
+          example: Aktualisierte Beschreibung für Sprint 3
+        status:
+          type: string
+          description: Neuer Status der Task-Liste (optional)
+          example: ACTIVE
+          enum:
+          - ACTIVE
+          - ARCHIVED
+      description: DTO für partielle Aktualisierungen einer Task-Liste (PATCH)
     APIResponseListTaskListDto:
       type: object
       properties:

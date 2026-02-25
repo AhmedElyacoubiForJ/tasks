@@ -12,6 +12,11 @@ import edu.yacoubi.tasks.mappers.TaskTransformer;
 import edu.yacoubi.tasks.services.app.ITaskListService;
 import edu.yacoubi.tasks.services.app.ITaskListsTaskOrchestrator;
 import java.util.UUID;
+
+import edu.yacoubi.tasks.services.app.ITaskService;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -77,6 +82,7 @@ public class TaskListsTaskOrchestratorImpl
         implements ITaskListsTaskOrchestrator {
 
   private final ITaskListService taskListService;
+  private final ITaskService taskService;
   private final TaskUpdater taskUpdater;
 
   @Override
@@ -89,7 +95,7 @@ public class TaskListsTaskOrchestratorImpl
 
     TaskList taskList = taskListService.getTaskListOrThrow(taskListId);
 
-    // Domain erstellt Task über Aggregat-Root
+    // Domain erstellt Task und gibt das Objekt zurück
     Task task = taskList.createTask(
             dto.title(),
             dto.description(),
@@ -98,12 +104,13 @@ public class TaskListsTaskOrchestratorImpl
     );
 
     // Aggregat speichern (Task wird per Cascade mitgespeichert)
-    taskListService.save(taskList);
+    taskListService.save(taskList); // flush inside
 
     TaskSummaryDto created = TaskTransformer.TASK_TO_SUMMARY.transform(task);
 
+    // TODO bidirectional id setting don't working
     log.info("::createTaskInList erfolgreich abgeschlossen für taskId={} in taskListId={}",
-            created.id(), taskListId);
+            created.id(), taskListId); // created.id() is immer noch null
 
     return created;
   }
@@ -179,12 +186,16 @@ public class TaskListsTaskOrchestratorImpl
 
     TaskList taskList = taskListService.getTaskListOrThrow(taskListId);
 
-    Task task = taskList.getTasks().stream()
-            .filter(t -> t.getId().equals(taskId))
-            .findFirst()
-            .orElseThrow(() -> new IllegalStateException(
-                    "Task " + taskId + " gehört nicht zur TaskList " + taskListId
-            ));
+    // Orchestrator greift nichts direkt auf entities über Repo. sondern über services
+    Task task = taskService.getTaskOrThrow(taskId);
+
+    // DDD-Nicht-Konform
+    //    Task task = taskList.getTasks().stream()
+//            .filter(t -> t.getId().equals(taskId))
+//            .findFirst()
+//            .orElseThrow(() -> new IllegalStateException(
+//                    "Task " + taskId + " gehört nicht zur TaskList " + taskListId
+//            ));
 
     taskList.removeTask(task);
 

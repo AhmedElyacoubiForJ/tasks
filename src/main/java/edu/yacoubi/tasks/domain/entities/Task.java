@@ -119,6 +119,11 @@ public class Task {
         this.updated = LocalDateTime.now();
     }
 
+    // 🔥 Nur TaskList darf die Beziehung setzen
+    void assignTo(TaskList list) {
+        this.taskList = list;
+    }
+
     // -----------------------------------------
     //  Domain-Methoden (fachliches Verhalten)
     //  Keine Setter → Aggregat bleibt konsistent
@@ -246,23 +251,3 @@ public class Task {
                 '}';
     }
 }
-
-
-/*
-* public void start() {
-    changeStatus(TaskStatus.IN_PROGRESS);
-}
-
-public void complete() {
-    changeStatus(TaskStatus.COMPLETED);
-}
-
-public void validateBeforeArchive() {
-    if (!isCompleted()) {
-        throw new DomainRuleViolationException(
-                "Task '" + title + "' ist nicht abgeschlossen und verhindert das Archivieren der TaskList."
-        );
-    }
-}
-
-* */
