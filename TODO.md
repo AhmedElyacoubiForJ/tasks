@@ -134,3 +134,35 @@ Du kannst:
 - die Scenario‑Tests bauen
 
 - oder das bidirektionale Mapping fixen (damit Create endlich IDs zurückgibt)
+
+---
+
+👉 die Controller‑Testklassen selbst kommentieren
+👉 oder die CRUD‑Tests füllen
+👉 oder die Validation‑Tests ergänzen
+👉 oder das bidirektionale Mapping fixen (damit Create endlich IDs zurückgibt)
+
+---
+
+👉 den CRUD‑Testklassen
+👉 oder den Scenario‑Tests
+👉 oder wir füllen die ersten Validation‑Tests gemeinsam
+
+---
+
+Wenn du möchtest, kann ich dir:
+
+- den kompletten GlobalExceptionHandler sauber strukturieren
+
+- alle Validation‑Tests automatisch anpassen
+
+- oder die Enum‑Validierung eleganter machen (z.B. mit Custom Validator)
+
+Was möchtest du als Nächstes?
+
+---
+
+👉 den gesamten GlobalExceptionHandler als Markdown‑Dokumentation exportieren  
+👉 alle CRUD‑Validation‑Tests genauso sauber bauen  
+👉 die Scenario‑Tests kommentieren  
+👉 oder das bidirektionale Mapping fixen (damit Create endlich IDs zurückgibt)
