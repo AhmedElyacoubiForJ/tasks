@@ -1,9 +1,10 @@
 package edu.yacoubi.tasks.controllers.api.impl;
 
-import edu.yacoubi.tasks.controllers.api.contract.ITaskListsScenarioApi;
 import edu.yacoubi.tasks.controllers.api.ResponseStatus;
+import edu.yacoubi.tasks.controllers.api.contract.ITaskListsUseCaseApi;
 import edu.yacoubi.tasks.controllers.api.wrappers.APIResponseListTaskListDto;
 import edu.yacoubi.tasks.controllers.api.wrappers.APIResponseTaskListDto;
+import edu.yacoubi.tasks.domain.dto.request.tasklist.ChangeTaskStatusRequest;
 import edu.yacoubi.tasks.domain.dto.response.tasklist.TaskListDto;
 import edu.yacoubi.tasks.domain.entities.TaskList;
 import edu.yacoubi.tasks.mappers.TaskListTransformer;
@@ -58,7 +59,7 @@ import java.util.UUID;
 @RestController
 @RequiredArgsConstructor
 @Slf4j
-public class TaskListsScenarioController implements ITaskListsScenarioApi {
+public class TaskListsUseCaseController implements ITaskListsUseCaseApi {
 
     private final ITaskListService taskListService;
     private final ITaskListsTaskOrchestrator orchestrator;
@@ -106,7 +107,9 @@ public class TaskListsScenarioController implements ITaskListsScenarioApi {
     }
 
     @Override
-    public ResponseEntity<APIResponseTaskListDto> archiveTaskList(UUID id) {
+    public ResponseEntity<APIResponseTaskListDto> archiveTaskList(
+            final UUID id
+    ) {
         log.info("📦 Archivieren der TaskList {}", id);
 
         TaskList archived = orchestrator.archiveTaskList(id);
@@ -121,6 +124,39 @@ public class TaskListsScenarioController implements ITaskListsScenarioApi {
                 .build();
 
         log.info("✅ TaskList {} erfolgreich archiviert", id);
+        return ResponseEntity.ok(response);
+    }
+
+    @Override
+    public ResponseEntity<APIResponseTaskListDto> changeTaskStatus(
+            final UUID taskListId,
+            final UUID taskId,
+            final ChangeTaskStatusRequest request
+    ) {
+        log.info(
+                "::changeTaskStatus gestartet für taskListId={} taskId={} status={}",
+                taskListId,
+                taskId,
+                request.status()
+        );
+
+        TaskList updatedTaskList = orchestrator.changeTaskStatus(
+                taskListId,
+                taskId,
+                request.status()
+        );
+
+        TaskListDto dto = TaskListTransformer.TASKLIST_TO_DTO.transform(updatedTaskList);
+
+        APIResponseTaskListDto response =
+                APIResponseTaskListDto.builder()
+                        .status(ResponseStatus.SUCCESS)
+                        .statusCode(HttpStatus.OK.value())
+                        .message("Task-Status erfolgreich geändert")
+                        .data(dto)
+                        .timestamp(LocalDateTime.now())
+                        .build();
+
         return ResponseEntity.ok(response);
     }
 }

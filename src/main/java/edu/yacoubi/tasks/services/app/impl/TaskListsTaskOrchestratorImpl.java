@@ -8,6 +8,7 @@ import edu.yacoubi.tasks.domain.dto.response.task.TaskSummaryDto;
 import edu.yacoubi.tasks.domain.entities.Task;
 import edu.yacoubi.tasks.domain.entities.TaskList;
 import edu.yacoubi.tasks.domain.entities.TaskPriority;
+import edu.yacoubi.tasks.domain.entities.TaskStatus;
 import edu.yacoubi.tasks.mappers.TaskTransformer;
 import edu.yacoubi.tasks.services.app.ITaskListService;
 import edu.yacoubi.tasks.services.app.ITaskListsTaskOrchestrator;
@@ -221,4 +222,35 @@ public class TaskListsTaskOrchestratorImpl
 
     return saved;
   }
+
+  @Override
+  public TaskList changeTaskStatus(
+          final UUID taskListId,
+          final UUID taskId,
+          final TaskStatus taskStatus
+  ) {
+    log.info(
+            "::changeTaskStatus gestartet für taskListId={} taskId={} status={}",
+            taskListId,
+            taskId,
+            taskStatus
+    );
+
+    TaskList taskList = taskListService.getTaskListOrThrow(taskListId);
+
+    // 👉 Domain-Methode auf dem Aggregat-Root
+    taskList.changeTaskStatus(taskId, taskStatus);
+
+    // Orchestrator gereift nichts direkt auf repos
+    TaskList updatedTaskList = taskListService.save(taskList);
+
+    log.info(
+            "::changeTaskStatus erfolgreich abgeschlossen für taskListId={} taskId={}",
+            taskListId,
+            taskId
+    );
+
+    return updatedTaskList;
+  }
+
 }

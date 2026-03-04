@@ -1,4 +1,4 @@
-package edu.yacoubi.tasks.api.tasklists.tasks;
+package edu.yacoubi.tasks.api.tasklists.tasks.crud;
 
 import edu.yacoubi.tasks.api.base.TaskApiRestAssuredTestBase;
 import io.restassured.http.ContentType;
@@ -34,7 +34,7 @@ import static org.hamcrest.Matchers.equalTo;
  *   - PATCH  /api/tasklists/{taskListId}/tasks/{taskId}
  *   - PUT    /api/tasklists/{taskListId}/tasks/{taskId}
  */
-class TaskListsTasksControllerValidationTest extends TaskApiRestAssuredTestBase {
+class TaskListsTasksCrudControllerValidationTest extends TaskApiRestAssuredTestBase {
 
     // ------------------------------------------------------------
     // POST /api/tasklists/{taskListId}/tasks

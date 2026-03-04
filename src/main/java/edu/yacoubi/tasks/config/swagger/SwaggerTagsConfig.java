@@ -12,12 +12,12 @@ import org.springframework.context.annotation.Configuration;
                         description = "Basisoperationen für TaskLists: erstellen, abrufen, aktualisieren, löschen"
                 ),
                 @Tag(
-                        name = "TaskLists – Szenarien",
-                        description = "Spezial- und Szenario-Endpunkte wie Archivierung oder Statusfilter"
+                        name = "Tasks – CRUD in TaskLists",
+                        description = "Endpunkte für Tasks innerhalb einer TaskList"
                 ),
                 @Tag(
-                        name = "Tasks in TaskLists",
-                        description = "Endpunkte für Tasks innerhalb einer TaskList"
+                        name = "TaskLists – UseCases",
+                        description = "Spezial- und UseCase-Endpunkte wie Archivierung oder Statusfilter"
                 )
         }
 )

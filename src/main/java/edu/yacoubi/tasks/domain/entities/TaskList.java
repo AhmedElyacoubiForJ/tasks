@@ -274,7 +274,8 @@ public class TaskList {
             .filter(t -> t.getId().equals(taskId))
             .findFirst()
             .orElseThrow(
-                () -> new DomainRuleViolationException("Task gehört nicht zu dieser TaskList."));
+                () -> new DomainRuleViolationException("Task gehört nicht zu dieser TaskList.")
+            );
 
     task.changeStatus(newStatus);
     this.updated = LocalDateTime.now();

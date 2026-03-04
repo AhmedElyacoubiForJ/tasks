@@ -1,7 +1,7 @@
 package edu.yacoubi.tasks.controllers.api.impl;
 
 import edu.yacoubi.tasks.controllers.api.ResponseStatus;
-import edu.yacoubi.tasks.controllers.api.contract.ITaskListsTasksApi;
+import edu.yacoubi.tasks.controllers.api.contract.ITaskListsTasksCrudApi;
 import edu.yacoubi.tasks.controllers.api.wrappers.APIResponseListTaskSummaryDto;
 import edu.yacoubi.tasks.controllers.api.wrappers.APIResponseTaskSummaryDto;
 import edu.yacoubi.tasks.controllers.api.wrappers.APIResponseVoid;
@@ -63,7 +63,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @Slf4j
-public class TaskListsTasksController implements ITaskListsTasksApi {
+public class TaskListsTasksCrudController implements ITaskListsTasksCrudApi {
 
   private final ITaskService taskService;
   private final ITaskListService taskListService;

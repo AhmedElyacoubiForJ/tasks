@@ -1,4 +1,4 @@
-package edu.yacoubi.tasks.api.tasklists.tasks;
+package edu.yacoubi.tasks.api.tasklists.tasks.crud;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
@@ -9,14 +9,14 @@ import io.restassured.http.ContentType;
 import org.junit.jupiter.api.Test;
 
 /**
- * TaskListsTasksControllerHappyPathTest
+ * TaskListsTasksCrudControllerHappyPathTest
  * -------------------------------------
  * Testet alle erfolgreichen (Happy Path) Endpunkte unter:
  *
  *   /api/tasklists/{taskListId}/tasks
  *
  * Aufruf (CLI):
- *   ./mvnw test -Dtest=TaskListsTasksControllerHappyPathTest
+ *   ./mvnw test -Dtest=TaskListsTasksCrudControllerHappyPathTest
  *
  * Abgedeckte Endpunkte:
  *   - POST   /api/tasklists/{taskListId}/tasks
@@ -31,7 +31,7 @@ import org.junit.jupiter.api.Test;
  *   - Sobald das bidirektionale Mapping korrigiert ist,
  *     kann der Workaround entfernt werden.
  */
-class TaskListsTasksControllerHappyPathTest extends TaskApiRestAssuredTestBase {
+class TaskListsTasksCrudControllerHappyPathTest extends TaskApiRestAssuredTestBase {
 
   // ------------------------------------------------------------
   // POST /api/tasklists/{taskListId}/tasks
@@ -178,7 +178,7 @@ class TaskListsTasksControllerHappyPathTest extends TaskApiRestAssuredTestBase {
     createTask(listId);
 
     String taskId =
-            given().when().get("/tasklists/" + listId + "/tasks").then().extract().path("data[0].id");
+        given().when().get("/tasklists/" + listId + "/tasks").then().extract().path("data[0].id");
 
     given().when().delete("/tasklists/" + listId + "/tasks/" + taskId).then().statusCode(200);
   }

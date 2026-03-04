@@ -166,3 +166,75 @@ Was möchtest du als Nächstes?
 👉 alle CRUD‑Validation‑Tests genauso sauber bauen  
 👉 die Scenario‑Tests kommentieren  
 👉 oder das bidirektionale Mapping fixen (damit Create endlich IDs zurückgibt)
+
+---
+
+👉 Soll ich dir danach auch eine Release‑Note oder Changelog‑Eintrag generieren?
+
+---
+
+👉 NotFound‑Tests  
+oder
+👉 Validation‑Tests  
+oder
+👉 Domain‑Tests? für
+
+---
+
+👉❓ Welche Domainregeln gelten für TaskLists?
+Beispiele:
+
+👉 Müssen TaskList‑Titel eindeutig sein?
+
+👉Darf eine TaskList gelöscht werden, wenn Tasks existieren?
+
+👉 Gibt es Archivierungsregeln?
+
+👉 Gibt es Längenbegrenzungen?
+
+👉Gibt es Status‑Felder (ACTIVE, ARCHIVED)?
+
+Sag mir einfach:
+
+👉 Welche Domainregeln sollen wir testen?
+
+---
+
+Wenn du möchtest, kann ich dir jetzt:
+
+👉 die Validierungsannotation @ValidTaskStatus erstellen
+
+👉 die Controller‑Implementierung anpassen
+
+👉 die Orchestrator‑ und Service‑Methoden finalisieren
+
+👉 oder direkt den Domain‑Test grün machen
+
+Wie möchtest du weitermachen?
+
+---
+
+1. Orchestrator‑Implementierung finalisieren
+2. Service‑Implementierung finalisieren
+3. Domain‑Methode changeTaskStatus finalisieren
+4. Domain‑Test erneut laufen lassen → wird grün
+
+---
+
+Was du jetzt tun kannst (wenn du möchtest)
+Du hast mehrere natürliche nächste Schritte:
+
+👉 Die mathematisch komprimierte Statusmaschine später einbauen
+
+👉 Weitere Szenario‑Tests migrieren
+
+👉 Die Archivierungslogik weiter verfeinern
+
+👉 Domain‑Events einführen (optional)
+
+👉 Progress‑Berechnung in die Domain verschieben
+
+👉 TaskList‑Status (ACTIVE/ARCHIVED) als Enum modellieren
+
+Aber das Wichtigste ist:
+Du hast jetzt ein vollständiges, funktionierendes Szenario‑Feature.

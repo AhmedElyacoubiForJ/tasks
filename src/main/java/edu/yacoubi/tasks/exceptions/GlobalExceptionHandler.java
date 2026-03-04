@@ -11,10 +11,12 @@ import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 /**
  * GlobalExceptionHandler ---------------------- Zentrale Fehlerbehandlung für alle REST-Controller.
@@ -199,5 +201,49 @@ public class GlobalExceptionHandler {
             .build();
 
     return ResponseEntity.status(500).body(body);
+  }
+
+  // ------------------------------------------------------------
+  // 405 – HTTP-Methode nicht erlaubt
+  // ------------------------------------------------------------
+  @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+  public ResponseEntity<APIResponseVoid> handleMethodNotSupported(
+          HttpRequestMethodNotSupportedException ex) {
+
+    APIResponseVoid body =
+            APIResponseVoid.builder()
+                    .status(ResponseStatus.ERROR)
+                    .statusCode(405)
+                    .message("HTTP-Methode nicht erlaubt")
+                    .errors(List.of(
+                            new ApiErrorResponse(
+                                    405,
+                                    "Erlaubte Methoden: " + String.join(", ", ex.getSupportedMethods())
+                            )
+                    ))
+                    .timestamp(LocalDateTime.now())
+                    .build();
+
+    return ResponseEntity.status(405).body(body);
+  }
+
+  // ------------------------------------------------------------
+  // 404 – Technischer Resource-Not-Found (Endpoint existiert nicht)
+  // ------------------------------------------------------------
+  @ExceptionHandler(NoResourceFoundException.class)
+  public ResponseEntity<APIResponseVoid> handleNoResourceFound(NoResourceFoundException ex) {
+
+    APIResponseVoid body =
+            APIResponseVoid.builder()
+                    .status(ResponseStatus.ERROR)
+                    .statusCode(404)
+                    .message("Endpoint nicht gefunden")
+                    .errors(List.of(
+                            new ApiErrorResponse(404, ex.getMessage())
+                    ))
+                    .timestamp(LocalDateTime.now())
+                    .build();
+
+    return ResponseEntity.status(404).body(body);
   }
 }

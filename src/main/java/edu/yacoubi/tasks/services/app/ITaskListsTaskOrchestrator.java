@@ -5,6 +5,7 @@ import edu.yacoubi.tasks.domain.dto.request.task.FullUpdateTaskDto;
 import edu.yacoubi.tasks.domain.dto.request.task.PatchTaskDto;
 import edu.yacoubi.tasks.domain.dto.response.task.TaskSummaryDto;
 import edu.yacoubi.tasks.domain.entities.TaskList;
+import edu.yacoubi.tasks.domain.entities.TaskStatus;
 
 import java.util.UUID;
 
@@ -19,4 +20,6 @@ public interface ITaskListsTaskOrchestrator {
   void deleteTaskInList(UUID taskListId, UUID taskId);
 
   TaskList archiveTaskList(UUID taskListId);
+
+  TaskList changeTaskStatus(UUID taskListId, UUID taskId, TaskStatus taskStatus);
 }

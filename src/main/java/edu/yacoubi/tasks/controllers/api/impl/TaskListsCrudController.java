@@ -91,7 +91,9 @@ public class TaskListsCrudController implements ITaskListsCrudApi {
     }
 
     @Override
-    public ResponseEntity<APIResponseTaskListDto> getTaskList(UUID id) {
+    public ResponseEntity<APIResponseTaskListDto> getTaskList(
+            final UUID id
+    ) {
         log.info("📥 Abrufen der TaskList mit ID {}", id);
 
         TaskList taskList = taskListService.getTaskListOrThrow(id);
@@ -132,8 +134,8 @@ public class TaskListsCrudController implements ITaskListsCrudApi {
 
     @Override
     public ResponseEntity<APIResponseTaskListDto> updateTaskList(
-            UUID id,
-            UpdateTaskListDto dto
+            final UUID id,
+            final UpdateTaskListDto dto
     ) {
         log.info("✏️ PUT TaskList {}", id);
 
@@ -154,8 +156,8 @@ public class TaskListsCrudController implements ITaskListsCrudApi {
 
     @Override
     public ResponseEntity<APIResponseTaskListDto> patchTaskList(
-            UUID id,
-            PatchTaskListDto dto
+            final UUID id,
+            final PatchTaskListDto dto
     ) {
         log.info("🩹 PATCH TaskList {}", id);
 
@@ -176,7 +178,9 @@ public class TaskListsCrudController implements ITaskListsCrudApi {
 
 
     @Override
-    public ResponseEntity<APIResponseVoid> deleteTaskList(UUID id) {
+    public ResponseEntity<APIResponseVoid> deleteTaskList(
+            final UUID id
+    ) {
         log.info("🗑️ Lösche TaskList {}", id);
 
         taskListService.deleteTaskList(id);

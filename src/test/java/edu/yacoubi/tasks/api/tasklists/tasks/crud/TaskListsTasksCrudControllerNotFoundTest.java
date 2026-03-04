@@ -1,4 +1,4 @@
-package edu.yacoubi.tasks.api.tasklists.tasks;
+package edu.yacoubi.tasks.api.tasklists.tasks.crud;
 
 import edu.yacoubi.tasks.api.base.TaskApiRestAssuredTestBase;
 import org.junit.jupiter.api.Test;
@@ -26,7 +26,7 @@ import static org.hamcrest.Matchers.equalTo;
  *   Sicherstellen, dass die API korrekt mit nicht existierenden
  *   TaskLists oder Tasks umgeht und konsistente 404-Fehler liefert.
  */
-class TaskListsTasksControllerNotFoundTest extends TaskApiRestAssuredTestBase {
+class TaskListsTasksCrudControllerNotFoundTest extends TaskApiRestAssuredTestBase {
 
     // ------------------------------------------------------------
     // GET /api/tasklists/{taskListId}/tasks

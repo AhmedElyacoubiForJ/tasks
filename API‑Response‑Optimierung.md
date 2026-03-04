@@ -87,11 +87,11 @@ public @interface DomainErrorResponses {
 
 ### ❌ Aber NICHT:
 - **409 (Konflikt)**  
-  → z. B. TaskList kann nicht archiviert werden, weil Tasks noch offen sind  
+  → z.B. TaskList kann nicht archiviert werden, weil Tasks noch offen sind  
   → Task kann nicht gelöscht werden, weil er in einem gesperrten Status ist
 
 - **422 (Domain‑Validierung)**  
-  → z. B. PATCH enthält ungültige Statuskombination  
+  → z.B. PATCH enthält ungültige Statuskombination  
   → Business‑Regel verletzt
 
 Diese Fehler sind **fachlich**, nicht technisch.  
@@ -178,7 +178,7 @@ Jetzt, wo DomainErrorResponses steht, können wir weiter:
 ### 👉 Schritt 6 – APIResponse<T> generisch verbessern
 Damit Swagger nicht mehr „object“ zeigt, sondern echte Typen.
 
-Alles klar, Ahmed — jetzt kommt **Schritt 6: APIResponse<T> generisch verbessern**, und ich verspreche dir:  
+Alles klar, Ahmed — jetzt kommt **Schritt6: APIResponse<T> generisch verbessern**, und ich verspreche dir:  
 **Das wird deine gesamte API-Dokumentation auf ein neues Level heben.**
 
 Du bekommst:
@@ -207,7 +207,7 @@ Das ist schlecht, weil:
 
 - Swagger weiß nicht, welcher Typ drin ist
 - Entwickler sehen nicht, was zurückkommt
-- Code‑Generatoren (z. B. OpenAPI Generator) erzeugen falsche Clients
+- Code‑Generatoren (z.B. OpenAPI Generator) erzeugen falsche Clients
 - Es wirkt unprofessionell
 
 Wir wollen:

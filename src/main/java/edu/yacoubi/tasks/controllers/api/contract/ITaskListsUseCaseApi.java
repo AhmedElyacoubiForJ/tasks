@@ -4,6 +4,7 @@ import edu.yacoubi.tasks.controllers.api.wrappers.APIResponseListTaskListDto;
 import edu.yacoubi.tasks.controllers.api.wrappers.APIResponseTaskListDto;
 
 import edu.yacoubi.tasks.controllers.api.annotations.DomainErrorResponses;
+import edu.yacoubi.tasks.domain.dto.request.tasklist.ChangeTaskStatusRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -16,10 +17,10 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @Tag(
-        name = "TaskLists – Szenarien",
-        description = "Spezial- und Szenario-Endpunkte wie Archivierung oder Statusfilter"
+        name = "TaskLists – UseCases",
+        description = "Spezial- und UseCase-Endpunkte wie Archivierung oder Statusfilter"
 )
-public interface ITaskListsScenarioApi extends IApiPrefix {
+public interface ITaskListsUseCaseApi extends IApiPrefix {
 
     @Operation(
             summary = "Aktive TaskLists abrufen",
@@ -33,7 +34,10 @@ public interface ITaskListsScenarioApi extends IApiPrefix {
                     schema = @Schema(implementation = APIResponseListTaskListDto.class)
             )
     )
-    @GetMapping(value = "/tasklists/active", produces = "application/json")
+    @GetMapping(
+            value = "/tasklists/active",
+            produces = "application/json"
+    )
     ResponseEntity<APIResponseListTaskListDto> getActiveTaskLists();
 
     @Operation(
@@ -48,7 +52,10 @@ public interface ITaskListsScenarioApi extends IApiPrefix {
                     schema = @Schema(implementation = APIResponseListTaskListDto.class)
             )
     )
-    @GetMapping(value = "/tasklists/archived", produces = "application/json")
+    @GetMapping(
+            value = "/tasklists/archived",
+            produces = "application/json"
+    )
     ResponseEntity<APIResponseListTaskListDto> getArchivedTaskLists();
 
     @Operation(
@@ -64,9 +71,47 @@ public interface ITaskListsScenarioApi extends IApiPrefix {
                     schema = @Schema(implementation = APIResponseTaskListDto.class)
             )
     )
-    @PutMapping(value = "/tasklists/{id}/archive", produces = "application/json")
+    @PutMapping(
+            value = "/tasklists/{id}/archive",
+            produces = "application/json"
+    )
     ResponseEntity<APIResponseTaskListDto> archiveTaskList(
             @Parameter(description = "UUID der TaskList")
             @PathVariable("id") UUID id
+    );
+
+    @Operation(
+            summary = "Status eines Tasks ändern",
+            description = "Ändert den Status eines Tasks innerhalb einer TaskList."
+    )
+    @DomainErrorResponses
+    @ApiResponse(
+            responseCode = "200",
+            description = "Task-Status erfolgreich geändert",
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = APIResponseTaskListDto.class)
+            )
+    )
+    @PatchMapping(
+            value = "/tasklists/{taskListId}/tasks/{taskId}/status",
+            produces = "application/json"
+    )
+    ResponseEntity<APIResponseTaskListDto> changeTaskStatus(
+            @Parameter(description = "UUID der TaskList")
+            @PathVariable("taskListId") UUID taskListId,
+
+            @Parameter(description = "UUID des Tasks")
+            @PathVariable("taskId") UUID taskId,
+
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "Neuer Status des Tasks",
+                    required = true,
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ChangeTaskStatusRequest.class)
+                    )
+            )
+            @RequestBody ChangeTaskStatusRequest request
     );
 }

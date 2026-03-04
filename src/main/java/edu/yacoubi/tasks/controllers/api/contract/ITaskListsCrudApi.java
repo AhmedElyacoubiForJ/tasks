@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,7 +36,10 @@ public interface ITaskListsCrudApi extends IApiPrefix {
                     schema = @Schema(implementation = APIResponseListTaskListDto.class)
             )
     )
-    @GetMapping(value = "/tasklists", produces = "application/json")
+    @GetMapping(
+            value = "/tasklists",
+            produces = "application/json"
+    )
     ResponseEntity<APIResponseListTaskListDto> getAllTaskLists();
 
     @Operation(
@@ -50,9 +54,12 @@ public interface ITaskListsCrudApi extends IApiPrefix {
                     schema = @Schema(implementation = APIResponseTaskListDto.class)
             )
     )
-    @GetMapping(value = "/tasklists/{id}", produces = "application/json")
+    @GetMapping(
+            value = "/tasklists/{id}",
+            produces = "application/json"
+    )
     ResponseEntity<APIResponseTaskListDto> getTaskList(
-            @Parameter(description = "UUID der TaskList")
+            @Valid @Parameter(description = "UUID der TaskList")
             @PathVariable("id") UUID id
     );
 
@@ -68,9 +75,13 @@ public interface ITaskListsCrudApi extends IApiPrefix {
                     schema = @Schema(implementation = APIResponseTaskListDto.class)
             )
     )
-    @PostMapping(value = "/tasklists", consumes = "application/json", produces = "application/json")
+    @PostMapping(
+            value = "/tasklists",
+            consumes = "application/json",
+            produces = "application/json"
+    )
     ResponseEntity<APIResponseTaskListDto> createTaskList(
-            @RequestBody CreateTaskListDto dto
+            @Valid @RequestBody CreateTaskListDto dto
     );
 
     @Operation(
@@ -85,10 +96,14 @@ public interface ITaskListsCrudApi extends IApiPrefix {
                     schema = @Schema(implementation = APIResponseTaskListDto.class)
             )
     )
-    @PutMapping(value = "/tasklists/{id}", consumes = "application/json", produces = "application/json")
+    @PutMapping(
+            value = "/tasklists/{id}",
+            consumes = "application/json",
+            produces = "application/json"
+    )
     ResponseEntity<APIResponseTaskListDto> updateTaskList(
             @PathVariable("id") UUID id,
-            @RequestBody UpdateTaskListDto dto
+            @Valid @RequestBody UpdateTaskListDto dto
     );
 
     @Operation(
@@ -112,7 +127,7 @@ public interface ITaskListsCrudApi extends IApiPrefix {
     ResponseEntity<APIResponseTaskListDto> patchTaskList(
             @Parameter(description = "UUID der TaskList")
             @PathVariable("id") UUID id,
-            @RequestBody PatchTaskListDto dto
+            @Valid @RequestBody PatchTaskListDto dto
     );
 
     @Operation(
@@ -127,7 +142,10 @@ public interface ITaskListsCrudApi extends IApiPrefix {
                     schema = @Schema(implementation = APIResponseVoid.class)
             )
     )
-    @DeleteMapping(value = "/tasklists/{id}", produces = "application/json")
+    @DeleteMapping(
+            value = "/tasklists/{id}",
+            produces = "application/json"
+    )
     ResponseEntity<APIResponseVoid> deleteTaskList(
             @PathVariable("id") UUID id
     );

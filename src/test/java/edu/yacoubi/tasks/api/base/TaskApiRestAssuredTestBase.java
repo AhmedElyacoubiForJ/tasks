@@ -30,6 +30,7 @@ public abstract class TaskApiRestAssuredTestBase {
                 .when()
                 .post("/tasklists")
                 .then()
+                .log().body() // logging
                 .statusCode(201)
                 .extract()
                 .path("data.id");
@@ -51,6 +52,28 @@ public abstract class TaskApiRestAssuredTestBase {
                 .when()
                 .post("/tasklists/" + listId + "/tasks")
                 .then()
+                .log().body() // logging
+                .statusCode(201)
+                .extract()
+                .path("data.id");
+    }
+
+    /**
+     * Hilfsmethode: Erstellt eine TaskList mit einem bestimmten Titel.
+     */
+    protected String createTaskList(String title) {
+        return given()
+                .contentType(ContentType.JSON)
+                .body("""
+                    {
+                      "title": "%s",
+                      "description": "Beschreibung"
+                    }
+                    """.formatted(title))
+                .when()
+                .post("/tasklists")
+                .then()
+                .log().body() // logging
                 .statusCode(201)
                 .extract()
                 .path("data.id");
