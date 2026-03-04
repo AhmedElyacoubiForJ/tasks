@@ -1,3 +1,4 @@
+# src/main/resources/application.yml
 # 📦 App-Informationen & 🌍 Profil
 spring:
   application:
@@ -21,5 +22,11 @@ logging:
 # Swagger‑UI Operationen sortieren
 springdoc:
   swagger-ui:
-  operationsSorter: method
-
+    tagsSorter:  alpha
+    pathsSorter: none
+    operationsSorter: method
+#    operationsSorter: >
+#      function(a, b) {
+#        const order = {get: 1, post: 2, put: 3, patch: 4, delete: 5};
+#        return order[a.get("method")] - order[b.get("method")];
+#      }

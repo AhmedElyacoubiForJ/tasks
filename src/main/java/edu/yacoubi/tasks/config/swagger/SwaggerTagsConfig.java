@@ -8,18 +8,19 @@ import org.springframework.context.annotation.Configuration;
 @OpenAPIDefinition(
         tags = {
                 @Tag(
-                        name = "TaskLists – CRUD",
+                        name = "A. TaskLists – CRUD",
                         description = "Basisoperationen für TaskLists: erstellen, abrufen, aktualisieren, löschen"
                 ),
                 @Tag(
-                        name = "Tasks – CRUD in TaskLists",
+                        name = "B. Tasks – CRUD innerhalb von TaskList",
                         description = "Endpunkte für Tasks innerhalb einer TaskList"
                 ),
                 @Tag(
-                        name = "TaskLists – UseCases",
+                        name = "C. TaskLists – UseCases",
                         description = "Spezial- und UseCase-Endpunkte wie Archivierung oder Statusfilter"
                 )
         }
 )
+
 public class SwaggerTagsConfig {
 }

@@ -19,8 +19,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @Tag(
-        name = "TaskLists – CRUD",
-        description = "Basisoperationen für TaskLists: erstellen, abrufen, aktualisieren, löschen"
+        name = "A. TaskLists – CRUD" //,
+        //description = "Basisoperationen für TaskLists: erstellen, abrufen, aktualisieren, löschen"
 )
 public interface ITaskListsCrudApi extends IApiPrefix {
 

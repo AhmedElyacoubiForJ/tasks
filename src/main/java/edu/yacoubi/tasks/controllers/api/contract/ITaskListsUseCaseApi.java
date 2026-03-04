@@ -17,8 +17,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @Tag(
-        name = "TaskLists – UseCases",
-        description = "Spezial- und UseCase-Endpunkte wie Archivierung oder Statusfilter"
+        name = "C. TaskLists – UseCases" //,
+        //description = "Spezial- und UseCase-Endpunkte wie Archivierung oder Statusfilter"
 )
 public interface ITaskListsUseCaseApi extends IApiPrefix {
 

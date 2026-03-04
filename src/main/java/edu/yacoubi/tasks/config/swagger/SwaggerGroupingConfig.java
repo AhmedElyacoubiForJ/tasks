@@ -20,24 +20,24 @@ public class SwaggerGroupingConfig {
     }
 
     @Bean
-    public GroupedOpenApi taskListsScenarioGroup() {
+    public GroupedOpenApi tasksInTaskListsGroup() {
         return GroupedOpenApi.builder()
-                .group("TaskLists – Szenarien")
+                .group("Tasks – CRUD innerhalb von TaskList")
                 .pathsToMatch(
-                        "/api/tasklists/active",
-                        "/api/tasklists/archived",
-                        "/api/tasklists/**/archive"
+                        "/api/tasklists/**/tasks",
+                        "/api/tasklists/**/tasks/**"
                 )
                 .build();
     }
 
     @Bean
-    public GroupedOpenApi tasksInTaskListsGroup() {
+    public GroupedOpenApi taskListsScenarioGroup() {
         return GroupedOpenApi.builder()
-                .group("Tasks in TaskLists")
+                .group("TaskLists – UseCases")
                 .pathsToMatch(
-                        "/api/tasklists/**/tasks",
-                        "/api/tasklists/**/tasks/**"
+                        "/api/tasklists/active",
+                        "/api/tasklists/archived",
+                        "/api/tasklists/**/archive"
                 )
                 .build();
     }

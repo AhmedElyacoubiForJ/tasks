@@ -1,3 +1,4 @@
+# src/main/resources/application-local-dev.yml
 # 🛠️ Entwicklungsprofil: DEV
 
 spring:
@@ -43,3 +44,6 @@ logging:
   #  edu.yacoubi.tasks: DEBUG
     #org.thymeleaf: DEBUG
     #com.zaxxer.hikari.HikariConfig: DEBUG
+
+# springdoc:
+#  swagger-ui: {}
