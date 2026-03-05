@@ -18,10 +18,7 @@ import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-@Tag(
-        name = "B. Tasks – CRUD innerhalb von TaskList" //,
-        //description = "Endpunkte für Tasks innerhalb einer TaskList"
-)
+@Tag(name = "B. Tasks – CRUD innerhalb von TaskList")
 public interface ITaskListsTasksCrudApi extends IApiPrefix {
 
   @Operation(
