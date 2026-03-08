@@ -238,3 +238,27 @@ Du hast mehrere natürliche nächste Schritte:
 
 Aber das Wichtigste ist:
 Du hast jetzt ein vollständiges, funktionierendes Szenario‑Feature.
+
+---
+
+👉 Wenn du möchtest, können wir als nächsten Schritt gemeinsam die 
+    Namenskonventionen oder die API‑Versionierung (v1/v2) vorbereiten,
+    damit deine API langfristig stabil bleibt
+
+---
+
+Dann sortieren wir alles sauber in:
+
+👉 domain/model
+
+👉 domain/services
+
+👉 domain/events
+
+👉 domain/exceptions
+
+👉 application/usecases
+
+👉 infrastructure/persistence
+
+Damit wird dein Projekt wirklich DDD‑rein.

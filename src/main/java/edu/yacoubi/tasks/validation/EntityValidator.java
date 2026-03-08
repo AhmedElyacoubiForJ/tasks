@@ -1,7 +1,7 @@
 package edu.yacoubi.tasks.validation;
 
-import edu.yacoubi.tasks.repositories.TaskListRepository;
-import edu.yacoubi.tasks.repositories.TaskRepository;
+import edu.yacoubi.tasks.infrastructure.persistence.repositories.TaskListRepository;
+import edu.yacoubi.tasks.infrastructure.persistence.repositories.TaskRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

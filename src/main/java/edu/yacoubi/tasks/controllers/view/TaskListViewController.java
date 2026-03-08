@@ -1,12 +1,12 @@
 package edu.yacoubi.tasks.controllers.view;
 
-import edu.yacoubi.tasks.domain.dto.request.tasklist.CreateTaskListDto;
-import edu.yacoubi.tasks.domain.dto.request.tasklist.UpdateTaskListDto;
-import edu.yacoubi.tasks.domain.dto.response.tasklist.TaskListDto;
-import edu.yacoubi.tasks.domain.entities.TaskList;
-import edu.yacoubi.tasks.mappers.TaskListTransformer;
-import edu.yacoubi.tasks.services.app.ITaskListService;
-import edu.yacoubi.tasks.services.ui.IProgressColorService;
+import edu.yacoubi.tasks.controllers.api.v1.contract.dto.request.tasklist.CreateTaskListDto;
+import edu.yacoubi.tasks.controllers.api.v1.contract.dto.request.tasklist.UpdateTaskListDto;
+import edu.yacoubi.tasks.controllers.api.v1.contract.dto.response.tasklist.TaskListDto;
+import edu.yacoubi.tasks.domain.model.TaskList;
+import edu.yacoubi.tasks.infrastructure.mapping.TaskListTransformer;
+import edu.yacoubi.tasks.application.ports.ITaskListService;
+import edu.yacoubi.tasks.infrastructure.ui.IProgressColorService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

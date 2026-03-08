@@ -1,7 +1,7 @@
 package edu.yacoubi.tasks.controllers.view;
 
-import edu.yacoubi.tasks.domain.dto.response.task.TaskSummaryDto;
-import edu.yacoubi.tasks.services.app.ITaskService;
+import edu.yacoubi.tasks.controllers.api.v1.contract.dto.response.task.TaskSummaryDto;
+import edu.yacoubi.tasks.application.ports.ITaskService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;

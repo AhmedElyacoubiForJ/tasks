@@ -1,7 +1,7 @@
 package edu.yacoubi.tasks.config;
 
-import edu.yacoubi.tasks.interceptor.ConsoleLoggingInterceptor;
-import edu.yacoubi.tasks.interceptor.JsonLoggingInterceptor;
+import edu.yacoubi.tasks.infrastructure.logging.ConsoleLoggingInterceptor;
+import edu.yacoubi.tasks.infrastructure.logging.JsonLoggingInterceptor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
