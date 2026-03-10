@@ -63,6 +63,9 @@ jobs:
       - name: Run Regression TestSuite
         run: ./mvnw -Dtest=TaskListsCrudTestSuite test
 
+      - name: Run Regression TaskListsTasksCrudTestSuite
+        run: ./mvnw -Dtest=TaskListsTasksCrudTestSuite test
+
       - name: Show App Logs (falls Fehler)
         if: failure()
         run: |

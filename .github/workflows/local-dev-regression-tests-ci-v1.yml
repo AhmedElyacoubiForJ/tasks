@@ -25,7 +25,10 @@
 
 name: Local Dev Regression Tests (v1)
 
-#on:
+# Diese Datei ist archiviert und deaktiviert.
+# GitHub Actions soll sie niemals ausführen.
+
+# on:
 #  push:
 #    branches: [ main ]
 #  pull_request:
@@ -58,7 +61,7 @@ jobs:
       - name: Make mvnw executable
         run: chmod +x ./mvnw
 
-      - name: Run Regression TestSuite
+      - name: Run Regression TaskListsCrudTestSuite
         run: ./mvnw -Dtest=TaskListsCrudTestSuite test
 
       - name: Show App Logs (falls Fehler)
