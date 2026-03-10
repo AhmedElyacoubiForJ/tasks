@@ -21,11 +21,17 @@ jobs:
           distribution: temurin
           java-version: 21
 
+      - name: Make mvnw executable
+        run: chmod +x ./mvnw
+
       - name: Start Application (local-dev)
         run: |
           nohup ./mvnw spring-boot:run -Dspring-boot.run.profiles=local-dev &
           echo "Warte auf App-Start..."
           sleep 30
+
+      - name: Make mvnw executable
+        run: chmod +x ./mvnw
 
       - name: Run Regression TestSuite
         run: ./mvnw -Dtest=TaskListsCrudTestSuite test
