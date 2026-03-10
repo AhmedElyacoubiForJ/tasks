@@ -10,7 +10,7 @@ echo "----------------------------------------------"
 # Alle Testklassen finden, die irgendwo unter /api/ liegen
 find "$TEST_DIR" \
   -type f \
-  -name "*Test.java" \
+  -name "*Test*.java" \
   | grep "/api/" \
   | sort
 

@@ -1,7 +1,7 @@
-# 📘 **OpenAPI‑YAML Export – Mini‑Dokumentation**
+[//]: # (docs/swagger/OpenAPI-Exportieren.md)
+# 📘 OpenAPI‑Export (YAML/JSON)
 
-## 📍 Speicherort der API‑Definition
-
+## Speicherort der API‑Definition
 Die generierte OpenAPI‑Spezifikation wird im Projekt unter folgendem Pfad abgelegt:
 
 ```
@@ -12,25 +12,22 @@ Dieser Ordner dient als zentrale Stelle für API‑Dokumentation und kann versio
 
 ---
 
-## 📤 **OpenAPI‑YAML manuell exportieren**
-
-Starte die Anwendung und führe folgenden Befehl aus:
+## OpenAPI‑YAML manuell exportieren
+Anwendung starten und folgenden Befehl ausführen:
 
 ```bash
 curl http://localhost:8080/v3/api-docs.yaml -o docs/swagger/openapi.yaml
 ```
 
-Dieser Befehl:
+Der Befehl:
 
 - ruft die vollständige OpenAPI‑Definition ab
 - speichert sie als `openapi.yaml`
-- legt sie automatisch im Ordner `docs/swagger/` ab
+- legt sie im Ordner `docs/swagger/` ab
 
 ---
 
-## 🧭 **Alternative: JSON‑Version**
-
-Falls du die JSON‑Variante brauchst:
+## JSON‑Export (optional)
 
 ```bash
 curl http://localhost:8080/v3/api-docs -o docs/swagger/openapi.json
@@ -38,9 +35,7 @@ curl http://localhost:8080/v3/api-docs -o docs/swagger/openapi.json
 
 ---
 
-## 🔍 **Swagger‑UI im Browser**
-
-Swagger‑UI bleibt weiterhin erreichbar unter:
+## Swagger‑UI im Browser
 
 ```
 http://localhost:8080/swagger-ui/index.html
@@ -48,12 +43,10 @@ http://localhost:8080/swagger-ui/index.html
 
 ---
 
-# 🎉 Fertig — klein, klar, wertvoll
+## Skripte für automatisierten Export
+Unter `scripts/swagger/` liegen zwei Hilfsskripte:
 
-Wenn du willst, kann ich dir jetzt:
+- `export-openapi.sh` (YAML)
+- `export-openapi.json.sh` (JSON)
 
-- ein kleines Shell‑Skript `export-openapi.sh` erstellen
-- eine GitHub‑Action bauen, die die YAML automatisch generiert
-- oder die README um diesen Abschnitt erweitern
-
-Sag einfach, womit wir weitermachen.
+Sie erleichtern den Export für lokale Entwicklung oder CI‑Pipelines.

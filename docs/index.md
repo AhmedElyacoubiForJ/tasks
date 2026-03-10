@@ -27,12 +27,16 @@
 → [README](./DDD‑Guideline/README.md)  
 → [Index / Navigation](./DDD‑Guideline/index.md)
 
-### Inhalte
-- DDD für Dummies
-- DDD für Juniors
-- DDD für Fortgeschrittene
-- DDD für Experten
-- DDD Humor-Version
-- DDD Checkliste
-- DDD One-Pager
-- DDD Architektur-Diagramm  
+---
+
+## 🔌 API-Versionierung (Tasks-Projekt)
+→ [README](./api/versionierung/README.md)  
+→ [Index / Navigation](./api/versionierung/index.md)
+
+---
+
+## 🔍 Swagger / OpenAPI
+→ [README](./swagger/README.md)  
+→ [Index / Navigation](./swagger/index.md)
+
+

@@ -3,7 +3,6 @@ package edu.yacoubi.tasks.api;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
 
@@ -19,7 +18,7 @@ import static org.hamcrest.Matchers.*;
 // .log().ifValidationFails() in allen Tests
 // .log().all() nur temporär beim Debuggen
 // Utility‑Methoden für TaskList & Task
-class TaskApiTest {
+class TaskApiBack {
 
     @BeforeAll
     static void setup() {

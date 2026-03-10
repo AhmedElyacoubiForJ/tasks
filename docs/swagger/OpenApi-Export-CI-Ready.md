@@ -1,69 +1,31 @@
-# OpenAPI Export – CI Ready (TODO: GitHub Actions)
+[//]: # (docs/swagger/OpenApi-Export-CI-Ready.md)
+# OpenAPI‑Export – CI‑Automatisierung (Roadmap)
 
-Diese kurze Dokumentation beschreibt, wie die OpenAPI-Spezifikation der Anwendung
-exportiert und im Projekt abgelegt wird.  
-Der Export funktioniert bereits manuell über Skripte.  
-**Die Automatisierung in GitHub Actions ist als TODO markiert.**
+## Ziel
+> Die OpenAPI‑Spezifikation soll zukünftig automatisch generiert und im Ordner `docs/swagger/` abgelegt werden. Der manuelle Export funktioniert bereits über Skripte; die CI‑Automatisierung folgt später.
 
----
-
-## 📍 Speicherort der API-Spezifikation
-
-Die exportierten Dateien liegen unter:
-
+## Speicherort der Spezifikation
 ```
 docs/swagger/
+  openapi.yaml
+  openapi.json
 ```
 
-- `openapi.yaml`
-- `openapi.json`
-
----
-
-## 📤 Manuelle Exporte
-
-### YAML exportieren
-
-```bash
-./scripts/swagger/export-openapi.sh
-```
-
-Direkter curl-Aufruf:
-
-```bash
-curl http://localhost:8080/v3/api-docs.yaml -o docs/swagger/openapi.yaml
-```
-
----
-
-### JSON exportieren
-
-```bash
-./scripts/swagger/export-openapi.json.sh
-```
-
-Direkter curl-Aufruf:
-
-```bash
-curl http://localhost:8080/v3/api-docs -o docs/swagger/openapi.json
-```
-
----
-
-## 🧭 Swagger UI
-
-Die interaktive API-Dokumentation bleibt erreichbar unter:
+## Manuelle Exporte
+Die Skripte für lokale Exporte liegen unter:
 
 ```
-http://localhost:8080/swagger-ui/index.html
+scripts/swagger/
+  export-openapi.sh
+  export-openapi.json.sh
 ```
 
----
+## CI‑TODOs
+- YAML und JSON automatisch generieren
+- Dateien in `docs/swagger/` aktualisieren
 
-## 📝 TODO: GitHub Actions (später automatisieren)
+[//]: # (- Optional: Versionierung der API‑Spezifikation)
 
-- [ ] YAML & JSON automatisch generieren
-- [ ] Dateien in `docs/swagger/` aktualisieren
-- [ ] Optional: Versionierung der API-Spezifikation
-- [ ] Optional: Veröffentlichung (z.B. GitHub Pages)
-- [ ] Optional: Client-Generierung (TypeScript, Java, Kotlin)
+[//]: # (- Optional: Veröffentlichung &#40;z.B. GitHub Pages&#41;)
+
+[//]: # (- Optional: Client‑Generierung &#40;TypeScript, Java, Kotlin&#41;)
