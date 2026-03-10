@@ -23,12 +23,12 @@ jobs:
 
       - name: Start Application (local-dev)
         run: |
-          nohup mvn spring-boot:run -Dspring-boot.run.profiles=local-dev &
+          nohup ./mvnw spring-boot:run -Dspring-boot.run.profiles=local-dev &
           echo "Warte auf App-Start..."
-          sleep 15
+          sleep 30
 
       - name: Run Regression TestSuite
-        run: mvn -Dtest=TaskListsCrudTestSuite test
+        run: ./mvnw -Dtest=TaskListsCrudTestSuite test
 
       - name: Show App Logs (falls Fehler)
         if: failure()
