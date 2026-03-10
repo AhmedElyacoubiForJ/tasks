@@ -60,7 +60,7 @@ jobs:
           echo "App wurde nicht rechtzeitig bereit."
           exit 1
 
-      - name: Run Regression TestSuite
+      - name: Run Regression TaskListsCrudTestSuite
         run: ./mvnw -Dtest=TaskListsCrudTestSuite test
 
       - name: Run Regression TaskListsTasksCrudTestSuite
