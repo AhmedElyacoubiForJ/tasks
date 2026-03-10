@@ -1,0 +1,73 @@
+# local-dev-regression-tests-ci-v1.yml
+#
+# v1: Erste funktionsfähige Local-Dev-CI
+#
+# Zweck:
+# - Diese Version ist der erste stabile Nachweis, dass GitHub Actions:
+#     • die Spring-Boot-App im Profil "local-dev" starten kann
+#     • H2 korrekt initialisiert
+#     • REST-Assured-Regressionstests ausführen kann
+# - Sie dient als historischer Meilenstein: "Proof of CI viability".
+#
+# Eigenschaften:
+# - Stabil, aber nicht optimiert
+# - Start über mvnw + spring-boot:run
+# - Blindes Warten mit sleep 30
+# - Keine Caches, kein Healthcheck, kein JAR-Build
+# - Ein einziger Testlauf (TaskListsCrudTestSuite)
+#
+# Nachfolger:
+# - v2: Optimiert (JAR-Start, Healthcheck, Maven-Caching)
+# - v3: Testsplitting (CRUD / UseCases / Fehlerfälle)
+# - Danach: compose-dev-CI für echte Postgres-Tests
+#
+# Diese Datei bleibt bewusst deaktiviert, um die Historie zu bewahren.
+
+name: Local Dev Regression Tests (v1)
+
+#on:
+#  push:
+#    branches: [ main ]
+#  pull_request:
+#    branches: [ main ]
+#  workflow_dispatch:
+
+jobs:
+  local-dev-regression-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Make mvnw executable
+        run: chmod +x ./mvnw
+
+      - name: Start Application (local-dev)
+        run: |
+          nohup ./mvnw spring-boot:run -Dspring-boot.run.profiles=local-dev &
+          echo "Warte auf App-Start..."
+          sleep 30
+
+      - name: Make mvnw executable
+        run: chmod +x ./mvnw
+
+      - name: Run Regression TestSuite
+        run: ./mvnw -Dtest=TaskListsCrudTestSuite test
+
+      - name: Show App Logs (falls Fehler)
+        if: failure()
+        run: |
+          echo "Logs der Anwendung:"
+          cat target/spring.log || echo "Keine Logdatei gefunden"
+
+# Nächste Schritte:
+# - v2: Optimieren (JAR, Healthcheck, Cache)
+# - v3: Tests splitten
+# - compose-dev-CI: echte Postgres-Tests

@@ -1,0 +1,77 @@
+# local-dev-regression-tests-ci-v2.yml
+#
+# v2: Optimierte Local-Dev-CI
+# - v1 bleibt als Historie erhalten (einfacher mvnw-Run + sleep)
+# - v2 bringt:
+#   - Maven-Caching (schnellere Builds)
+#   - Build als JAR (stabiler als spring-boot:run)
+#   - Healthcheck statt blindem Warten
+#   - Grundlage für spätere Erweiterungen (v3: Test-Splitting)
+#
+# Hinweis:
+# v3 wird die Tests in CRUD / UseCases / Fehlerfälle splitten.
+# v2 bleibt bewusst als "Single-Job-Optimierung" bestehen.
+
+name: Local Dev Regression Tests (v2)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  local-dev-regression-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: maven
+
+      - name: Make mvnw executable
+        run: chmod +x ./mvnw
+
+      - name: Build JAR
+        run: ./mvnw -DskipTests package
+
+      - name: Start Application (local-dev)
+        run: |
+          nohup java -jar target/*.jar --spring.profiles.active=local-dev &
+          echo "Warte auf App-Start..."
+
+      - name: Healthcheck (warte bis App erreichbar ist)
+        run: |
+          for i in {1..20}; do
+            if curl -s http://localhost:8080/actuator/health | grep '"status":"UP"' > /dev/null; then
+              echo "App ist bereit."
+              exit 0
+            fi
+            echo "Noch nicht bereit... Versuch $i"
+            sleep 3
+          done
+          echo "App wurde nicht rechtzeitig bereit."
+          exit 1
+
+      - name: Run Regression TestSuite
+        run: ./mvnw -Dtest=TaskListsCrudTestSuite test
+
+      - name: Show App Logs (falls Fehler)
+        if: failure()
+        run: |
+          echo "Logs der Anwendung:"
+          cat target/spring.log || echo "Keine Logdatei gefunden"
+
+# v3 wird Tests splitten:
+# - CRUD
+# - UseCases
+# - Fehlerfälle
+#
+# Danach folgt compose-dev-CI für echte Postgres-Tests.
