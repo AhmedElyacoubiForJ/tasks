@@ -3,10 +3,10 @@
 # v2: Optimierte Local-Dev-CI
 # - v1 bleibt als Historie erhalten (einfacher mvnw-Run + sleep)
 # - v2 bringt:
-#   - Maven-Caching (schnellere Builds)
-#   - Build als JAR (stabiler als spring-boot:run)
-#   - Healthcheck statt blindem Warten
-#   - Grundlage für spätere Erweiterungen (v3: Test-Splitting)
+#   - ⚡ Maven-Caching (schnellere Builds)
+#   - 🏗️ Build als JAR (stabiler als spring-boot:run)
+#   - ❤️ Healthcheck statt blindem Warten
+#   - 🧩 Grundlage für spätere Erweiterungen (v3: Test-Splitting)
 #
 # Hinweis:
 # v3 wird die Tests in CRUD / UseCases / Fehlerfälle splitten.
@@ -26,28 +26,28 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Code
+      - name: 📥 Checkout Code
         uses: actions/checkout@v4
 
-      - name: Setup JDK
+      - name: ☕ Setup JDK 21 + Maven Cache
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 21
           cache: maven
 
-      - name: Make mvnw executable
+      - name: 🔧 Make mvnw executable
         run: chmod +x ./mvnw
 
-      - name: Build JAR
+      - name: 🏗️ Build JAR (Tests übersprungen)
         run: ./mvnw -DskipTests package
 
-      - name: Start Application (local-dev)
+      - name: 🚀 Start Application (local-dev)
         run: |
           nohup java -jar target/*.jar --spring.profiles.active=local-dev &
           echo "Warte auf App-Start..."
 
-      - name: Healthcheck (warte bis App erreichbar ist)
+      - name: ❤️ Healthcheck (warte bis App erreichbar ist)
         run: |
           for i in {1..20}; do
             if curl -s http://localhost:8080/actuator/health | grep '"status":"UP"' > /dev/null; then
@@ -60,13 +60,16 @@ jobs:
           echo "App wurde nicht rechtzeitig bereit."
           exit 1
 
-      - name: Run Regression TaskListsCrudTestSuite
+      - name: 🧪 Run Regression TaskListsCrudTestSuite
         run: ./mvnw -Dtest=TaskListsCrudTestSuite test
 
-      - name: Run Regression TaskListsTasksCrudTestSuite
+      - name: 🧪 Run Regression TaskListsTasksCrudTestSuite
         run: ./mvnw -Dtest=TaskListsTasksCrudTestSuite test
 
-      - name: Show App Logs (falls Fehler)
+      - name: 🧪 Run Regression TaskListsUseCaseTestSuite
+        run: ./mvnw -Dtest=TaskListsUseCaseTestSuite test
+
+      - name: 📄 Show App Logs (falls Fehler)
         if: failure()
         run: |
           echo "Logs der Anwendung:"
