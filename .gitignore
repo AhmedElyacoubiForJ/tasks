@@ -3,9 +3,7 @@ docs/private/
 docs/drafts/
 *.tmp.md
 
-# desktop/
 target/
-# desktop/VERSIONING_HELPER.md
 logs/
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
@@ -20,11 +18,6 @@ db-config/container/prod/.env.prod
 db-config/local/prod/.env
 # git rm -r --cached -f makefiles/
 makefiles/
-
-
-## workshops ##
-# desktop/zu-docs/workshop_profile_users/.env.workshop
-# desktop/zu-docs/workshop_postgres_users/.env
 
 ### STS ###
 .apt_generated
