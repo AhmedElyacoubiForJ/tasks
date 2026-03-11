@@ -1,13 +1,8 @@
 # Ignore files and directories that should not be tracked by Git
-desktop/HELP.md
-desktop/NOTES.md
-desktop/LAYOUT_DEMO.md
-desktop/CSS-README.md
-desktop/table.css
-desktop/buttons.css
-desktop/responsive.css
-desktop/HTML-Template.html
-desktop/Dark-Mode-Toggle.md
+docs/private/
+docs/drafts/
+*.tmp.md
+
 desktop/
 target/
 desktop/VERSIONING_HELPER.md

@@ -33,11 +33,14 @@
 #└──────────────┘        └──────────────┘        └────────────────┘
 name: Local Dev Regression Tests (v3)
 
+#on:
+#  push:
+#    branches: [ main ]
+#  pull_request:
+#    branches: [ main ]
+#  workflow_dispatch:
+
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
   workflow_dispatch:
 
 jobs:
@@ -226,3 +229,5 @@ jobs:
       - name: 📄 Logs (falls Fehler)
         if: failure()
         run: cat target/spring.log || echo "Keine Logdatei gefunden"
+
+# Danach folgt compose-dev-CI für echte Postgres-Tests.

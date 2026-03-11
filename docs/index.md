@@ -1,37 +1,49 @@
 [//]: # (docs/index.md)
 # 📚 Dokumentationsübersicht
 
-## 🍽️ Minikube-Restaurant
-→ [README](./Minikube-Restaurant/README.md)  
-→ [Kochschule](./Minikube-Restaurant/Kochschule/README.md)  
-→ [Stationen](_archiv/stationen/index.md)
+## 🍽️ Minikube-Restaurant (draft)
 
-## 🧠 SQL-Workshop
-→ [README](./sql-workshop/README.md)  
-→ [Module](./sql-workshop/index.md)
+[//]: # (→ [README]&#40;drafts/Minikube-Restaurant/README.md&#41;  )
+
+[//]: # (→ [Kochschule]&#40;drafts/Minikube-Restaurant/Kochschule/README.md&#41;  )
+
+[//]: # (→ [Stationen]&#40;_archiv/stationen/index.md&#41;)
+
+## 🧠 SQL-Workshop (draft)
+
+[//]: # (→ [README]&#40;drafts/sql-workshop/README.md&#41;  )
+
+[//]: # (→ [Module]&#40;drafts/sql-workshop/index.md&#41;)
 
 ## ⚙️ DevOps-Ecosystem
 → [Workflow-Profile](./DevOps-Ecosystem/workflow/README.md)  
 → [Dev-Tools](./DevOps-Ecosystem/dev-tools/README.md)
 
-## 🏗️ Architektur
-→ [ARCHITEKTUR](./prod/ARCHITEKTUR.md)
+## 🏗️ Architektur (TODO)
 
-## 🧬 JPA-Models Analyse
-→ [README](./jpa-models-analyse/README.md)  
-→ [TODOs](./jpa-models-analyse/index.md)
+[//]: # (→ [ARCHITEKTUR]&#40;./prod/ARCHITEKTUR.md&#41;)
 
----
+## 🧬 JPA-Models Analyse (draft)
 
-## 🧩 DDD-Guideline (Tasks-Projekt)
-→ [README](./DDD‑Guideline/README.md)  
-→ [Index / Navigation](./DDD‑Guideline/index.md)
+[//]: # (→ [README]&#40;drafts/jpa-models-analyse/README.md&#41;  )
+
+[//]: # (→ [TODOs]&#40;drafts/jpa-models-analyse/index.md&#41;)
 
 ---
 
-## 🔌 API-Versionierung (Tasks-Projekt)
-→ [README](./api/versionierung/README.md)  
-→ [Index / Navigation](./api/versionierung/index.md)
+## 🧩 DDD-Guideline (Tasks-Projekt) (draft)
+
+[//]: # (→ [README]&#40;drafts/DDD‑Guideline/README.md&#41;  )
+
+[//]: # (→ [Index / Navigation]&#40;drafts/DDD‑Guideline/index.md&#41;)
+
+---
+
+## 🔌 API-Versionierung (Tasks-Projekt) (draft)
+
+[//]: # (→ [README]&#40;./api/versionierung/README.md&#41;  )
+
+[//]: # (→ [Index / Navigation]&#40;./api/versionierung/index.md&#41;)
 
 ---
 
