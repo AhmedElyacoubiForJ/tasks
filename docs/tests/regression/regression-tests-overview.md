@@ -1,20 +1,28 @@
+# Überblick
 
-# Regressionstests – Überblick
+> Die Regressionstests stellen sicher, dass die API stabil bleibt, auch wenn neue Features hinzukommen 
+> oder bestehende Bereiche refaktoriert werden.
 
-> Die manuelle Prüfung über Swagger‑UI war zu aufwendig und fehleranfällig.  
-> Um wiederholbare, schnelle und automatisierte Tests zu ermöglichen, wurden Regressionstests mit RestAssured eingeführt.
+## Warum Regressionstests?
 
-## Ausgangssituation
-- API musste nach jedem Start manuell geprüft werden.
-- Swagger‑UI war hilfreich, aber zu langsam für vollständige Regression.
-- Fehler wurden spät entdeckt, weil kein automatisierter Testlauf existierte.
+- Sie decken das gesamte API‑Verhalten ab.
+- Sie simulieren echte Nutzeraktionen über HTTP.
+- Sie funktionieren unabhängig vom Spring‑Profil.
+- Sie ersetzen manuelle Swagger‑Tests.
+- Sie sind die Grundlage für spätere CI‑Automatisierung.
 
-## Ziel
-- API‑Endpunkte automatisiert testen.
-- Konsistente Ergebnisse unabhängig vom Entwickler.
-- Grundlage für spätere CI‑Automatisierung schaffen.
+## Profil‑Unabhängigkeit
 
-## Ansatz
-- RestAssured als Testframework.
-- Tests laufen gegen eine laufende Anwendung.
-- Tests können einzeln oder als Suite ausgeführt werden.
+Die Tests greifen **nicht** auf Spring‑Konfigurationen zu.  
+Sie testen eine **bereits laufende Anwendung** über:
+
+http://localhost:8080/api
+
+
+Dadurch benötigen sie **keine**:
+- `application-test.yml`
+- `application-local-dev-test.yml`
+- `application-compose-dev-test.yml`
+
+RestAssured verhält sich wie ein externer Client (Browser, Swagger, Postman).
+

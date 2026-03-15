@@ -1,3 +1,4 @@
+# docker-compose-dev.yml
 # 📦 Docker-Kommandos für Setup & Wartung:
 # ----------------------------------------
 #
@@ -28,6 +29,17 @@
 # 🧹 Container & Netzwerke komplett entfernen:
 # docker system prune -a
 
+# http://localhost:8080/actuator/health
+# docker compose -f docker-compose-dev.yml logs -f app
+# docker logs -f tasks-app
+# docker exec -it postgres-dev psql -U admin -d tasks_dev_db
+# \dt
+# \d task_lists
+
+# docker volume rm pgdata-dev
+# docker volume ls
+
+
 services:
   db:
     image: postgres:alpine # ${DB_IMAGE}
@@ -46,12 +58,12 @@ services:
       timeout: 5s
       retries: 5
     volumes:
-      - pgdata-dev:/var/lib/postgresql/data     # ${VOLUME}:/var/lib/postgresql/data
+      - pgdata-dev:/var/lib/postgresql # /data     # ${VOLUME}:/var/lib/postgresql/data
       - ./init-dev-db.sh:/docker-entrypoint-initdb.d/init-dev-db.sh
     ports:
       - "${DB_PORT:-5432}:5432"
   app:
-    image: tasks-app:latest # ${APP_IMAGE}
+    image: tasks-app:dev # ${APP_IMAGE}
     build:
       context: .
       dockerfile: Dockerfile.dev
@@ -69,3 +81,80 @@ services:
 volumes:
   pgdata-dev:
   #pgdata-compose-dev:
+
+# Das ist eine bekannte Fehlermeldung bei neueren Postgres-Images (ab Version 18+).
+# Die Ordnerstruktur hat sich geändert: Statt direkt in /var/lib/postgresql/data erwartet Docker die Daten nun in einem versionsspezifischen Unterordner (z. B. /var/lib/postgresql/18/data).
+#Hier sind die zwei gängigsten Wege, das zu beheben:
+#1. Der schnelle Fix (wenn die Daten egal sind)
+#Falls das eine frische Entwickler-Instanz ist und du keine wichtigen Daten verlierst: Lösche einfach das lokale Volume oder den Ordner, den du an den Container gebunden hast. Beim nächsten Start legt Postgres die neue Struktur korrekt an.
+#2. Der manuelle Fix (Daten behalten)
+#Postgres weigert sich zu starten, weil es "alte" Daten im Hauptverzeichnis findet. Du kannst sie manuell verschieben:
+#
+#   1. Stoppe den Container.
+#   2. Gehe in dein lokales Datenverzeichnis auf dem Host-Rechner.
+#   3. Erstelle einen Unterordner für deine Version (z. B. 18).
+#   4. Verschiebe den kompletten Inhalt (alle Dateien aus data/) in diesen neuen Ordner 18/data/.
+#   5. Passe dein Mount-Ziel im Docker-Befehl oder in der docker-compose.yaml an:
+#   * Alt: /dein/pfad:/var/lib/postgresql/data
+#      * Neu: /dein/pfad:/var/lib/postgresql
+#
+#Wichtig: Das Image sucht jetzt automatisch nach dem passenden Unterverzeichnis.
+#Soll ich dir zeigen, wie du deine docker-compose.yaml anpassen musst, damit das dauerhaft funktioniert?
+
+# Ja, die Anpassung in der docker-compose-dev.yml ist jetzt korrekt.
+#Durch das Ändern des Pfads von /var/lib/postgresql/data auf /var/lib/postgresql folgst du genau der Empfehlung für Postgres 18+.
+#Wichtig: Da du ein Named Volume (pgdata-dev) verwendest, musst du dieses einmalig sauber löschen, damit Postgres die neue Verzeichnisstruktur darin initialisieren kann.
+#Führe diesen Befehl aus, um mit einer sauberen Struktur zu starten:
+
+# TODO
+#docker compose -f docker-compose-dev.yml down -v
+#docker volume rm pgdata-dev
+#docker compose -f docker-compose-dev.yml --env-file .env.compose-dev up --build
+#
+#Warum das jetzt passt:
+#
+#* Das Image erstellt nun automatisch Unterordner (z.B. /var/lib/postgresql/18/data).
+#* Zukünftige Upgrades (z.B. auf Version 19) lassen sich durch pg_upgrade --link viel einfacher durchführen, da alles unterhalb eines Mount-Points liegt.
+#
+#Soll ich dir noch kurz erklären, wie du prüfen kannst, ob die Init-Skripte (init-dev-db.sh) in der neuen Struktur weiterhin wie gewohnt ausgeführt werden?
+
+
+# Dass deine Init-Skripte korrekt laufen, kannst du auf drei Wegen sicherstellen und prüfen:
+#1. Die Logs (Der direkte Weg)
+#Wenn der Container das erste Mal startet (und das Volume leer ist), führt Postgres alle Skripte in /docker-entrypoint-initdb.d/ aus. Suche in den Logs nach diesen Zeilen:
+#
+#docker compose -f docker-compose-dev.yml logs -f db
+#
+#Achte auf Ausgaben wie:
+#
+#* /usr/local/bin/docker-entrypoint.sh: running /docker-entrypoint-initdb.d/init-dev-db.sh
+#* PostgreSQL init process complete; ready for start up.
+#
+#2. Prüfung in der Datenbank
+#Verbinde dich direkt mit der Datenbank und schaue nach, ob deine Tabellen oder der APP_DB_USER existieren:
+#
+#docker exec -it postgres-dev psql -U admin -d tasks_dev_db -c "\du"# Oder um Tabellen zu listen:
+#docker exec -it postgres-dev psql -U admin -d tasks_dev_db -c "\dt"
+#
+#3. Wichtiger Check für dein Skript
+#Da du jetzt auf Postgres 18+ bist, hat sich am Mechanismus für Init-Skripte nichts geändert, aber ein häufiger Fehler ist das Rechte-Problem. Stelle sicher, dass dein Skript auf dem Host ausführbar ist:
+#
+#chmod +x init-dev-db.sh
+#
+#Ein kleiner Tipp für dein init-dev-db.sh:
+#Da du in der docker-compose Variablen wie APP_DB_USER definierst, sollte dein Skript diese mit "$APP_DB_USER" verwenden, damit sie dynamisch aus der .env.compose-dev gezogen werden.
+#Soll ich mir den Inhalt deines Init-Skripts kurz ansehen, um sicherzugehen, dass die Variablen dort richtig verarbeitet werden?
+
+# Dein Skript sieht sehr gut aus und wird auch in der neuen Struktur von Postgres 18+ tadellos funktionieren. Die Verwendung von set -e und ON_ERROR_STOP=1 ist best practice, um Fehler im Setup sofort zu bemerken.
+#Zwei kleine Details solltest du für einen reibungslosen Ablauf beachten:
+#
+#   1. Variablen-Handling: In Bash-Skripten, die SQL-Befehle per psql absetzen, ist es sicherer, die Variablen in Anführungszeichen zu setzen (falls Sonderzeichen im Passwort sind), also: PASSWORD '$APP_DB_PASSWORD'. Das hast du bereits getan – perfekt.
+#   2. Schema-Berechtigungen: Seit Postgres 15+ hat sich das Standardverhalten für das public-Schema geändert (User dürfen dort standardmäßig keine Tabellen mehr erstellen). Dein Befehl GRANT CREATE ON SCHEMA public TO $APP_DB_USER; löst genau dieses Problem für deine Applikation.
+#
+#Ein wichtiger Hinweis zum Testen:
+#Da das Skript nur beim ersten Erstellen des Volumes ausgeführt wird, musst du zum Testen von Änderungen am Skript zwingend das Volume löschen:
+#
+#docker compose -f docker-compose-dev.yml down -v
+#docker compose -f docker-compose-dev.yml up --build
+#
+#Möchtest du, dass wir auch kurz die Spring Boot Konfiguration (application.properties oder yml) prüfen, um sicherzustellen, dass die Verbindung mit dem neuen $APP_DB_USER nahtlos klappt?

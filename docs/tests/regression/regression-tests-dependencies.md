@@ -1,31 +1,27 @@
-# Regressionstests – Dependencies & Setup
+# Abhängigkeiten
 
-Für die API‑Regressionstests wird RestAssured verwendet.
+## Technische Basis
+- **JUnit 5**
+- **RestAssured**
+- **JSON-Assert / Hamcrest**
+- **Maven Surefire Plugin**
 
-## Dependencies (pom.xml)
+## Keine Spring-Testprofile notwendig
 
-```xml
-<dependency>
-    <groupId>io.rest-assured</groupId>
-    <artifactId>rest-assured</artifactId>
-    <version>5.4.0</version>
-    <scope>test</scope>
-</dependency>
+Regressionstests verwenden **keine** Spring‑Konfigurationen aus `src/test/resources`.
 
-<dependency>
-    <groupId>io.rest-assured</groupId>
-    <artifactId>json-path</artifactId>
-    <version>5.4.0</version>
-    <scope>test</scope>
-</dependency>
-```
+Sie benötigen **keine**:
+- `application-test.yml`
+- `application-local-dev-test.yml`
+- `application-compose-dev-test.yml`
 
-## Testumgebung
-- Profil: **local-dev**
-- Datenbank: **H2 In‑Memory**
-- Anwendung muss **vor Teststart laufen** (Port 8080)
+Grund:
+> RestAssured testet die API wie ein externer Client und lädt keinen Spring‑Kontext.
 
-## Struktur
-- Tests liegen unter `src/test/java/...`
-- Tests können einzeln oder als Suite ausgeführt werden.
-- Jede Suite deckt einen API‑Bereich ab (Task, TaskList, UseCases).
+## Laufende Anwendung erforderlich
+Die Tests benötigen eine laufende Instanz der Anwendung:
+
+- **local-dev** (H2, IntelliJ)
+- **compose-dev** (Docker + Postgres)
+
+Beide Profile sind über `http://localhost:8080/api` erreichbar.

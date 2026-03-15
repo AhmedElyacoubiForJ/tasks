@@ -1,109 +1,19 @@
-# 📄 regression-tests-structure.md
-**(kompakt, nur das Wesentliche, perfekt für schnelle Orientierung)**
+# Teststruktur
 
-## Struktur der API‑Regressionstests
+Die Regressionstests sind nach API‑Bereichen organisiert.
 
-Die Tests sind nach API‑Bereichen gruppiert und spiegeln exakt die API‑Interfaces wider:
+## Bereiche
+- **TaskLists CRUD**
+- **Tasks CRUD**
+- **UseCases** (Complete, Reopen, Archive, Restore)
+- **Fehlerfälle** (Validation, NotFound, MethodNotAllowed)
 
-- **ITaskListsCrudApi**
-- **ITaskListsTasksCrudApi**
-- **ITaskListsUseCaseApi**
+## Suites
+- Bereichsspezifische Suites
+- Gesamtsuite für alle API‑Tests
 
-Jeder Bereich besitzt:
-- Happy‑Path‑Tests
-- Validation‑Tests
-- NotFound‑Tests
-- MethodNotAllowed‑Tests
-- Eine eigene TestSuite
-
----
-
-## Verzeichnisstruktur (aus `scripts/list_api_tests.sh`)
-
-```
-src/test/java/edu/yacoubi/tasks/api/
-  TaskApiFullTestSuite.java
-  base/
-    TaskApiRestAssuredTestBase.java
-
-  tasklists/
-    crud/
-      TaskListsCrudControllerHappyPathTest.java
-      TaskListsCrudControllerMethodNotAllowedTest.java
-      TaskListsCrudControllerNotFoundTest.java
-      TaskListsCrudControllerValidationTest.java
-      TaskListsCrudTestSuite.java
-
-    tasks/crud/
-      TaskListsTasksCrudControllerHappyPathTest.java
-      TaskListsTasksCrudControllerMethodNotAllowedTest.java
-      TaskListsTasksCrudControllerNotFoundTest.java
-      TaskListsTasksCrudControllerValidationTest.java
-      TaskListsTasksCrudTestSuite.java
-
-    usecase/
-      TaskListsTasksUseCaseControllerDomainErrorTest.java
-      TaskListsUseCaseControllerHappyPathTest.java
-      TaskListsUseCaseControllerTechnicalErrorTest.java
-      TaskListsUseCaseTestSuite.java
-```
-
----
-
-## Testgruppen (kompakt)
-
-### **TaskLists CRUD**
-```
-TaskListsCrudControllerHappyPathTest
-TaskListsCrudControllerValidationTest
-TaskListsCrudControllerNotFoundTest
-TaskListsCrudControllerMethodNotAllowedTest
-TaskListsCrudTestSuite
-```
-
-### **TaskLists → Tasks CRUD**
-```
-TaskListsTasksCrudControllerHappyPathTest
-TaskListsTasksCrudControllerValidationTest
-TaskListsTasksCrudControllerNotFoundTest
-TaskListsTasksCrudControllerMethodNotAllowedTest
-TaskListsTasksCrudTestSuite
-```
-
-### **TaskLists UseCases**
-```
-TaskListsUseCaseControllerHappyPathTest
-TaskListsTasksUseCaseControllerDomainErrorTest
-TaskListsUseCaseControllerTechnicalErrorTest
-TaskListsUseCaseTestSuite
-```
-
-### **Gesamtsuite**
-```
-TaskApiFullTestSuite
-```
-
----
-
-## Ausführung (kompakt)
-
-### Einzeltest
-```
-mvn -Dtest=TaskListsCrudControllerHappyPathTest test
-```
-
-### Bereichssuite
-```
-mvn -Dtest=TaskListsCrudTestSuite test
-```
-
-### Gesamte API‑Suite
-```
-mvn -Dtest=TaskApiFullTestSuite test
-```
-
-### Voraussetzung
-- App muss laufen (`local-dev`, H2, Port 8080)
+## Profil‑Unabhängigkeit
+Die Struktur ist identisch für **local-dev** und **compose-dev**, da die Tests nur HTTP‑Requests senden und keine Spring‑Konfiguration laden.
 
 ---
 

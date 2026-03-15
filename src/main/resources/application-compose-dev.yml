@@ -1,3 +1,4 @@
+# src/main/resources/application-compose-dev.yml
 spring:
   datasource:
     url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
@@ -11,7 +12,7 @@ spring:
     properties:
       hibernate:
         format_sql: true
-        generate_statistics: true
+        generate_statistics: false
     # 🚫 H2-Konsole deaktiviert
     h2:
       console:

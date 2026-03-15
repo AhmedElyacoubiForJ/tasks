@@ -1,3 +1,23 @@
+# ------------------------------------------------------------
+# 🐳 Dockerfile.dev – Entwicklungs‑Image für Spring Boot
+#
+# ▶ Zweck:
+#    - Baut die App mit Maven Wrapper (mvnw)
+#    - Nutzt das Profil "compose-dev" (über application-compose-dev.yml)
+#    - Erzeugt ein leichtgewichtiges JRE‑Runtime‑Image
+#
+# ▶ Build starten:
+#      docker build -t tasks-app:dev -f Dockerfile.dev .
+#
+# ▶ Container starten:
+#      docker run --rm -p 8080:8080 tasks-app:dev
+#
+# ▶ Mit Profil starten:
+#      docker run --rm -p 8080:8080 tasks-app:dev \
+#         --spring.profiles.active=compose-dev
+#
+# ------------------------------------------------------------
+
 # 🧱 Base Layer
 FROM eclipse-temurin:17-jdk AS build
 WORKDIR /app
@@ -9,7 +29,7 @@ RUN chmod +x mvnw
 COPY pom.xml .
 
 # 📦 Dependencies (cached)
-# So wird go-offline nur neu ausgeführt, wenn pom.xml sich ändert
+# Wird nur neu ausgeführt, wenn pom.xml sich ändert
 RUN ./mvnw dependency:go-offline
 
 # 🧑‍💻 Source & Resources
@@ -17,22 +37,22 @@ COPY src ./src
 COPY src/main/resources/application.yml ./src/main/resources/
 COPY src/main/resources/application-compose-dev.yml ./src/main/resources/
 
-# Build
+# 🏗️ Build
 RUN ./mvnw clean package -DskipTests
 
-# 🔒 Final Stage
+# 🔒 Final Stage – kleines Runtime‑Image
 FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 
-# 🔒 Nicht-root Benutzer
+# 👤 Nicht-root Benutzer
 RUN adduser -D -h /home/appuser appuser
 USER appuser
 
-# App Jar übernehmen
+# 📦 App Jar übernehmen
 COPY --from=build /app/target/*.jar ./app.jar
 
+# ▶ Startkommando
 ENTRYPOINT ["java", "-jar", "app.jar"]
 
+# Optional:
 # CMD ["java", "-jar", "app.jar", "--spring.profiles.active=compose-prod"]
-
-#  docker build -t myimage:tasks-app .
