@@ -1,13 +1,14 @@
 #!/bin/bash
 # =====================================================================
-# 🔁 dev restart — stoppt und startet compose-dev neu
+# 🏗️ dev rebuild — build + up
 # =====================================================================
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-echo "🔁 Starte compose-dev neu..."
+echo "🏗️ Baue Images neu..."
+source "$SCRIPT_DIR/build.sh"
 
-source "$SCRIPT_DIR/down.sh"
+echo "🚀 Starte compose-dev..."
 source "$SCRIPT_DIR/up.sh"
 
-echo "✔ Neustart abgeschlossen."
+echo "✔ Rebuild abgeschlossen."

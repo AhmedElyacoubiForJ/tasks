@@ -3,39 +3,33 @@
 # =====================================================================
 
 # 🚀 Starten & Neu-Builden
-# ------------------------
 # docker compose -f docker-compose-dev.yml --env-file .env.compose-dev up --build
 # docker compose up --build --detach
 # docker compose ps -a
 
 # 🛑 Stoppen & Aufräumen
-# -----------------------
 # docker compose -f docker-compose-dev.yml --env-file .env.compose-dev down -v
 # docker compose down -v
 # docker system prune -a
 
 # 🧹 Volumes verwalten
-# ---------------------
 # docker volume ls
-# docker volume inspect pgdata-dev
-# docker volume rm pgdata-dev
-# 🔄 Komplett neu starten (frisches Volume):
-# docker compose down -v && docker volume rm pgdata-dev && docker compose up --build
+# docker volume inspect ${VOLUME} docker volume inspect tasks_${VOLUME}, weil docker added prefix.
+# docker volume rm ${VOLUME}
+# docker compose down -v && docker volume rm ${VOLUME} && docker compose up --build
 
 # 📜 Logs & Debugging
-# --------------------
 # docker compose logs -f
-# docker compose -f docker-compose-dev.yml logs -f app
-# docker logs -f tasks-app
-# docker ps -a   # alle Container (auch manuelle)
+# docker compose -f docker-compose-dev.yml logs -f ${APP_CONTAINER}
+# docker logs -f ${APP_CONTAINER}
+# docker ps -a
 
 # 🗄️ Postgres – Zugriff & DB-Tools
-# ---------------------------------
-# docker exec -it postgres-dev sh
-# docker exec -it postgres-dev psql -U admin -d tasks_dev_db
+# docker exec -it ${DB_CONTAINER} sh
+# docker exec -it ${DB_CONTAINER} psql -U ${POSTGRES_USER} -d ${DB_NAME}
 # \dt
 # \d task_lists
-# http://localhost:8080/actuator/health
+# http://localhost:${APP_PORT}/actuator/health
 
 # =====================================================================
 
@@ -52,17 +46,17 @@ services:
       APP_DB_USER: ${APP_DB_USER}
       APP_DB_PASSWORD: ${APP_DB_PASSWORD}
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ] # test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${DB_NAME}"]
       interval: 10s
       timeout: 5s
       retries: 5
     volumes:
-      - ${VOLUME}:/var/lib/postgresql # w. old version ${VOLUME}:/var/lib/postgresql/data
+      - ${VOLUME}:/var/lib/postgresql
       - ./init-dev-db.sh:/docker-entrypoint-initdb.d/init-dev-db.sh
     ports:
       - "${DB_PORT:-5432}:5432"
   app:
-    image: ${APP_IMAGE}
+    image: ${APP_NAME}:${APP_VERSION}
     build:
       context: .
       dockerfile: Dockerfile.dev
@@ -79,3 +73,5 @@ services:
 
 volumes:
   pgdata-dev:
+
+# TODO ./mvnw -Dtest=TaskApiFullTestSuite test integrieren

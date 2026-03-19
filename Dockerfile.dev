@@ -1,22 +1,14 @@
-# ------------------------------------------------------------
+# =====================================================================
 # 🐳 Dockerfile.dev – Entwicklungs‑Image für Spring Boot
+# =====================================================================
+# Dieses Dockerfile wird über das Build-Skript gebaut:
 #
-# ▶ Zweck:
-#    - Baut die App mit Maven Wrapper (mvnw)
-#    - Nutzt das Profil "compose-dev" (über application-compose-dev.yml)
-#    - Erzeugt ein leichtgewichtiges JRE‑Runtime‑Image
+#   source ./scripts/compose-dev/build.sh
+#   . ./scripts/compose-dev/build.sh
 #
-# ▶ Build starten:
-#      docker build -t tasks-app:dev -f Dockerfile.dev .
-#
-# ▶ Container starten:
-#      docker run --rm -p 8080:8080 tasks-app:dev
-#
-# ▶ Mit Profil starten:
-#      docker run --rm -p 8080:8080 tasks-app:dev \
-#         --spring.profiles.active=compose-dev
-#
-# ------------------------------------------------------------
+# Das Image-Tag wird NICHT im Dockerfile definiert,
+# sondern im Skript / in .env.compose-dev.
+# =====================================================================
 
 # 🧱 Base Layer
 FROM eclipse-temurin:17-jdk AS build
@@ -56,3 +48,5 @@ ENTRYPOINT ["java", "-jar", "app.jar"]
 
 # Optional:
 # CMD ["java", "-jar", "app.jar", "--spring.profiles.active=compose-prod"]
+
+#### **`init-dev-db.sh` (Idempotenz, ENV‑Nutzung, Fehlerhandling)**

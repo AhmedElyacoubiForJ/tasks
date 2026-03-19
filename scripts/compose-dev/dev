@@ -1,0 +1,67 @@
+#!/bin/bash
+# =====================================================================
+# 🌐 Zentrales compose-dev CLI
+# =====================================================================
+#
+# Installation (einmalig):
+#   1. CLI aktivieren:
+#        ./scripts/compose-dev/init.sh
+#
+#   2. Tab-Autocomplete installieren:
+#        ./scripts/compose-dev/completion.sh
+#
+# Danach stehen alle Befehle systemweit zur Verfügung:
+#        dev up
+#        dev down
+#        dev logs
+#        dev db shell
+#        dev status
+#        dev restart
+#
+# =====================================================================
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+case "$1" in
+
+  up) source "$SCRIPT_DIR/up.sh" ;;
+  down) shift; source "$SCRIPT_DIR/down.sh" "$@" ;;
+  build) source "$SCRIPT_DIR/build.sh" ;;
+  logs) shift; source "$SCRIPT_DIR/logs.sh" "$@" ;;
+  db) shift; source "$SCRIPT_DIR/db.sh" "$@" ;;
+  doctor) source "$SCRIPT_DIR/doctor.sh" ;;
+  status) source "$SCRIPT_DIR/status.sh" ;;
+  restart) source "$SCRIPT_DIR/restart.sh" ;;
+  rebuild) source "$SCRIPT_DIR/rebuild.sh" ;;
+  clean-all) source "$SCRIPT_DIR/clean-all.sh" ;;
+  completion) shift; source "$SCRIPT_DIR/completion.sh" "$@" ;;
+
+  help|--help|-h)
+    echo ""
+    echo "📘 Verfügbare Befehle:"
+    echo ""
+    echo "   dev up"
+    echo "   dev down [clean]"
+    echo "   dev build"
+    echo "   dev logs app|db|all|env|check"
+    echo "   dev db shell|tables|users|schemas|exec|reset|info"
+    echo "   dev doctor"
+    echo "   dev status"
+    echo "   dev restart"
+    echo "   dev rebuild"
+    echo "   dev clean-all"
+    echo "   dev completion install"
+    echo "   dev help"
+    echo ""
+    echo "💡 Hinweis:"
+    echo "   Falls 'dev' oder Tab-Autocomplete nicht funktioniert:"
+    echo "       ./scripts/compose-dev/init.sh"
+    echo "       ./scripts/compose-dev/completion.sh"
+    echo ""
+    ;;
+
+  *)
+    echo "❌ Unbekannter Befehl: $1"
+    echo "   Nutze: dev help"
+    ;;
+esac
