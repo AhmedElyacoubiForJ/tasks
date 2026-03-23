@@ -11,7 +11,7 @@
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
-ENV_FILE="$ROOT_DIR/.env.compose-dev"
+ENV_FILE="$ROOT_DIR/env/.env.compose-dev"
 
 # ----------------------------------------
 # 🔧 ENV laden
@@ -29,12 +29,12 @@ fi
 # 🧪 Parser-Check
 # ----------------------------------------
 echo "🧪 Prüfe docker-compose Syntax..."
-docker compose -f "$ROOT_DIR/docker-compose-dev.yml" --env-file "$ENV_FILE" config >/dev/null
+docker compose -f "$ROOT_DIR/docker/compose-dev.yml" --env-file "$ENV_FILE" config >/dev/null
 
 if [ $? -eq 0 ]; then
     echo "✅ docker-compose Syntax OK"
 else
-    echo "❌ Fehler in docker-compose-dev.yml"
+    echo "❌ Fehler in compose-dev.yml"
     return 1 2>/dev/null || exit 1
 fi
 
@@ -42,7 +42,7 @@ fi
 # 🛑 Container stoppen
 # ----------------------------------------
 echo "🛑 Stoppe compose-dev Umgebung..."
-docker compose -f "$ROOT_DIR/docker-compose-dev.yml" --env-file "$ENV_FILE" down
+docker compose -f "$ROOT_DIR/docker/compose-dev.yml" --env-file "$ENV_FILE" down
 echo "✅ Container gestoppt."
 
 # ----------------------------------------

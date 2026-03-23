@@ -5,7 +5,7 @@
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
-ENV_FILE="$ROOT_DIR/.env.compose-dev"
+ENV_FILE="$ROOT_DIR/env/.env.compose-dev"
 
 echo "⚠️ WARNUNG: Dies löscht ALLE compose-dev Ressourcen!"
 echo "   Container, Images, Volumes, Networks, Build-Cache"
@@ -26,7 +26,7 @@ PROJECT_NAME=$(basename "$ROOT_DIR")
 DOCKER_VOLUME="${PROJECT_NAME}_${VOLUME}"
 
 echo "🛑 Stoppe Container..."
-docker compose -f "$ROOT_DIR/docker-compose-dev.yml" --env-file "$ENV_FILE" down --rmi all --volumes --remove-orphans
+docker compose -f "$ROOT_DIR/docker/compose-dev.yml" --env-file "$ENV_FILE" down --rmi all --volumes --remove-orphans
 
 echo "🧹 Entferne Volume: $DOCKER_VOLUME"
 docker volume rm "$DOCKER_VOLUME" 2>/dev/null

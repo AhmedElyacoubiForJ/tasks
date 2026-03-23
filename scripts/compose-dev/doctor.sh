@@ -11,7 +11,7 @@ RESET="\e[0m"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
-ENV_FILE="$ROOT_DIR/.env.compose-dev"
+ENV_FILE="$ROOT_DIR/env/.env.compose-dev"
 
 echo -e "${BLUE}🔍 Starte Diagnose...${RESET}"
 
@@ -67,7 +67,7 @@ done
 # Compose Syntax
 # ----------------------------------------
 echo -e "${BLUE}🔎 Prüfe docker-compose Syntax...${RESET}"
-if docker compose -f "$ROOT_DIR/docker-compose-dev.yml" --env-file "$ENV_FILE" config >/dev/null; then
+if docker compose -f "$ROOT_DIR/docker/compose-dev.yml" --env-file "$ENV_FILE" config >/dev/null; then
     echo -e "${GREEN}✔ Compose Syntax OK${RESET}"
 else
     echo -e "${RED}❌ Fehler in docker-compose-dev.yml${RESET}"

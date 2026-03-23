@@ -22,7 +22,7 @@ echo "🔨 Baue Dev-Image..."
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
-ENV_FILE="$ROOT_DIR/.env.compose-dev"
+ENV_FILE="$ROOT_DIR/env/.env.compose-dev"
 
 # ENV-Variablen exportieren
 if [ -f "$ENV_FILE" ]; then

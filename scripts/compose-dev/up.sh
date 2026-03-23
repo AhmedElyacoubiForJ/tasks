@@ -44,7 +44,7 @@ ROOT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 [ -f "$SCRIPT_DIR/colors.sh" ] && source "$SCRIPT_DIR/colors.sh"
 
 # Pfad zur ENV-Datei
-ENV_FILE="$ROOT_DIR/.env.compose-dev"
+ENV_FILE="$ROOT_DIR/env/.env.compose-dev"
 
 # ENV-Variablen in die aktuelle Shell exportieren
 if [ -f "$ENV_FILE" ]; then
@@ -60,4 +60,4 @@ fi
 echo "📦 Volume: ${VOLUME}"
 
 # Compose starten
-docker compose -f "$ROOT_DIR/docker-compose-dev.yml" --env-file "$ENV_FILE" up -d
+docker compose -f "$ROOT_DIR/docker/compose-dev.yml" --env-file "$ENV_FILE" up -d
