@@ -55,9 +55,9 @@ jobs:
       - name: Make mvnw executable
         run: chmod +x ./mvnw
 
-      - name: Start Application (local-dev)
+      - name: Start Application (local-demo)
         run: |
-          nohup ./mvnw spring-boot:run -Dspring-boot.run.profiles=local-dev &
+          nohup ./mvnw spring-boot:run -Dspring-boot.run.profiles=local-demo &
           echo "Warte auf App-Start..."
           sleep 30
 

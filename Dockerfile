@@ -13,9 +13,9 @@ RUN ./mvnw dependency:go-offline
 
 # 🧑‍💻 Source & Resources
 COPY src ./src
-COPY src/main/resources/application.yml ./src/main/resources/
+COPY src/main/resources/config/application.yml ./src/main/resources/
 # COPY src/main/resources/application-container-dev.yml ./src/main/resources/
-COPY src/main/resources/application-compose-dev.yml ./src/main/resources/
+COPY src/main/resources/config/application-compose-dev.yml ./src/main/resources/
 
 # Stelle sicher, dass mvnw ausführbar ist
 RUN chmod +x mvnw

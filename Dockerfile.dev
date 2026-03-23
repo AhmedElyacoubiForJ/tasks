@@ -26,8 +26,8 @@ RUN ./mvnw dependency:go-offline
 
 # 🧑‍💻 Source & Resources
 COPY src ./src
-COPY src/main/resources/application.yml ./src/main/resources/
-COPY src/main/resources/application-compose-dev.yml ./src/main/resources/
+COPY src/main/resources/config/application.yml ./src/main/resources/
+COPY src/main/resources/config/application-compose-dev.yml ./src/main/resources/
 
 # 🏗️ Build
 RUN ./mvnw clean package -DskipTests

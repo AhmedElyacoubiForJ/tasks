@@ -102,9 +102,9 @@ jobs:
           name: app-jar
           path: target
 
-      - name: 🚀 Start Application (local-dev)
+      - name: 🚀 Start Application (local-demo)
         run: |
-          nohup java -jar target/*.jar --spring.profiles.active=local-dev &
+          nohup java -jar target/*.jar --spring.profiles.active=local-demo &
           echo "Warte auf App-Start..."
 
       - name: ❤️ Healthcheck

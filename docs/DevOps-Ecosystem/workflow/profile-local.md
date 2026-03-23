@@ -1,7 +1,7 @@
 ## 🧪 **Workflow: Lokal starten ohne Docker (PostgreSQL läuft auf Windows)**
 
-Diese Umgebung ist ideal für schnelle Iterationen, UI-Entwicklung mit HTMX und Live-Reload durch Spring Devtools.  
-Sie nutzt lokale Ressourcen und vermeidet Container-Overhead — perfekt für fokussiertes Entwickeln.
+> Diese Umgebung ist ideal für schnelle Iterationen, UI-Entwicklung mit HTMX und Live-Reload durch Spring Devtools.
+> Sie nutzt lokale Ressourcen und vermeidet Container-Overhead — perfekt für fokussiertes Entwickeln.
 
 ---
 
