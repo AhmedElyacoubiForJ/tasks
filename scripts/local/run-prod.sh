@@ -4,7 +4,6 @@
 # ----------------------------------------
 
 # Pfad zur ENV-Datei mit PostgreSQL-Zugangsdaten und Spring-Konfiguration
-#ENV_FILE="db-config/local/prod/.env"
 ENV_FILE="env/.env.local-prod"
 
 # Prüfe, ob die ENV-Datei existiert

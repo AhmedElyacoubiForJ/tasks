@@ -51,7 +51,7 @@ services:
       timeout: 5s
       retries: 5
     volumes:
-      - ${VOLUME}:/var/lib/postgresql
+      - ${VOLUME}:/var/lib/postgresql # /data weg dann funktioniert wieder
       - ./postgres/init-dev-db.sh:/docker-entrypoint-initdb.d/init-dev-db.sh
     ports:
       - "${DB_PORT:-5432}:5432"

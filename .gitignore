@@ -14,16 +14,14 @@ logs/
 
 # hier wird systhematisch aber schrittweise aufgeräumt
 .env.ci
-.env.test
-env/.env.compose-dev
 db-config/container/dev/.env.dev
-db-config/container/test/.env.test
 db-config/container/prod/.env.prod
 
 ## das sind die neuen (alte unter db-config weg gemacht)
 env/.env.local-demo
 env/.env.local-prod
 env/.env.compose-dev
+env/.env.local-docker-db
 
 ### STS ###
 .apt_generated
