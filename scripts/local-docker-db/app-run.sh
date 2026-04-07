@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# scripts/local-docker-db/app-run.sh
 ###############################################
 # App Runner Script
 # Startet die Spring Boot App mit dem Profil

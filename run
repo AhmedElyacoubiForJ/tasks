@@ -1,0 +1,119 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Root ermitteln
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+# detect-env laden
+source "$ROOT_DIR/scripts/lib/detect-env.sh"
+
+# Hilfetext
+usage() {
+  echo "Usage: ./run <db|app|test> <command>"
+  echo
+  echo "DB:"
+  echo "  ./run db up"
+  echo "  ./run db down"
+  echo "  ./run db test"
+  echo
+  echo "App:"
+  echo "  ./run app mvn"
+  echo "  ./run app jar"
+  echo
+  echo "Tests:"
+  echo "  ./run test regression"
+  exit 1
+}
+
+[[ $# -lt 2 ]] && usage
+
+CATEGORY="$1"
+COMMAND="$2"
+
+###############################################
+# Hilfsfunktion: Skript in WSL ausführen
+###############################################
+run_in_wsl() {
+  local script_path="$1"
+  wsl bash -c "cd '$ROOT_DIR' && bash '$script_path'"
+}
+
+###############################################
+# Hilfsfunktion: Skript in Git Bash ausführen
+###############################################
+run_in_gitbash() {
+  local script_path="$1"
+  bash "$script_path"
+}
+
+###############################################
+# Routing
+###############################################
+
+case "$CATEGORY" in
+
+  db)
+    case "$COMMAND" in
+      up)
+        if [[ "$IS_WSL" == "true" ]]; then
+          bash "$ROOT_DIR/scripts/db/up.sh"
+        else
+          run_in_wsl "scripts/db/up.sh"
+        fi
+        ;;
+      down)
+        if [[ "$IS_WSL" == "true" ]]; then
+          bash "$ROOT_DIR/scripts/db/down.sh"
+        else
+          run_in_wsl "scripts/db/down.sh"
+        fi
+        ;;
+      test)
+        if [[ "$IS_WSL" == "true" ]]; then
+          bash "$ROOT_DIR/scripts/db/test.sh"
+        else
+          run_in_wsl "scripts/db/test.sh"
+        fi
+        ;;
+      *)
+        usage
+        ;;
+    esac
+    ;;
+
+  app)
+    case "$COMMAND" in
+      mvn|jar)
+        if [[ "$IS_GITBASH" == "true" ]]; then
+          bash "$ROOT_DIR/scripts/app/run.sh" "$COMMAND"
+        else
+          # WSL → Git Bash starten
+          "/mnt/c/Program Files/Git/bin/bash.exe" "$ROOT_DIR/scripts/app/run.sh" "$COMMAND"
+        fi
+        ;;
+      *)
+        usage
+        ;;
+    esac
+    ;;
+
+  test)
+    case "$COMMAND" in
+      regression)
+        if [[ "$IS_GITBASH" == "true" ]]; then
+          bash "$ROOT_DIR/scripts/test/regression.sh"
+        else
+          "/mnt/c/Program Files/Git/bin/bash.exe" "$ROOT_DIR/scripts/test/regression.sh"
+        fi
+        ;;
+      *)
+        usage
+        ;;
+    esac
+    ;;
+
+  *)
+    usage
+    ;;
+esac

@@ -1,0 +1,120 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Verzeichnis dieses Scripts
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Projektroot (2 Ebenen hoch)
+ROOT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
+
+# detect-env laden
+source "$ROOT_DIR/scripts/lib/detect-env.sh"
+
+usage() {
+  echo "Usage: ./scripts/local-docker-db/run <db|app|test> <command> [args...]"
+  echo
+  echo "DB:"
+  echo "  run db up"
+  echo "  run db down [--purge]"
+  echo "  run db test"
+  echo
+  echo "App:"
+  echo "  run app mvn"
+  echo "  run app jar"
+  echo
+  echo "Tests:"
+  echo "  run test regression"
+  exit 1
+}
+
+# Mindestens zwei Argumente erforderlich
+[[ $# -lt 2 ]] && usage
+
+CATEGORY="$1"
+COMMAND="$2"
+shift 2   # Entfernt CATEGORY und COMMAND → Rest sind zusätzliche Argumente
+
+# Windows-Pfad → WSL-Pfad
+convert_to_wsl_path() {
+  local win_path="$1"
+  echo "$win_path" | sed 's|^/c/|/mnt/c/|; s|^/d/|/mnt/d/|'
+}
+
+# Script in WSL ausführen + alle Argumente weiterreichen
+run_in_wsl() {
+  local script_path="$1"
+  shift
+  local full_path="$ROOT_DIR/$script_path"
+  local wsl_path
+  wsl_path="$(convert_to_wsl_path "$full_path")"
+  wsl bash -c "bash '$wsl_path' $*"
+}
+
+###############################################
+# Routing
+###############################################
+
+case "$CATEGORY" in
+
+  db)
+    case "$COMMAND" in
+      up)
+        if [[ "$IS_WSL" == "true" ]]; then
+          bash "$SCRIPT_DIR/db-up.sh" "$@"
+        else
+          run_in_wsl "scripts/local-docker-db/db-up.sh" "$@"
+        fi
+        ;;
+      down)
+        if [[ "$IS_WSL" == "true" ]]; then
+          bash "$SCRIPT_DIR/db-down.sh" "$@"
+        else
+          run_in_wsl "scripts/local-docker-db/db-down.sh" "$@"
+        fi
+        ;;
+      test)
+        if [[ "$IS_WSL" == "true" ]]; then
+          bash "$SCRIPT_DIR/db-test.sh" "$@"
+        else
+          run_in_wsl "scripts/local-docker-db/db-test.sh" "$@"
+        fi
+        ;;
+      *)
+        usage
+        ;;
+    esac
+    ;;
+
+  app)
+    case "$COMMAND" in
+      mvn|jar)
+        if [[ "$IS_GITBASH" == "true" ]]; then
+          bash "$SCRIPT_DIR/app-run.sh" "$COMMAND" "$@"
+        else
+          "/mnt/c/Program Files/Git/bin/bash.exe" "$SCRIPT_DIR/app-run.sh" "$COMMAND" "$@"
+        fi
+        ;;
+      *)
+        usage
+        ;;
+    esac
+    ;;
+
+  test)
+    case "$COMMAND" in
+      regression)
+        if [[ "$IS_GITBASH" == "true" ]]; then
+          bash "$SCRIPT_DIR/regression-test.sh" "$@"
+        else
+          "/mnt/c/Program Files/Git/bin/bash.exe" "$SCRIPT_DIR/regression-test.sh" "$@"
+        fi
+        ;;
+      *)
+        usage
+        ;;
+    esac
+    ;;
+
+  *)
+    usage
+    ;;
+esac

@@ -1,0 +1,141 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+echo "[run] DEBUG: Starte run-script..."
+echo "[run] DEBUG: BASH_SOURCE = ${BASH_SOURCE[0]}"
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
+
+echo "[run] DEBUG: SCRIPT_DIR = $SCRIPT_DIR"
+echo "[run] DEBUG: ROOT_DIR   = $ROOT_DIR"
+
+# detect-env laden
+echo "[run] DEBUG: Lade detect-env..."
+source "$ROOT_DIR/scripts/lib/detect-env.sh"
+echo "[run] DEBUG: ENV_NAME = $ENV_NAME"
+
+usage() {
+  echo "Usage: ./scripts/local-docker-db/run <db|app|test> <command>"
+  exit 1
+}
+
+[[ $# -lt 2 ]] && usage
+
+CATEGORY="$1"
+COMMAND="$2"
+
+echo "[run] DEBUG: CATEGORY = $CATEGORY"
+echo "[run] DEBUG: COMMAND  = $COMMAND"
+
+###############################################
+# Hilfsfunktionen
+###############################################
+
+convert_to_wsl_path() {
+  local win_path="$1"
+  # /c/... → /mnt/c/...
+  echo "$win_path" | sed 's|^/c/|/mnt/c/|; s|^/d/|/mnt/d/|'
+}
+
+run_in_wsl() {
+  local script_path="$1"
+
+  echo "[run] DEBUG: run_in_wsl() aufgerufen"
+  echo "[run] DEBUG: script_path = $script_path"
+
+  local full_path="$ROOT_DIR/$script_path"
+  echo "[run] DEBUG: full_path (WIN) = $full_path"
+
+  local wsl_path
+  wsl_path="$(convert_to_wsl_path "$full_path")"
+  echo "[run] DEBUG: full_path (WSL) = $wsl_path"
+
+  if [[ ! -f "$full_path" ]]; then
+    echo "[run] WARN: Datei existiert im Windows-Pfad nicht (kann ok sein)"
+  fi
+
+  echo "[run] DEBUG: Führe aus: wsl bash -c \"bash '$wsl_path'\""
+  wsl bash -c "bash '$wsl_path'"
+}
+
+run_in_gitbash() {
+  local script_path="$1"
+  echo "[run] DEBUG: run_in_gitbash() → $script_path"
+  bash "$script_path"
+}
+
+###############################################
+# Routing
+###############################################
+
+case "$CATEGORY" in
+
+  db)
+    case "$COMMAND" in
+      up)
+        echo "[run] DEBUG: DB-UP"
+        if [[ "$IS_WSL" == "true" ]]; then
+          bash "$SCRIPT_DIR/db-up.sh"
+        else
+          run_in_wsl "scripts/local-docker-db/db-up.sh"
+        fi
+        ;;
+      down)
+        echo "[run] DEBUG: DB-DOWN"
+        if [[ "$IS_WSL" == "true" ]]; then
+          bash "$SCRIPT_DIR/db-down.sh"
+        else
+          run_in_wsl "scripts/local-docker-db/db-down.sh"
+        fi
+        ;;
+      test)
+        echo "[run] DEBUG: DB-TEST"
+        if [[ "$IS_WSL" == "true" ]]; then
+          bash "$SCRIPT_DIR/db-test.sh"
+        else
+          run_in_wsl "scripts/local-docker-db/db-test.sh"
+        fi
+        ;;
+      *)
+        usage
+        ;;
+    esac
+    ;;
+
+  app)
+    case "$COMMAND" in
+      mvn|jar)
+        echo "[run] DEBUG: APP ($COMMAND)"
+        if [[ "$IS_GITBASH" == "true" ]]; then
+          bash "$SCRIPT_DIR/app-run.sh" "$COMMAND"
+        else
+          "/mnt/c/Program Files/Git/bin/bash.exe" "$SCRIPT_DIR/app-run.sh" "$COMMAND"
+        fi
+        ;;
+      *)
+        usage
+        ;;
+    esac
+    ;;
+
+  test)
+    case "$COMMAND" in
+      regression)
+        echo "[run] DEBUG: TEST-REGRESSION"
+        if [[ "$IS_GITBASH" == "true" ]]; then
+          bash "$SCRIPT_DIR/regression-test.sh"
+        else
+          "/mnt/c/Program Files/Git/bin/bash.exe" "$SCRIPT_DIR/regression-test.sh"
+        fi
+        ;;
+      *)
+        usage
+        ;;
+    esac
+    ;;
+
+  *)
+    usage
+    ;;
+esac

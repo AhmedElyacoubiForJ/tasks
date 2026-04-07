@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# 1) Umgebung erkennen
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(dirname "$(dirname "$SCRIPT_DIR")")"
+
+# detect-env.sh ausführen
+source "$ROOT_DIR/lib/detect-env.sh"
+
+echo "🧪 Starte Regression Tests..."
+echo "🌍 Erkannte Umgebung: $DETECTED_ENV"
+
+# 2) API-URL dynamisch bestimmen
+API_URL="http://localhost:8080/actuator/health"
+
+if [[ "$DETECTED_ENV" == "WSL" ]]; then
+    echo "🔍 WSL erkannt – hole Windows-Host-IP..."
+    WIN_IP=$(ipconfig.exe | grep "IPv4" | awk '{print $NF}' | tr -d '\r' | head -n 1)
+    API_URL="http://$WIN_IP:8080/actuator/health"
+    echo "➡ Verwende API-URL: $API_URL"
+fi
+
+echo "⏳ Warte auf API ($API_URL)..."
+
+# 3) Health-Check
+until curl -s "$API_URL" | grep -q '"UP"'; do
+  sleep 2
+done
+
+echo "✔ API ist erreichbar und gesund."
+
+# 4) Regression Tests starten
+bash "$ROOT_DIR/mvnw" -Dtest=TaskApiFullTestSuite test
+
+echo "✔ Regression Tests abgeschlossen."
