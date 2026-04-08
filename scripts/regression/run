@@ -1,36 +1,74 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+###############################################################################
+# scripts/regression/run
+#
+# Regression-Test Runner
+# ----------------------
+# Führt die vollständige Regression-Test-Suite aus.
+#
+# Features:
+#   • Erkennt automatisch die Umgebung (WSL, Git Bash, Linux, macOS)
+#   • Wartet, bis die API erreichbar ist
+#   • Führt die Test-Suite über Maven aus
+#
+# Warum Umgebungserkennung?
+#   Unter WSL läuft die App in Windows (Port 8080),
+#   aber Regression-Tests laufen in WSL → daher andere API-URL.
+###############################################################################
+
 # 1) Umgebung erkennen
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(dirname "$(dirname "$SCRIPT_DIR")")"
 
-# detect-env.sh ausführen
-source "$ROOT_DIR/lib/detect-env.sh"
+source "$ROOT_DIR/scripts/lib/detect-env.sh"
 
 echo "🧪 Starte Regression Tests..."
-echo "🌍 Erkannte Umgebung: $DETECTED_ENV"
 
-# 2) API-URL dynamisch bestimmen
+###############################################################################
+# 2) API-URL bestimmen
+###############################################################################
+
 API_URL="http://localhost:8080/actuator/health"
 
-if [[ "$DETECTED_ENV" == "WSL" ]]; then
-    echo "🔍 WSL erkannt – hole Windows-Host-IP..."
+if [[ "$IS_WSL" == "true" ]]; then
+    echo "🌍 WSL erkannt – hole Windows-Host-IP..."
     WIN_IP=$(ipconfig.exe | grep "IPv4" | awk '{print $NF}' | tr -d '\r' | head -n 1)
     API_URL="http://$WIN_IP:8080/actuator/health"
     echo "➡ Verwende API-URL: $API_URL"
+else
+    echo "➡ Verwende API-URL: $API_URL"
 fi
+
+###############################################################################
+# 3) Health-Check
+###############################################################################
 
 echo "⏳ Warte auf API ($API_URL)..."
 
-# 3) Health-Check
 until curl -s "$API_URL" | grep -q '"UP"'; do
   sleep 2
 done
 
 echo "✔ API ist erreichbar und gesund."
 
+###############################################################################
 # 4) Regression Tests starten
-bash "$ROOT_DIR/mvnw" -Dtest=TaskApiFullTestSuite test
+###############################################################################
+
+echo "🧪 Führe Test-Suite aus..."
+
+if [[ "$IS_WSL" == "true" ]]; then
+    # mvnw.cmd muss unter Windows laufen
+    WIN_MVNW=$(wslpath -w "$ROOT_DIR/mvnw.cmd")
+    cmd.exe /C "$WIN_MVNW -Dtest=TaskApiFullTestSuite test"
+else
+    bash "$ROOT_DIR/mvnw" -Dtest=TaskApiFullTestSuite test
+fi
 
 echo "✔ Regression Tests abgeschlossen."
+
+## ✔ eine Regression‑README.md schreiben
+## ✔ die Test‑Suite erweitern
+## ✔ Health‑Check robuster machen (Timeout, Retry‑Limit)

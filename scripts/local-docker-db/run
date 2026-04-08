@@ -1,14 +1,66 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+###############################################################################
+# scripts/local-docker-db/run
+#
+# UNIVERSAL ENTRYPOINT FÜR LOKALE ENTWICKLUNG
+# -------------------------------------------
+# Dieses Script bündelt alle lokalen Dev-Kommandos:
+#
+#   ./scripts/local-docker-db/run db <up|down|test>
+#   ./scripts/local-docker-db/run app <jar|mvn>
+#
+# DESIGN-GRUNDSÄTZE
+# -----------------
+# 1) DB-Kommandos laufen immer in WSL (Docker läuft dort stabil)
+# 2) App-Kommandos nutzen das universelle Script:
+#       → JAR-Modus: überall stabil (WSL, Git Bash, Linux, macOS)
+#       → mvn-Modus: unter WSL deaktiviert (technische Limitierung)
+#
+# WARUM ES EIN PROFIL "local-docker-db" GIBT
+# ------------------------------------------
+# Dieses Profil ist speziell für Entwickler gedacht, die:
+#
+#   • KEIN PostgreSQL lokal installieren wollen
+#   • KEINE Datenbank auf dem Host-System betreiben möchten
+#   • ABER Docker in WSL installiert haben
+#   • UND App + PostgreSQL als Docker-Container laufen lassen wollen
+#
+# Das Profil sorgt dafür, dass:
+#   - die App automatisch gegen die Docker-DB spricht
+#   - alle DB-Parameter aus .env.local-docker-db geladen werden
+#   - nichts lokal installiert werden muss
+#   - die App komplett containerisiert laufen kann
+#
+# WARUM mvn UNTER WSL DEAKTIVIERT IST
+# -----------------------------------
+# mvnw.cmd läuft unter Windows/cmd.exe.
+# cmd.exe kann ENV-Variablen aus WSL NICHT zuverlässig übernehmen:
+#   - Whitespace wird eingefügt
+#   - JDBC-URLs werden zerstört
+#   - Ports werden falsch interpretiert
+#   - DevTools verliert ENV beim Restart
+#
+# Ergebnis: kaputte DB-Connections.
+#
+# Lösung:
+#   → mvn NUR unter Git Bash / Windows erlauben
+#   → unter WSL → JAR-Modus verwenden
+###############################################################################
+
+
 # Verzeichnis dieses Scripts
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Projektroot (2 Ebenen hoch)
 ROOT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
-# detect-env laden
+# detect-env lädt IS_WSL, IS_GITBASH usw.
 source "$ROOT_DIR/scripts/lib/detect-env.sh"
 
+###############################################################################
+# Usage-Hilfe
+###############################################################################
 usage() {
   echo "Usage: ./scripts/local-docker-db/run <db|app|test> <command> [args...]"
   echo
@@ -18,11 +70,15 @@ usage() {
   echo "  run db test"
   echo
   echo "App:"
-  echo "  run app mvn"
   echo "  run app jar"
+  echo "  run app mvn        (nur Git Bash / Windows)"
   echo
   echo "Tests:"
   echo "  run test regression"
+  echo "      Führt die vollständige Regression-Test-Suite aus."
+  echo "      Erkennt automatisch WSL/GitBash/Linux/macOS."
+  echo "      Wartet auf API-Health-Status und startet dann Maven-Tests."
+  echo
   exit 1
 }
 
@@ -32,6 +88,10 @@ usage() {
 CATEGORY="$1"
 COMMAND="$2"
 shift 2   # Entfernt CATEGORY und COMMAND → Rest sind zusätzliche Argumente
+
+###############################################################################
+# Hilfsfunktionen
+###############################################################################
 
 # Windows-Pfad → WSL-Pfad
 convert_to_wsl_path() {
@@ -49,12 +109,15 @@ run_in_wsl() {
   wsl bash -c "bash '$wsl_path' $*"
 }
 
-###############################################
+###############################################################################
 # Routing
-###############################################
+###############################################################################
 
 case "$CATEGORY" in
 
+  ###########################################################################
+  # DB-KOMMANDOS
+  ###########################################################################
   db)
     case "$COMMAND" in
       up)
@@ -84,37 +147,74 @@ case "$CATEGORY" in
     esac
     ;;
 
+  ###########################################################################
+  # APP-KOMMANDOS
+  ###########################################################################
   app)
     case "$COMMAND" in
-      mvn|jar)
+
+      #######################################################################
+      # JAR-MODUS → universell & stabil
+      #######################################################################
+      jar)
+        bash "$SCRIPT_DIR/app-run-universal.sh" jar "$@"
+        ;;
+
+      #######################################################################
+      # MVN-MODUS → unter WSL deaktiviert
+      #######################################################################
+      mvn)
+        if [[ "$IS_WSL" == "true" ]]; then
+          echo "❌ mvn-Modus unter WSL nicht unterstützt."
+          echo "   Grund: mvnw.cmd unter Windows kann ENV-Variablen aus WSL nicht zuverlässig übernehmen."
+          echo "   Bitte entweder:"
+          echo "     • mvn in Git Bash (Windows) ausführen, oder"
+          echo "     • den JAR-Modus verwenden."
+          exit 1
+        fi
+
+        # Unter Git Bash / Windows → mvn-Modus erlaubt
         if [[ "$IS_GITBASH" == "true" ]]; then
-          bash "$SCRIPT_DIR/app-run.sh" "$COMMAND" "$@"
+          bash "$SCRIPT_DIR/app-run-universal.sh" mvn "$@"
         else
-          "/mnt/c/Program Files/Git/bin/bash.exe" "$SCRIPT_DIR/app-run.sh" "$COMMAND" "$@"
+          "/mnt/c/Program Files/Git/bin/bash.exe" "$SCRIPT_DIR/app-run-universal.sh" mvn "$@"
         fi
         ;;
+
       *)
         usage
         ;;
     esac
     ;;
 
-  test)
-    case "$COMMAND" in
-      regression)
-        if [[ "$IS_GITBASH" == "true" ]]; then
-          bash "$SCRIPT_DIR/regression-test.sh" "$@"
-        else
-          "/mnt/c/Program Files/Git/bin/bash.exe" "$SCRIPT_DIR/regression-test.sh" "$@"
-        fi
-        ;;
-      *)
-        usage
-        ;;
-    esac
-    ;;
+    ###########################################################################
+    # TEST-KOMMANDOS
+    ###########################################################################
+    test)
+      case "$COMMAND" in
+
+        regression)
+          echo "▶ Starte Regression Tests..."
+
+          # Regression-Script ist vollständig WSL-aware → einfach direkt ausführen
+          if [[ "$IS_GITBASH" == "true" ]]; then
+            bash "$ROOT_DIR/scripts/regression/run" "$@"
+          else
+            bash "$ROOT_DIR/scripts/regression/run" "$@"
+          fi
+          ;;
+
+        *)
+          usage
+          ;;
+      esac
+      ;;
 
   *)
     usage
     ;;
 esac
+# TODO
+#✔ eine passende .env.local-docker-db‑Beispieldatei formulieren
+#✔ eine README.md für das gesamte local-docker-db‑Setup schreiben
+#✔ eine Architektur‑Skizze, wie App + DB + WSL zusammenspielen
