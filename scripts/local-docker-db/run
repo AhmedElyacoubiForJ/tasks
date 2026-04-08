@@ -214,7 +214,3 @@ case "$CATEGORY" in
     usage
     ;;
 esac
-# TODO
-#✔ eine passende .env.local-docker-db‑Beispieldatei formulieren
-#✔ eine README.md für das gesamte local-docker-db‑Setup schreiben
-#✔ eine Architektur‑Skizze, wie App + DB + WSL zusammenspielen

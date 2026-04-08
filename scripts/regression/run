@@ -69,6 +69,5 @@ fi
 
 echo "✔ Regression Tests abgeschlossen."
 
-## ✔ eine Regression‑README.md schreiben
-## ✔ die Test‑Suite erweitern
+## TODO
 ## ✔ Health‑Check robuster machen (Timeout, Retry‑Limit)
