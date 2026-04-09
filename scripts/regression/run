@@ -10,26 +10,91 @@ set -euo pipefail
 #
 # Features:
 #   • Erkennt automatisch die Umgebung (WSL, Git Bash, Linux, macOS)
-#   • Wartet, bis die API erreichbar ist
+#   • Wartet, bis die API erreichbar ist (Timeout + Retry + curl-timeout)
+#   • Zeigt schöne farbige Header/Status/Fehlerboxen
 #   • Führt die Test-Suite über Maven aus
-#
-# Warum Umgebungserkennung?
-#   Unter WSL läuft die App in Windows (Port 8080),
-#   aber Regression-Tests laufen in WSL → daher andere API-URL.
 ###############################################################################
 
+###############################################################################
+# Farben
+###############################################################################
+GREEN="\033[0;32m"
+RED="\033[0;31m"
+YELLOW="\033[1;33m"
+NC="\033[0m" # reset
+
+###############################################################################
+# Zentrierte Ausgabe (ASCII-safe, WSL-safe)
+###############################################################################
+center_text() {
+  local text="$1"
+  local width=$(tput cols 2>/dev/null || echo 80)
+  local text_length=${#text}
+
+  local padding=$(( (width - text_length) / 2 ))
+  if (( padding < 0 )); then padding=0; fi
+
+  printf "%*s%s\n" "$padding" "" "$text"
+}
+
+###############################################################################
+# Header-Box
+###############################################################################
+print_header_box() {
+  echo -e "${YELLOW}"
+  center_text "----------------------------------------"
+  center_text "      REGRESSION TEST RUNNER START      "
+  center_text "----------------------------------------"
+  echo -e "${NC}"
+}
+
+###############################################################################
+# Erfolgs-Box
+###############################################################################
+print_success_box() {
+  echo -e "${GREEN}"
+  center_text "----------------------------------------"
+  center_text "[ OK ]  API ist erreichbar und gesund"
+  center_text "----------------------------------------"
+  echo -e "${NC}"
+}
+
+###############################################################################
+# Fehler-Box
+###############################################################################
+print_error_box() {
+  echo -e "${RED}"
+  center_text "----------------------------------------"
+  center_text "[ FAIL ]  API NICHT erreichbar!"
+  center_text "----------------------------------------"
+  echo -e "${NC}"
+}
+
+###############################################################################
+# Footer-Box
+###############################################################################
+print_footer_box_done() {
+  echo -e "${YELLOW}"
+  center_text "----------------------------------------"
+  center_text "          ALL TESTS EXECUTED            "
+  center_text "----------------------------------------"
+  echo -e "${NC}"
+}
+
+###############################################################################
 # 1) Umgebung erkennen
+###############################################################################
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(dirname "$(dirname "$SCRIPT_DIR")")"
 
 source "$ROOT_DIR/scripts/lib/detect-env.sh"
 
 echo "🧪 Starte Regression Tests..."
+print_header_box
 
 ###############################################################################
 # 2) API-URL bestimmen
 ###############################################################################
-
 API_URL="http://localhost:8080/actuator/health"
 
 if [[ "$IS_WSL" == "true" ]]; then
@@ -42,32 +107,81 @@ else
 fi
 
 ###############################################################################
-# 3) Health-Check
+# 3) Health-Check (Farben + kompakt + WSL-sicher)
 ###############################################################################
 
-echo "⏳ Warte auf API ($API_URL)..."
+# Default: 60 Sekunden Timeout
+WAIT_SECONDS=60
 
-until curl -s "$API_URL" | grep -q '"UP"'; do
+# Argument-Parser (WSL-sicher, ohne shift)
+for arg in "$@"; do
+  if [[ "$arg" == "--wait" ]]; then
+    NEXT_IS_WAIT=true
+    continue
+  fi
+  if [[ "${NEXT_IS_WAIT:-}" == true ]]; then
+    if [[ "$arg" =~ ^[0-9]+$ ]]; then
+      WAIT_SECONDS="$arg"
+    else
+      echo -e "${RED}❌ Ungültiger Wert für --wait${NC}"
+      exit 1
+    fi
+    NEXT_IS_WAIT=false
+  fi
+done
+
+MAX_RETRIES=$(( WAIT_SECONDS / 2 ))
+RETRY_COUNT=0
+
+echo -e "${YELLOW}⏳ Warte auf API ($API_URL) – Timeout: ${WAIT_SECONDS}s ...${NC}"
+
+# Punkt-Spinner + curl-timeout (WSL-safe)
+while ! curl -s --max-time 2 --connect-timeout 2 "$API_URL" | grep -q '"UP"'; do
+  RETRY_COUNT=$((RETRY_COUNT + 1))
+  printf "."
+
+  if [[ "$RETRY_COUNT" -ge "$MAX_RETRIES" ]]; then
+      echo
+      print_error_box
+      echo -e "${RED}"
+      center_text "Bitte prüfen:"
+      center_text "• Läuft die App?"
+      center_text "• Port 8080 offen?"
+      center_text "• Richtige Windows-IP unter WSL?"
+      echo -e "${NC}"
+      exit 1
+  fi
+
   sleep 2
 done
 
-echo "✔ API ist erreichbar und gesund."
+print_success_box
 
 ###############################################################################
 # 4) Regression Tests starten
 ###############################################################################
-
 echo "🧪 Führe Test-Suite aus..."
 
 if [[ "$IS_WSL" == "true" ]]; then
-    # mvnw.cmd muss unter Windows laufen
     WIN_MVNW=$(wslpath -w "$ROOT_DIR/mvnw.cmd")
     cmd.exe /C "$WIN_MVNW -Dtest=TaskApiFullTestSuite test"
 else
     bash "$ROOT_DIR/mvnw" -Dtest=TaskApiFullTestSuite test
 fi
 
-echo "✔ Regression Tests abgeschlossen."
+print_footer_box_done
 
 ## TODO
-## ✔ Health‑Check robuster machen (Timeout, Retry‑Limit)
+## --endpoint <URL> → mehrere Health‑Checks
+## mehrere Endpoints prüfen (/health, /info, /ready) Multi‑Endpoint‑Health‑Check‑Box
+##--suite <Name> → dynamische Test‑Suite
+##
+##--verbose → Debug‑Modus
+
+##einen Backoff‑Algorithmus einbauen (1s → 2s → 4s …)
+##
+##den gesamten Runner modularisieren und in Module aufteilen (lib/health.sh, lib/output.sh, lib/env.sh)
+#
+## die Box automatisch zentrieren
+##
+##eine Warn‑Box (gelb) hinzufügen
