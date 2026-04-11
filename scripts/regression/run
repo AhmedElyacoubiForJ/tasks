@@ -10,171 +10,235 @@ set -euo pipefail
 #
 # Features:
 #   • Erkennt automatisch die Umgebung (WSL, Git Bash, Linux, macOS)
-#   • Wartet, bis die API erreichbar ist (Timeout + Retry + curl-timeout)
-#   • Zeigt schöne farbige Header/Status/Fehlerboxen
-#   • Führt die Test-Suite über Maven aus
+#   • Ermittelt automatisch die korrekte API-URL
+#       - Windows / Git Bash: http://localhost:8080
+#       - WSL: http://<Windows-IP>:8080
+#   • Wartet, bis die API erreichbar ist
+#       - Retry-Mechanismus (alle 2s)
+#       - curl-timeout (WSL-sicher)
+#       - konfigurierbares Timeout via --wait <Sekunden>
+#         Default: 60 Sekunden
+#   • Führt die gewünschte Test-Suite aus
+#       - via --suite <Name>
+#       - Default: TaskApiFullTestSuite
+#       - Verfügbare Suites:
+#           • TaskApiFullTestSuite
+#           • TaskListsCrudTestSuite
+#           • TaskListsTasksCrudTestSuite
+#           • TaskListsUseCaseTestSuite
+#   • Zeigt farbige Header-, Status- und Fehlerboxen (ASCII-safe)
+#   • Vollständig kompatibel mit WSL, Git Bash, IntelliJ, Linux, macOS
 ###############################################################################
 
 ###############################################################################
-# Farben
+# 1. PFADE UND IMPORTS
 ###############################################################################
-GREEN="\033[0;32m"
-RED="\033[0;31m"
-YELLOW="\033[1;33m"
-NC="\033[0m" # reset
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE}")" && pwd)"
+ROOT_DIR="$(dirname "$(dirname "$SCRIPT_DIR")")"
+
+# Farben laden (Fallback falls Datei fehlt, um 'unbound variable' zu vermeiden)
+if [ -f "$ROOT_DIR/scripts/utils/colors.sh" ]; then
+    source "$ROOT_DIR/scripts/utils/colors.sh"
+else
+    # Standardfarben
+    RED='' GREEN='' YELLOW='' BLUE='' CYAN='' PURPLE='' NC=''
+
+    # Bold
+    BOLD_RED='' BOLD_GREEN='' BOLD_YELLOW='' BOLD_CYAN=''
+
+    # Background
+    BG_RED='' BG_GREEN=''
+fi
+
+# Umgebungs-Erkennung (IS_WSL Variable)
+if [ -f "$ROOT_DIR/scripts/lib/detect-env.sh" ]; then
+    source "$ROOT_DIR/scripts/lib/detect-env.sh"
+fi
 
 ###############################################################################
-# Zentrierte Ausgabe (ASCII-safe, WSL-safe)
+# 2. KONFIGURATION
 ###############################################################################
+DEFAULT_SUITE="TaskApiFullTestSuite"
+VALID_SUITES=("TaskApiFullTestSuite" "TaskListsCrudTestSuite" "TaskListsTasksCrudTestSuite" "TaskListsUseCaseTestSuite")
+
+WAIT_SECONDS=60
+SUITE="$DEFAULT_SUITE"
+
+###############################################################################
+# 3. HILFSFUNKTIONEN
+###############################################################################
+
+# Zentriert Text basierend auf der Terminal-Breite
 center_text() {
   local text="$1"
   local width=$(tput cols 2>/dev/null || echo 80)
-  local text_length=${#text}
-
-  local padding=$(( (width - text_length) / 2 ))
-  if (( padding < 0 )); then padding=0; fi
-
+  local padding=$(( (width - ${#text}) / 2 ))
+  (( padding < 0 )) && padding=0
   printf "%*s%s\n" "$padding" "" "$text"
 }
 
-###############################################################################
-# Header-Box
-###############################################################################
+# Kurzer Hinweis bei Syntax-Fehlern (User-Friendly)
+print_usage() {
+  echo -e "${YELLOW}Verwendung:${NC} ./scripts/regression/run [--wait <Sekunden>] [--suite <Name>]"
+  echo -e "Tipp: Nutze ${CYAN}--help${NC} für die vollständige Liste der Suites."
+}
+
+# Ausführliche Hilfe (wird bei --help aufgerufen)
+print_help() {
+  echo -e "${BOLD_YELLOW}"
+  center_text "----------------------------------------"
+  center_text "        REGRESSION TEST RUNNER HELP      "
+  center_text "----------------------------------------"
+  echo -e "${NC}"
+  print_usage
+  echo -e "\n${YELLOW}Verfügbare Suites:${NC}"
+  for s in "${VALID_SUITES[@]}"; do echo "  • $s"; done
+  echo -e "\n${YELLOW}Beispiele:${NC}"
+  echo "  ./scripts/regression/run --wait 15 --suite TaskListsCrudTestSuite"
+}
+
+# Header-Box für den Start
 print_header_box() {
-  echo -e "${YELLOW}"
+  echo -e "${BOLD_YELLOW}"
   center_text "----------------------------------------"
   center_text "      REGRESSION TEST RUNNER START      "
   center_text "----------------------------------------"
   echo -e "${NC}"
 }
 
-###############################################################################
-# Erfolgs-Box
-###############################################################################
-print_success_box() {
-  echo -e "${GREEN}"
-  center_text "----------------------------------------"
-  center_text "[ OK ]  API ist erreichbar und gesund"
-  center_text "----------------------------------------"
-  echo -e "${NC}"
-}
+#print_success_box() {
+#  echo -e "${BOLD_GREEN}" # Nutzt jetzt fett-grün
+#  center_text "----------------------------------------"
+#  center_text "[ OK ]  API ist erreichbar und gesund"
+#  center_text "----------------------------------------"
+#  echo -e "${NC}"
+#}
+#
+#print_error_box() {
+#  echo -e "${RED}";
+#  center_text "----------------------------------------"
+#  center_text "[ FAIL ]  API NICHT erreichbar!"
+#  center_text "----------------------------------------";
+#  echo -e "${NC}"
+#}
+#
+#print_footer_box_done() {
+#  echo -e "${YELLOW}";
+#  center_text "----------------------------------------"
+#  center_text "          ALL TESTS EXECUTED            "
+#  center_text "----------------------------------------";
+#  echo -e "${NC}"
+#}
 
 ###############################################################################
-# Fehler-Box
+# 4. ARGUMENT PARSING (LOGIK FÜR OPTIONEN)
 ###############################################################################
-print_error_box() {
-  echo -e "${RED}"
-  center_text "----------------------------------------"
-  center_text "[ FAIL ]  API NICHT erreichbar!"
-  center_text "----------------------------------------"
-  echo -e "${NC}"
-}
+NEXT_IS_WAIT=false
+NEXT_IS_SUITE=false
+
+for arg in "$@"; do
+  # Falls das vorherige Argument --wait war, ist dieses hier der Wert
+  if [ "$NEXT_IS_WAIT" = true ]; then
+    if [[ "$arg" =~ ^[0-9]+$ ]]; then WAIT_SECONDS="$arg"; else
+      echo -e "${RED}❌ Fehler: --wait benötigt eine Zahl, erhalten: $arg${NC}"; exit 1
+    fi
+    NEXT_IS_WAIT=false; continue
+  fi
+
+  # Falls das vorherige Argument --suite war, ist dieses hier der Name
+  if [ "$NEXT_IS_SUITE" = true ]; then
+    SUITE="$arg"; NEXT_IS_SUITE=false; continue
+  fi
+
+  case $arg in
+    --help)
+      print_help
+      exit 0 # Expliziter Erfolgsausstieg
+      ;;
+    --wait)
+      NEXT_IS_WAIT=true
+      ;;
+    --suite)
+      NEXT_IS_SUITE=true
+      ;;
+    *)
+      # Wenn etwas Unbekanntes kommt: Kurze Info + Fehler-Exit
+      echo -e "${RED}❌ Unbekannte Option: $arg${NC}"
+      print_usage
+      exit 1 # Fehler-Exit (wichtig für Automatisierung)
+      ;;
+  esac
+done
+
+# Validierung der Suite (Vergleich mit Array)
+if [[ ! " ${VALID_SUITES[*]} " =~ " ${SUITE} " ]]; then
+  echo -e "${RED}❌ Ungültige Test-Suite: ${SUITE}${NC}"
+  echo -e "\n${YELLOW}Erlaubte Suites:${NC}"
+  for s in "${VALID_SUITES[@]}"; do echo "  • $s"; done
+  exit 1
+fi
 
 ###############################################################################
-# Footer-Box
+# 5. EXECUTION (HAUPT-ABLAUF)
 ###############################################################################
-print_footer_box_done() {
-  echo -e "${YELLOW}"
-  center_text "----------------------------------------"
-  center_text "          ALL TESTS EXECUTED            "
-  center_text "----------------------------------------"
-  echo -e "${NC}"
-}
-
-###############################################################################
-# 1) Umgebung erkennen
-###############################################################################
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ROOT_DIR="$(dirname "$(dirname "$SCRIPT_DIR")")"
-
-source "$ROOT_DIR/scripts/lib/detect-env.sh"
-
 echo "🧪 Starte Regression Tests..."
 print_header_box
 
-###############################################################################
-# 2) API-URL bestimmen
-###############################################################################
+# API-URL Bestimmung (WSL vs. Native)
+# --- ROBUSTER IP-CHECK FÜR WSL ---
+# Standardmäßig gehen wir von localhost aus (Git Bash / Linux Native)
 API_URL="http://localhost:8080/actuator/health"
 
-if [[ "$IS_WSL" == "true" ]]; then
-    echo "🌍 WSL erkannt – hole Windows-Host-IP..."
-    WIN_IP=$(ipconfig.exe | grep "IPv4" | awk '{print $NF}' | tr -d '\r' | head -n 1)
+if [[ "${IS_WSL:-false}" == "true" ]]; then
+    echo "🌍 WSL erkannt – ermittle Host-IP..."
+
+    # SCHRITT A: Wir fragen die Routing-Tabelle von WSL.
+    # 'default' zeigt auf das Gateway, welches immer die Windows-Host-IP ist.
+    # Das ist viel sicherer als ipconfig.exe, da es VPNs/falsche Adapter ignoriert.
+    WIN_IP=$(ip route show | grep default | awk '{print $3}' | head -n 1)
+
+    # SCHRITT B: FALLBACK (Nur wenn A fehlschlägt)
+    # Falls ip route leer ist, fragen wir Windows per PowerShell nach dem Hostnamen
+    if [[ -z "$WIN_IP" ]]; then
+        WIN_IP=$(hostname.exe | xargs -I{} powershell.exe -Command "Resolve-DnsName -Name {} -Type A | Select-Object -ExpandProperty IPAddress" | tr -d '\r' | head -n 1)
+    fi
+
     API_URL="http://$WIN_IP:8080/actuator/health"
-    echo "➡ Verwende API-URL: $API_URL"
-else
-    echo "➡ Verwende API-URL: $API_URL"
 fi
 
-###############################################################################
-# 3) Health-Check (Farben + kompakt + WSL-sicher)
-###############################################################################
+echo -e "➡ Verwende API-URL: ${CYAN:-}$API_URL${NC}"
+echo -e "➡ Verwende Test-Suite: ${YELLOW}$SUITE${NC}"
 
-# Default: 60 Sekunden Timeout
-WAIT_SECONDS=60
-
-# Argument-Parser (WSL-sicher, ohne shift)
-for arg in "$@"; do
-  if [[ "$arg" == "--wait" ]]; then
-    NEXT_IS_WAIT=true
-    continue
-  fi
-  if [[ "${NEXT_IS_WAIT:-}" == true ]]; then
-    if [[ "$arg" =~ ^[0-9]+$ ]]; then
-      WAIT_SECONDS="$arg"
-    else
-      echo -e "${RED}❌ Ungültiger Wert für --wait${NC}"
-      exit 1
-    fi
-    NEXT_IS_WAIT=false
-  fi
-done
-
+# Health-Check Warteschleife
 MAX_RETRIES=$(( WAIT_SECONDS / 2 ))
 RETRY_COUNT=0
+echo -e "${YELLOW}⏳ Warte auf API – Timeout: ${WAIT_SECONDS}s ...${NC}"
 
-echo -e "${YELLOW}⏳ Warte auf API ($API_URL) – Timeout: ${WAIT_SECONDS}s ...${NC}"
-
-# Punkt-Spinner + curl-timeout (WSL-safe)
 while ! curl -s --max-time 2 --connect-timeout 2 "$API_URL" | grep -q '"UP"'; do
   RETRY_COUNT=$((RETRY_COUNT + 1))
   printf "."
-
   if [[ "$RETRY_COUNT" -ge "$MAX_RETRIES" ]]; then
-      echo
-      print_error_box
-      echo -e "${RED}"
-      center_text "Bitte prüfen:"
-      center_text "• Läuft die App?"
-      center_text "• Port 8080 offen?"
-      center_text "• Richtige Windows-IP unter WSL?"
-      echo -e "${NC}"
+      echo -e "\n${RED}❌ API nicht erreichbar. Läuft der Service auf Windows?${NC}"
       exit 1
   fi
-
   sleep 2
 done
 
-print_success_box
+echo -e "\n${GREEN}[ OK ] API ist bereit. Starte Tests...${NC}"
 
-###############################################################################
-# 4) Regression Tests starten
-###############################################################################
-echo "🧪 Führe Test-Suite aus..."
-
-if [[ "$IS_WSL" == "true" ]]; then
+# Maven Aufruf (Cross-Platform)
+if [[ "${IS_WSL:-false}" == "true" ]]; then
     WIN_MVNW=$(wslpath -w "$ROOT_DIR/mvnw.cmd")
-    cmd.exe /C "$WIN_MVNW -Dtest=TaskApiFullTestSuite test"
+    cmd.exe /C "$WIN_MVNW -Dtest=${SUITE} test"
 else
-    bash "$ROOT_DIR/mvnw" -Dtest=TaskApiFullTestSuite test
+    bash "$ROOT_DIR/mvnw" -Dtest=${SUITE} test
 fi
 
-print_footer_box_done
+echo -e "\n${GREEN}✅ Fertig!${NC}"
 
 ## TODO
 ## --endpoint <URL> → mehrere Health‑Checks
 ## mehrere Endpoints prüfen (/health, /info, /ready) Multi‑Endpoint‑Health‑Check‑Box
-##--suite <Name> → dynamische Test‑Suite
 ##
 ##--verbose → Debug‑Modus
 
@@ -185,3 +249,9 @@ print_footer_box_done
 ## die Box automatisch zentrieren
 ##
 ##eine Warn‑Box (gelb) hinzufügen
+
+# den README‑Abschnitt automatisch synchronisieren
+#
+#die Optionen‑Hilfe (--help) ins Script einbauen
+#
+#oder scripts/local-docker-db/run erweitern (wie du geplant hast)

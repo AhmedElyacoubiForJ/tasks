@@ -1,8 +1,9 @@
+[//]: # (scripts/regression/README.md)
 # Regression Test Runner
 
-Dieses Verzeichnis enthält den universellen Regression‑Test‑Runner für das Projekt.
-Das Script `run` sorgt dafür, dass die vollständige Test‑Suite stabil ausgeführt wird –
-unabhängig davon, ob du in WSL, Git Bash oder Linux/macOS arbeitest.
+> Dieses Verzeichnis enthält den universellen Regression‑Test‑Runner für das Projekt.
+> Das Script `run` sorgt dafür, dass die vollständige Test‑Suite stabil ausgeführt wird –
+> unabhängig davon, ob du in WSL, Git Bash oder Linux/macOS arbeitest.
 
 ---
 
@@ -17,9 +18,13 @@ unabhängig davon, ob du in WSL, Git Bash oder Linux/macOS arbeitest.
 
 ## Aufruf
 
+Der Script führt automatisiert die gewünschten Test-Suites aus und wartet zuvor darauf, dass die API erreichbar ist.
+
 ```bash
 ./scripts/regression/run
 ```
+
+## Verhalten
 
 Das Script:
 1. Erkennt automatisch die Umgebung (*WSL*, *Git Bash*, *Linux*, *macOS*)
@@ -27,7 +32,67 @@ Das Script:
    - unter Windows: **http://localhost:8080**
    - unter WSL: **http://<Windows-IP>:8080**
 3. Wartet, bis die App "UP" meldet
-4. Startet die Test-Suite TaskApiFullTestSuite
+    - Standard-Timeout: 60 Sekunden
+4. Führt die gewünschte Test-Suite aus
+    - Standard-Suite: TaskApiFullTestSuite
+
+---
+
+## ⚙️ Optionen
+
+--wait <Sekunden>
+
+Legt fest, wie lange auf die API gewartet wird, bevor das Script abbricht.
+
+Default: 60
+
+### Beispiel:
+
+```bash
+./scripts/regression/run --wait 10
+```
+
+---
+
+--Suite <Name>
+
+Wählt die Test-Suite aus, die ausgeführt werden soll.
+
+### Default:
+
+```code
+TaskApiFullTestSuite
+```
+
+### Verfügbare Suites:
+- TaskApiFullTestSuite
+- TaskListsCrudTestSuite
+- TaskListsTasksCrudSuite
+- TaskListsUseCaseTestSuite
+
+### Beispiel
+
+```bash
+./scripts/regression/run --suite TaskListsCrudTestSuite
+```
+
+---
+
+## 🔀 Optionen kombinieren
+
+```bash
+./scripts/regression/run --wait 15 --suite TaskListsUseCaseTestSuite
+```
+
+---
+
+## 🧪 Beispielausgabe
+
+- Header-Box beim Start
+- Health-Check mit Spinner
+- Erfolgs- oder Fehler-Box
+- Ausführung des gewälten Suite
+- Footer-Box „ALL TESTS EXECUTED“
 
 ---
 
