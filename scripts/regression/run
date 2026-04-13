@@ -85,15 +85,17 @@ print_usage() {
 
 # Ausführliche Hilfe (wird bei --help aufgerufen)
 print_help() {
-  echo -e "${BOLD_YELLOW}"
-  center_text "----------------------------------------"
-  center_text "        REGRESSION TEST RUNNER HELP      "
-  center_text "----------------------------------------"
-  echo -e "${NC}"
+  #echo -e "${BOLD_YELLOW}"
+  #center_text "----------------------------------------"
+  #center_text "        REGRESSION TEST RUNNER HELP      "
+  #center_text "----------------------------------------"
+  #echo -e "${NC}"
   print_usage
-  echo -e "\n${YELLOW}Verfügbare Suites:${NC}"
+  #echo -e "\n${YELLOW}Verfügbare Suites:${NC}"
+  echo -e "${YELLOW}Verfügbare Suites:${NC}"
   for s in "${VALID_SUITES[@]}"; do echo "  • $s"; done
-  echo -e "\n${YELLOW}Beispiele:${NC}"
+  #echo -e "\n${YELLOW}Beispiele:${NC}"
+  echo -e "${YELLOW}Beispiele:${NC}"
   echo "  ./scripts/regression/run --wait 15 --suite TaskListsCrudTestSuite"
 }
 
@@ -246,10 +248,6 @@ echo -e "\n${GREEN}✅ Fertig!${NC}"
 ##
 ##den gesamten Runner modularisieren und in Module aufteilen (lib/health.sh, lib/output.sh, lib/env.sh)
 #
-## die Box automatisch zentrieren
-##
-##eine Warn‑Box (gelb) hinzufügen
-
 # den README‑Abschnitt automatisch synchronisieren
 #
 #die Optionen‑Hilfe (--help) ins Script einbauen

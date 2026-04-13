@@ -10,28 +10,31 @@ set -euo pipefail
 #
 #   ./scripts/local-docker-db/run db <up|down|test>
 #   ./scripts/local-docker-db/run app <jar|mvn>
+#   ./scripts/local-docker-db/run test regression
 #
 # DESIGN-GRUNDSÄTZE
 # -----------------
-# 1) DB-Kommandos laufen immer in WSL (Docker läuft dort stabil)
+# 1) DB-Kommandos laufen immer in WSL (Docker läuft dort stabil).
 # 2) App-Kommandos nutzen das universelle Script:
 #       → JAR-Modus: überall stabil (WSL, Git Bash, Linux, macOS)
 #       → mvn-Modus: unter WSL deaktiviert (technische Limitierung)
 #
 # WARUM ES EIN PROFIL "local-docker-db" GIBT
 # ------------------------------------------
-# Dieses Profil ist speziell für Entwickler gedacht, die:
+# Dieses Profil ist für Entwickler gedacht, die:
 #
 #   • KEIN PostgreSQL lokal installieren wollen
 #   • KEINE Datenbank auf dem Host-System betreiben möchten
-#   • ABER Docker in WSL installiert haben
-#   • UND App + PostgreSQL als Docker-Container laufen lassen wollen
+#   • Docker in WSL installiert haben
+#   • App + PostgreSQL gemeinsam lokal entwickeln wollen
 #
-# Das Profil sorgt dafür, dass:
-#   - die App automatisch gegen die Docker-DB spricht
-#   - alle DB-Parameter aus .env.local-docker-db geladen werden
-#   - nichts lokal installiert werden muss
-#   - die App komplett containerisiert laufen kann
+# Dabei gilt:
+#   - Die **DB läuft in Docker** (unter WSL).
+#   - Die **App läuft NICHT im Container**, sondern direkt:
+#         • als JAR (empfohlen, überall stabil)
+#         • oder über mvn (nur Git Bash / Windows)
+#   - Die App spricht automatisch gegen die Docker‑DB.
+#   - Alle DB-Parameter kommen aus .env.local-docker-db.
 #
 # WARUM mvn UNTER WSL DEAKTIVIERT IST
 # -----------------------------------
@@ -49,57 +52,117 @@ set -euo pipefail
 #   → unter WSL → JAR-Modus verwenden
 ###############################################################################
 
-
-# Verzeichnis dieses Scripts
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-# Projektroot (2 Ebenen hoch)
 ROOT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
-# detect-env lädt IS_WSL, IS_GITBASH usw.
 source "$ROOT_DIR/scripts/lib/detect-env.sh"
 
+# Farben laden (Fallback)
+if [ -f "$ROOT_DIR/scripts/utils/colors.sh" ]; then
+    source "$ROOT_DIR/scripts/utils/colors.sh"
+else
+    # Standardfarben
+    RED='' GREEN='' YELLOW='' BLUE='' CYAN='' PURPLE='' NC=''
+
+    # Bold
+    BOLD_RED='' BOLD_GREEN='' BOLD_YELLOW='' BOLD_CYAN=''
+
+    # Background
+    BG_RED='' BG_GREEN=''
+fi
+
 ###############################################################################
-# Usage-Hilfe
+# Kategorie‑Hilfe als Variablen (einfach & ohne Wiederholung)
+###############################################################################
+DB_HELP_TEXT="
+DB-Kommandos:
+  run db up
+  run db down [--purge]
+  run db test
+"
+
+APP_HELP_TEXT="
+App-Kommandos:
+  run app jar
+  run app mvn        (nur Git Bash / Windows)
+"
+
+TEST_HELP_TEXT="
+Test-Kommandos:
+  run test regression
+      Führt die vollständige Regression-Test-Suite aus.
+      Erkennt automatisch WSL/GitBash/Linux/macOS.
+      Wartet auf API-Health-Status und startet dann Maven-Tests.
+"
+
+###############################################################################
+# Globale Usage
 ###############################################################################
 usage() {
   echo "Usage: ./scripts/local-docker-db/run <db|app|test> <command> [args...]"
-  echo
-  echo "DB:"
-  echo "  run db up"
-  echo "  run db down [--purge]"
-  echo "  run db test"
-  echo
-  echo "App:"
-  echo "  run app jar"
-  echo "  run app mvn        (nur Git Bash / Windows)"
-  echo
-  echo "Tests:"
-  echo "  run test regression"
-  echo "      Führt die vollständige Regression-Test-Suite aus."
-  echo "      Erkennt automatisch WSL/GitBash/Linux/macOS."
-  echo "      Wartet auf API-Health-Status und startet dann Maven-Tests."
-  echo
+  echo -e "${YELLOW}${DB_HELP_TEXT}${NC}"
+  echo -e "${YELLOW}${APP_HELP_TEXT}${NC}"
+  echo -e "${YELLOW}${TEST_HELP_TEXT}${NC}"
   exit 1
 }
 
-# Mindestens zwei Argumente erforderlich
-[[ $# -lt 2 ]] && usage
+###############################################################################
+# Kategorie‑spezifische Hilfe
+###############################################################################
+db_help() {
+  echo -e "${YELLOW}${DB_HELP_TEXT}${NC}"
+  echo -e "${YELLOW}ℹ️  Vollständige Hilfe:${NC} ./scripts/local-docker-db/run --help"
+  exit 0
+}
+
+app_help() {
+  echo -e "${YELLOW}${APP_HELP_TEXT}${NC}"
+  echo -e "${YELLOW}ℹ️  Vollständige Hilfe:${NC} ./scripts/local-docker-db/run --help"
+  exit 0
+}
+
+test_help() {
+  echo -e "${YELLOW}${TEST_HELP_TEXT}${NC}"
+  echo -e "${YELLOW}ℹ️  Vollständige Hilfe:${NC} ./scripts/local-docker-db/run --help"
+  exit 0
+}
+
+###############################################################################
+# GLOBAL --help
+###############################################################################
+if [[ "${1:-}" == "--help" ]]; then
+    usage
+fi
+
+###############################################################################
+# Argumentprüfung (verbessert)
+###############################################################################
+if [[ $# -lt 2 ]]; then
+  case "${1:-}" in
+    db|app|test)
+      echo -e "${RED}❌ Kein Command für Kategorie: $1${NC}"
+      echo -e "${YELLOW}ℹ️  Hilfe:${NC} ./scripts/local-docker-db/run $1 --help"
+      ;;
+    *)
+      echo -e "${RED}❌ Unbekannte Kategorie: ${1:-<none>}${NC}"
+      echo -e "${YELLOW}ℹ️  Hilfe:${NC} ./scripts/local-docker-db/run --help"
+      ;;
+  esac
+  exit 1
+fi
 
 CATEGORY="$1"
 COMMAND="$2"
-shift 2   # Entfernt CATEGORY und COMMAND → Rest sind zusätzliche Argumente
+shift 2
 
 ###############################################################################
 # Hilfsfunktionen
 ###############################################################################
-
-# Windows-Pfad → WSL-Pfad
 convert_to_wsl_path() {
   local win_path="$1"
   echo "$win_path" | sed 's|^/c/|/mnt/c/|; s|^/d/|/mnt/d/|'
 }
 
-# Script in WSL ausführen + alle Argumente weiterreichen
 run_in_wsl() {
   local script_path="$1"
   shift
@@ -116,9 +179,14 @@ run_in_wsl() {
 case "$CATEGORY" in
 
   ###########################################################################
-  # DB-KOMMANDOS
+  # DB
   ###########################################################################
   db)
+
+    if [[ "$COMMAND" == "--help" ]]; then
+        db_help
+    fi
+
     case "$COMMAND" in
       up)
         if [[ "$IS_WSL" == "true" ]]; then
@@ -142,75 +210,317 @@ case "$CATEGORY" in
         fi
         ;;
       *)
-        usage
+        echo -e "${RED}❌ Unbekannter Command: $COMMAND (Kategorie: db)${NC}"
+        echo -e "${YELLOW}ℹ️  Hilfe:${NC} ./scripts/local-docker-db/run db --help"
+        exit 1
         ;;
     esac
     ;;
 
   ###########################################################################
-  # APP-KOMMANDOS
+  # APP
   ###########################################################################
   app)
-    case "$COMMAND" in
 
-      #######################################################################
-      # JAR-MODUS → universell & stabil
-      #######################################################################
+    if [[ "$COMMAND" == "--help" ]]; then
+        app_help
+    fi
+
+    case "$COMMAND" in
       jar)
         bash "$SCRIPT_DIR/app-run-universal.sh" jar "$@"
         ;;
-
-      #######################################################################
-      # MVN-MODUS → unter WSL deaktiviert
-      #######################################################################
       mvn)
         if [[ "$IS_WSL" == "true" ]]; then
           echo "❌ mvn-Modus unter WSL nicht unterstützt."
-          echo "   Grund: mvnw.cmd unter Windows kann ENV-Variablen aus WSL nicht zuverlässig übernehmen."
-          echo "   Bitte entweder:"
-          echo "     • mvn in Git Bash (Windows) ausführen, oder"
-          echo "     • den JAR-Modus verwenden."
           exit 1
         fi
 
-        # Unter Git Bash / Windows → mvn-Modus erlaubt
         if [[ "$IS_GITBASH" == "true" ]]; then
           bash "$SCRIPT_DIR/app-run-universal.sh" mvn "$@"
         else
           "/mnt/c/Program Files/Git/bin/bash.exe" "$SCRIPT_DIR/app-run-universal.sh" mvn "$@"
         fi
         ;;
-
       *)
-        usage
+        echo -e "${RED}❌ Unbekannter Command: $COMMAND (Kategorie: app)${NC}"
+        echo -e "${YELLOW}ℹ️  Hilfe:${NC} ./scripts/local-docker-db/run app --help"
+        exit 1
         ;;
     esac
     ;;
 
-    ###########################################################################
-    # TEST-KOMMANDOS
-    ###########################################################################
-    test)
-      case "$COMMAND" in
+  ###########################################################################
+  # TEST
+  ###########################################################################
+  test)
 
-        regression)
-          echo "▶ Starte Regression Tests..."
+    if [[ "$COMMAND" == "--help" ]]; then
+        test_help
+    fi
 
-          # Regression-Script ist vollständig WSL-aware → einfach direkt ausführen
-          if [[ "$IS_GITBASH" == "true" ]]; then
-            bash "$ROOT_DIR/scripts/regression/run" "$@"
-          else
-            bash "$ROOT_DIR/scripts/regression/run" "$@"
-          fi
-          ;;
+    case "$COMMAND" in
+      regression)
+        bash "$ROOT_DIR/scripts/regression/run" "$@"
+        ;;
+      *)
+        echo -e "${RED}❌ Unbekannter Command: $COMMAND (Kategorie: test)${NC}"
+        echo -e "${YELLOW}ℹ️  Hilfe:${NC} ./scripts/local-docker-db/run test --help"
+        exit 1
+        ;;
+    esac
+    ;;
 
-        *)
-          usage
-          ;;
-      esac
-      ;;
-
+  ###########################################################################
+  # Unbekannte Kategorie
+  ###########################################################################
   *)
-    usage
+    echo -e "${RED}❌ Unbekannte Kategorie: $CATEGORY${NC}"
+    echo -e "${YELLOW}ℹ️  Hilfe:${NC} ./scripts/local-docker-db/run --help"
+    exit 1
     ;;
 esac
+
+
+
+
+
+
+
+
+
+
+##!/usr/bin/env bash
+#set -euo pipefail
+#
+################################################################################
+## scripts/local-docker-db/run
+##
+## UNIVERSAL ENTRYPOINT FÜR LOKALE ENTWICKLUNG
+################################################################################
+#
+#SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+#ROOT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
+#
+#source "$ROOT_DIR/scripts/lib/detect-env.sh"
+#
+## Farben laden (Fallback)
+#if [ -f "$ROOT_DIR/scripts/utils/colors.sh" ]; then
+#    source "$ROOT_DIR/scripts/utils/colors.sh"
+#else
+#    # Standardfarben
+#    RED='' GREEN='' YELLOW='' BLUE='' CYAN='' PURPLE='' NC=''
+#
+#    # Bold
+#    BOLD_RED='' BOLD_GREEN='' BOLD_YELLOW='' BOLD_CYAN=''
+#
+#    # Background
+#    BG_RED='' BG_GREEN=''
+#fi
+#
+################################################################################
+## Globale Usage
+################################################################################
+#usage() {
+#  echo "Usage: ./scripts/local-docker-db/run <db|app|test> <command> [args...]"
+#  echo -e "${YELLOW}DB:${NC}"
+#  echo "  run db up"
+#  echo "  run db down [--purge]"
+#  echo "  run db test"
+#  echo -e "${YELLOW}App:${NC}"
+#  echo "  run app jar"
+#  echo "  run app mvn        (nur Git Bash / Windows)"
+#  echo -e "${YELLOW}Tests:${NC}"
+#  echo "  run test regression"
+#  echo "      Führt die vollständige Regression-Test-Suite aus."
+#  echo "      Erkennt automatisch WSL/GitBash/Linux/macOS."
+#  echo "      Wartet auf API-Health-Status und startet dann Maven-Tests."
+#  exit 1
+#}
+#
+################################################################################
+## Kategorie‑spezifische Hilfe (einfach aus usage() extrahiert)
+################################################################################
+#db_help() {
+#  echo -e "${YELLOW}DB-Kommandos:${NC}"
+#  echo "  run db up"
+#  echo "  run db down [--purge]"
+#  echo "  run db test"
+#  echo
+#  echo -e "${YELLOW}ℹ️  Vollständige Hilfe:${NC} ./scripts/local-docker-db/run --help"
+#  exit 0
+#}
+#
+#app_help() {
+#  echo -e "${YELLOW}App-Kommandos:${NC}"
+#  echo "  run app jar"
+#  echo "  run app mvn        (nur Git Bash / Windows)"
+#  echo
+#  echo -e "${YELLOW}ℹ️  Vollständige Hilfe:${NC} ./scripts/local-docker-db/run --help"
+#  exit 0
+#}
+#
+#test_help() {
+#  echo -e "${YELLOW}Test-Kommandos:${NC}"
+#  echo "  run test regression"
+#  echo "      Führt die vollständige Regression-Test-Suite aus."
+#  echo "      Für Optionen & Suites: ./scripts/local-docker-db/run test regression --help"
+#  echo
+#  echo -e "${YELLOW}ℹ️  Vollständige Hilfe:${NC} ./scripts/local-docker-db/run --help"
+#  exit 0
+#}
+#
+################################################################################
+## GLOBAL --help
+################################################################################
+#if [[ "${1:-}" == "--help" ]]; then
+#    usage
+#fi
+#
+################################################################################
+## Argumentprüfung
+################################################################################
+#if [[ $# -lt 2 ]]; then
+#  case "${1:-}" in
+#    db|app|test)
+#      echo -e "${RED}❌ Kein Command für Kategorie: $1${NC}"
+#      echo -e "${YELLOW}ℹ️  Hilfe:${NC} ./scripts/local-docker-db/run $1 --help"
+#      ;;
+#    *)
+#      echo -e "${RED}❌ Unbekannte Kategorie: ${1:-<none>}${NC}"
+#      echo -e "${YELLOW}ℹ️  Hilfe:${NC} ./scripts/local-docker-db/run --help"
+#      ;;
+#  esac
+#  exit 1
+#fi
+#
+#CATEGORY="$1"
+#COMMAND="$2"
+#shift 2
+#
+################################################################################
+## Hilfsfunktionen
+################################################################################
+#convert_to_wsl_path() {
+#  local win_path="$1"
+#  echo "$win_path" | sed 's|^/c/|/mnt/c/|; s|^/d/|/mnt/d/|'
+#}
+#
+#run_in_wsl() {
+#  local script_path="$1"
+#  shift
+#  local full_path="$ROOT_DIR/$script_path"
+#  local wsl_path
+#  wsl_path="$(convert_to_wsl_path "$full_path")"
+#  wsl bash -c "bash '$wsl_path' $*"
+#}
+#
+################################################################################
+## Routing
+################################################################################
+#
+#case "$CATEGORY" in
+#
+#  ###########################################################################
+#  # DB
+#  ###########################################################################
+#  db)
+#
+#    # Kategorie‑Help
+#    if [[ "$COMMAND" == "--help" ]]; then
+#        db_help
+#    fi
+#
+#    case "$COMMAND" in
+#      up)
+#        if [[ "$IS_WSL" == "true" ]]; then
+#          bash "$SCRIPT_DIR/db-up.sh" "$@"
+#        else
+#          run_in_wsl "scripts/local-docker-db/db-up.sh" "$@"
+#        fi
+#        ;;
+#      down)
+#        if [[ "$IS_WSL" == "true" ]]; then
+#          bash "$SCRIPT_DIR/db-down.sh" "$@"
+#        else
+#          run_in_wsl "scripts/local-docker-db/db-down.sh" "$@"
+#        fi
+#        ;;
+#      test)
+#        if [[ "$IS_WSL" == "true" ]]; then
+#          bash "$SCRIPT_DIR/db-test.sh" "$@"
+#        else
+#          run_in_wsl "scripts/local-docker-db/db-test.sh" "$@"
+#        fi
+#        ;;
+#      *)
+#        echo -e "${RED}❌ Unbekannter Command: $COMMAND (Kategorie: db)${NC}"
+#        echo -e "${YELLOW}ℹ️  Hilfe:${NC} ./scripts/local-docker-db/run db --help"
+#        exit 1
+#        ;;
+#    esac
+#    ;;
+#
+#  ###########################################################################
+#  # APP
+#  ###########################################################################
+#  app)
+#
+#    if [[ "$COMMAND" == "--help" ]]; then
+#        app_help
+#    fi
+#
+#    case "$COMMAND" in
+#      jar)
+#        bash "$SCRIPT_DIR/app-run-universal.sh" jar "$@"
+#        ;;
+#      mvn)
+#        if [[ "$IS_WSL" == "true" ]]; then
+#          echo "❌ mvn-Modus unter WSL nicht unterstützt."
+#          exit 1
+#        fi
+#
+#        if [[ "$IS_GITBASH" == "true" ]]; then
+#          bash "$SCRIPT_DIR/app-run-universal.sh" mvn "$@"
+#        else
+#          "/mnt/c/Program Files/Git/bin/bash.exe" "$SCRIPT_DIR/app-run-universal.sh" mvn "$@"
+#        fi
+#        ;;
+#      *)
+#        echo -e "${RED}❌ Unbekannter Command: $COMMAND (Kategorie: app)${NC}"
+#        echo -e "${YELLOW}ℹ️  Hilfe:${NC} ./scripts/local-docker-db/run app --help"
+#        exit 1
+#        ;;
+#    esac
+#    ;;
+#
+#  ###########################################################################
+#  # TEST
+#  ###########################################################################
+#  test)
+#
+#    if [[ "$COMMAND" == "--help" ]]; then
+#        test_help
+#    fi
+#
+#    case "$COMMAND" in
+#      regression)
+#        bash "$ROOT_DIR/scripts/regression/run" "$@"
+#        ;;
+#      *)
+#        echo -e "${RED}❌ Unbekannter Command: $COMMAND (Kategorie: test)${NC}"
+#        echo -e "${YELLOW}ℹ️  Hilfe:${NC} ./scripts/local-docker-db/run test --help"
+#        exit 1
+#        ;;
+#    esac
+#    ;;
+#
+#  ###########################################################################
+#  # Unbekannte Kategorie
+#  ###########################################################################
+#  *)
+#    echo -e "${RED}❌ Unbekannte Kategorie: $CATEGORY${NC}"
+#    echo -e "${YELLOW}ℹ️  Hilfe:${NC} ./scripts/local-docker-db/run --help"
+#    exit 1
+#    ;;
+#esac
