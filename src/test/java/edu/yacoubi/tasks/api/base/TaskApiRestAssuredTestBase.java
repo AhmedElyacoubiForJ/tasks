@@ -1,15 +1,22 @@
 package edu.yacoubi.tasks.api.base;
 
+import static io.restassured.RestAssured.given;
+
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.junit.jupiter.api.BeforeAll;
 
-import static io.restassured.RestAssured.given;
-
+@org.junit.jupiter.api.Tag("regression")
 public abstract class TaskApiRestAssuredTestBase {
 
     @BeforeAll
     static void setupRestAssured() {
+        // TODO
+        // Nimmt die IP aus dem Maven-Aufruf, sonst Fallback auf localhost
+        // String host = System.getProperty("test.host", "localhost");
+        // RestAssured.baseURI = "http://" + host;
+        // Bash-Script beim Maven-Aufruf nur -Dtest.host=$WIN_IP hinzufügen
+
         RestAssured.baseURI = "http://localhost";
         RestAssured.port = 8080;
         RestAssured.basePath = "/api"; // WICHTIG: ist der API-Prefix
