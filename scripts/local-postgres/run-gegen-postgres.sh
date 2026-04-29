@@ -4,7 +4,6 @@
 # ----------------------------------------
 
 # Pfad zur ENV-Datei mit PostgreSQL-Zugangsdaten und Spring-Konfiguration
-#ENV_FILE="env/.env.local-prod"
 ENV_FILE="env/.env.local-postgres"
 
 # Prüfe, ob die ENV-Datei existiert
@@ -21,5 +20,4 @@ set +a
 
 # Starte die Spring Boot App mit dem Profil 'local-prod'
 # Dieses Profil erwartet PostgreSQL und nutzt die geladenen ENV-Werte
-#SPRING_PROFILES_ACTIVE=local-prod ./mvnw spring-boot:run
 SPRING_PROFILES_ACTIVE=local-postgres ./mvnw spring-boot:run

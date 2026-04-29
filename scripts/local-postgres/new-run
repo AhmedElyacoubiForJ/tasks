@@ -1,0 +1,139 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+###############################################################
+# LOCAL-POSTGRES ROOT RUNNER (App-Local PostgreSQL-Local Profil)
+###############################################################
+
+ROOT_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
+
+DB_RUNNER="$ROOT_DIR/scripts/local-postgres/db-run-universal.sh"
+APP_RUNNER="$ROOT_DIR/scripts/local-postgres/app-run-universal.sh"
+TEST_RUNNER="$ROOT_DIR/scripts/regression/new-run"   # optional
+
+###############################################################
+# Farben laden (Fallback)
+###############################################################
+if [ -f "$ROOT_DIR/scripts/utils/colors.sh" ]; then
+    # shellcheck disable=SC1091
+    source "$ROOT_DIR/scripts/utils/colors.sh"
+else
+    RED='' GREEN='' YELLOW='' BLUE='' CYAN='' PURPLE='' NC=''
+    BOLD_RED='' BOLD_GREEN='' BOLD_YELLOW='' BOLD_CYAN=''
+    BG_RED='' BG_GREEN=''
+fi
+
+###############################################################
+# Kategorie-Hilfe (als Variablen, ohne Wiederholung)
+###############################################################
+DB_HELP_TEXT="
+DB:
+  run db status
+      Zeigt den Status des lokalen PostgreSQL Windows-Dienstes an.
+"
+
+APP_HELP_TEXT="
+App:
+  run app jar
+      Startet Spring Boot über das gebaute JAR (universell, WSL-kompatibel).
+
+  run app mvn
+      Startet Spring Boot über Maven Wrapper (nicht unter WSL).
+"
+
+TEST_HELP_TEXT="
+Tests:
+  run test regression
+      Führt die Regression-Test-Suite aus (falls vorhanden).
+"
+
+###############################################################
+# Globale Usage
+###############################################################
+usage() {
+  echo "Usage: ./scripts/local-postgres/run <db|app|test> <command> [args...]"
+  echo -e "${YELLOW}${DB_HELP_TEXT}${NC}"
+  echo -e "${YELLOW}${APP_HELP_TEXT}${NC}"
+  echo -e "${YELLOW}${TEST_HELP_TEXT}${NC}"
+  exit 1
+}
+
+###############################################################
+# Routing
+###############################################################
+CATEGORY="${1:-}"
+ACTION="${2:-}"
+
+case "$CATEGORY" in
+
+  #############################################################
+  # DB
+  #############################################################
+  db)
+    case "$ACTION" in
+      status)
+        "$DB_RUNNER" status
+        ;;
+      *)
+        echo -e "${RED}❌ Unbekanntes DB-Kommando: $ACTION${NC}"
+        echo -e "${CYAN}ℹ️  Hilfe: ./scripts/local-postgres/run --help${NC}"
+        exit 1
+        ;;
+    esac
+    ;;
+
+  #############################################################
+  # APP
+  #############################################################
+  app)
+    case "$ACTION" in
+      jar)
+        "$APP_RUNNER" jar
+        ;;
+      mvn)
+        "$APP_RUNNER" mvn
+        ;;
+      *)
+        echo -e "${RED}❌ Unbekanntes APP-Kommando: $ACTION${NC}"
+        echo -e "${CYAN}ℹ️  Hilfe: ./scripts/local-postgres/run --help${NC}"
+        exit 1
+        ;;
+    esac
+    ;;
+
+  #############################################################
+  # TEST (optional)
+  #############################################################
+  test)
+    case "$ACTION" in
+      regression)
+        if [[ -f "$TEST_RUNNER" ]]; then
+          "$TEST_RUNNER"
+        else
+          echo -e "${YELLOW}⚠️  Regression Runner nicht vorhanden: $TEST_RUNNER${NC}"
+        fi
+        ;;
+      *)
+        echo -e "${RED}❌ Unbekanntes TEST-Kommando: $ACTION${NC}"
+        echo -e "${CYAN}ℹ️  Hilfe: ./scripts/local-postgres/run --help${NC}"
+        exit 1
+        ;;
+    esac
+    ;;
+
+  #############################################################
+  # HELP
+  #############################################################
+  --help|"")
+    usage
+    ;;
+
+  #############################################################
+  # UNKNOWN
+  #############################################################
+  *)
+    echo -e "${RED}❌ Unbekannte Kategorie: $CATEGORY${NC}"
+    echo -e "${CYAN}ℹ️  Hilfe: ./scripts/local-postgres/run --help${NC}"
+    exit 1
+    ;;
+esac

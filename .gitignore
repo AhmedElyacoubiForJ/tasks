@@ -14,12 +14,9 @@ logs/
 
 # hier wird systhematisch aber schrittweise aufgeräumt
 .env.ci
-db-config/container/dev/.env.dev
-db-config/container/prod/.env.prod
 
 ## das sind die neuen (alte unter db-config weg gemacht)
-env/.env.local-demo
-env/.env.local-prod
+env/.env.local-postgres
 env/.env.compose-dev
 env/.env.local-docker-db
 

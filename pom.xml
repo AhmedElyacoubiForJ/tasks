@@ -2,17 +2,29 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
+    <!-- ============================================ -->
+    <!-- PARENT POM: Spring Boot Basisverwaltung      -->
+    <!-- ============================================ -->
+    <!-- Erbt Dependency Management und Plugin-Konfiguration von Spring Boot -->
+    <!-- Spart manuelle Versionsverwaltung für Spring Boot Dependencies -->
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>3.5.3</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <relativePath/> <!-- Sucht Parent im lokalen Repository, sonst online -->
     </parent>
+
+    <!-- ============================================ -->
+    <!-- PROJEKT-IDENTIFIKATION                       -->
+    <!-- ============================================ -->
     <groupId>edu.yacoubi</groupId>
     <artifactId>tasks</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>tasks</name>
     <description>A task tracking app</description>
+
+    <!-- Metadaten (können leer bleiben bei internem Projekt) -->
     <url/>
     <licenses>
         <license/>
@@ -26,101 +38,206 @@
         <tag/>
         <url/>
     </scm>
+
+    <!-- ============================================ -->
+    <!-- BUILD-EIGENSCHAFTEN                          -->
+    <!-- ============================================ -->
     <properties>
+        <!-- Java-Version: 17 (LTS, empfohlen für Spring Boot 3.x) -->
         <java.version>17</java.version>
+
+        <!-- Encoding: UTF-8 für Cross-Platform Kompatibilität -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <!-- Output-Encoding für Reports und Dokumentation -->
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     </properties>
+
+    <!-- ============================================ -->
+    <!-- ABHÄNGIGKEITEN (Dependencies)                -->
+    <!-- ============================================ -->
     <dependencies>
+
+        <!-- ========================================== -->
+        <!-- SPRING BOOT STARTERS: Kern-Framework      -->
+        <!-- ========================================== -->
+        <!-- Spring Data JPA: ORM mit Hibernate + Datenbank-Abstraktionsschicht -->
+        <!-- Bietet Repository-Pattern, CRUD-Operationen, Query-DSL -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
+
+        <!-- Spring Web: REST APIs, Controller, Request/Response Handling -->
+        <!-- Inkludiert Apache Tomcat als Embedded Server -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
+
+        <!-- Spring Validation: Bean Validation (JSR-380) mit Hibernate Validator -->
+        <!-- Für @Valid, @NotNull, @Email, @Min/@Max Annotationen -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
+
+        <!-- Spring Boot Actuator: Monitoring & Metrics Endpoints (/health, /metrics, /env) -->
+        <!-- Wichtig für Production Überwachung und Diagnostics -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <!-- Spring Web MVC + Thymeleaf: Server-side HTML Template Engine -->
+        <!-- Alternative zu Freemarker/Velocity, native Spring Integration -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
+        </dependency>
+
+        <!-- ========================================== -->
+        <!-- CODE-GENERATION & MAPPING                 -->
+        <!-- ========================================== -->
+        <!-- MapStruct: Automatische DTO ↔ Entity Mapping -->
+        <!-- Type-safe Alternative zu ModelMapper, bessere Performance -->
         <dependency>
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct</artifactId>
             <version>1.5.5.Final</version>
         </dependency>
-        <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
-            <version>2.2.224</version> <!-- oder eine stabile Version -->
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql</artifactId>
-            <scope>runtime</scope>
-        </dependency>
+
+        <!-- Lombok: Reduziert Boilerplate-Code (Getter, Setter, Konstruktoren, equals/hashCode) -->
+        <!-- @Data, @Getter, @Setter, @Builder, @NoArgsConstructor, @AllArgsConstructor -->
+        <!-- optional=true: wird nicht in JAR verpackt, nur zum Compile-Time benötigt -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
+
+        <!-- ========================================== -->
+        <!-- DATENBANKZUGRIFF                          -->
+        <!-- ========================================== -->
+        <!-- H2: In-Memory oder File-based Datenbank -->
+        <!-- Perfekt für Tests und Entwicklung, KEIN Setup erforderlich -->
+        <!-- scope=runtime: wird nur zur Laufzeit benötigt, nicht im Code -->
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>2.2.224</version>
+            <scope>runtime</scope>
         </dependency>
+
+        <!-- PostgreSQL JDBC Driver: Verbindung zu produktiver PostgreSQL DB -->
+        <!-- scope=runtime: wird automatisch erkannt, wenn PostgreSQL konfiguriert -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- ========================================== -->
+        <!-- API-DOKUMENTATION                         -->
+        <!-- ========================================== -->
+        <!-- SpringDoc OpenAPI: Swagger/OpenAPI 3.0 UI & JSON Generierung -->
+        <!-- Automatisch aus @RestController, @GetMapping, @PostMapping etc. erzeugt -->
+        <!-- Verfügbar unter: http://localhost:8080/swagger-ui.html -->
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
             <version>2.5.0</version>
-<!--            <version>3.0.0</version>-->
         </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-actuator</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-thymeleaf</artifactId>
-        </dependency>
+
+        <!-- ========================================== -->
+        <!-- TEMPLATE & RENDERING                      -->
+        <!-- ========================================== -->
+        <!-- Thymeleaf Layout Dialect: Erweiterte Layout-Features für Templates -->
+        <!-- Ermöglicht Master-Layouts, Fragment-Reuse, ähnlich JSP Tiles -->
         <dependency>
             <groupId>nz.net.ultraq.thymeleaf</groupId>
             <artifactId>thymeleaf-layout-dialect</artifactId>
         </dependency>
+
+        <!-- ========================================== -->
+        <!-- DATEI-GENERIERUNG                         -->
+        <!-- ========================================== -->
+        <!-- OpenPDF: Generiert PDFs aus Java Code -->
+        <!-- Alternative zu iText, mit Apache 2.0 Lizenz -->
+        <!-- Nützlich für Reports, Rechnungen, Dokumente -->
         <dependency>
             <groupId>com.github.librepdf</groupId>
             <artifactId>openpdf</artifactId>
             <version>1.3.26</version>
         </dependency>
+
+        <!-- ========================================== -->
+        <!-- TEST-DATENGENERIERUNG                      -->
+        <!-- ========================================== -->
+        <!-- JavaFaker: Generiert realistische Fake-Daten für Tests -->
+        <!-- Namen, Adressen, Emails, Phone Numbers, etc. -->
         <dependency>
             <groupId>com.github.javafaker</groupId>
             <artifactId>javafaker</artifactId>
             <version>1.0.2</version>
         </dependency>
+
+        <!-- ========================================== -->
+        <!-- ENTWICKLER-TOOLS                          -->
+        <!-- ========================================== -->
+        <!-- Spring Boot DevTools: Live Reload & Schnelleres Neustart -->
+        <!-- scope=provided: wird von IDE automatisch aktiviert, nicht im Prod-JAR -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>
             <scope>provided</scope>
         </dependency>
-        <!-- JSON Encoder für Logback -->
+
+        <!-- ========================================== -->
+        <!-- LOGGING & MONITORING                      -->
+        <!-- ========================================== -->
+        <!-- Logstash Logback Encoder: Strukturierte Logs im JSON-Format -->
+        <!-- Ermöglicht einfache Parsing für ELK-Stack (Elasticsearch, Logstash, Kibana) -->
+        <!-- Besser als plain-text Logs für Monitoring in Production -->
         <dependency>
             <groupId>net.logstash.logback</groupId>
             <artifactId>logstash-logback-encoder</artifactId>
             <version>7.4</version>
         </dependency>
+
+        <!-- ========================================== -->
+        <!-- TEST-FRAMEWORK & ASSERTION                -->
+        <!-- ========================================== -->
+        <!-- Spring Boot Test Starter: JUnit 5, Mockito, AssertJ, etc. -->
+        <!-- scope=test: wird NUR im Test-Compile eingebunden, nicht im Prod-Build -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- REST-Assured: High-Level API für REST API Testing -->
+        <!-- Gute Lesbarkeit, ähnlich Gherkin/BDD Syntax -->
+        <!-- given().when().then() - sehr intuitiv für Integration Tests -->
         <dependency>
             <groupId>io.rest-assured</groupId>
             <artifactId>rest-assured</artifactId>
             <version>5.4.0</version>
             <scope>test</scope>
         </dependency>
+
+        <!-- JSON-Path Support für REST-Assured: XPath-ähnliche Queries auf JSON -->
+        <!-- Extrahiert Werte aus Response: jsonPath("data.id").getInt() -->
         <dependency>
             <groupId>io.rest-assured</groupId>
             <artifactId>json-path</artifactId>
             <version>5.4.0</version>
             <scope>test</scope>
         </dependency>
+
+        <!-- JUnit Platform Suite: Gruppiert und organisiert Test-Suites -->
+        <!-- Erlaubt @SelectClasses, @SelectPackages für Test-Kategorisierung -->
+        <!-- Nützlich für Smoke-, Regression-, Integration-Test-Suites -->
         <dependency>
             <groupId>org.junit.platform</groupId>
             <artifactId>junit-platform-suite</artifactId>
@@ -129,7 +246,15 @@
         </dependency>
     </dependencies>
 
+    <!-- ============================================ -->
+    <!-- MAVEN PROFILE: Umgebungsspezifische Config   -->
+    <!-- ============================================ -->
+    <!-- Aktivierung: mvn clean install -P dev       -->
+
     <profiles>
+        <!-- DEV-PROFIL: Für lokale Entwicklung -->
+        <!-- Nutzt H2 In-Memory DB, kein Setup notwendig -->
+        <!-- Aktivieren: mvn -P dev spring-boot:run   -->
         <profile>
             <id>dev</id>
             <dependencies>
@@ -142,6 +267,9 @@
             </dependencies>
         </profile>
 
+        <!-- TEST-PROFIL: Für Unit- und Integration-Tests -->
+        <!-- H2 mit Test-Scope: wird NUR beim mvn test ausgeführt -->
+        <!-- Isoliert: Jeder Test bekommt eine frische DB -->
         <profile>
             <id>test</id>
             <dependencies>
@@ -153,50 +281,140 @@
                 </dependency>
             </dependencies>
         </profile>
+
+        <!-- REGRESSION-PROFIL: Für umfassende Test-Suites -->
+        <!-- Aktivierung: mvn clean verify -P regression -->
+        <!-- Führt alle Tests aus, inklusive solche mit @Tag("regression") -->
+        <!-- Standardmäßig sind Regression-Tests AUSGESCHLOSSEN (siehe maven-surefire-plugin) -->
+        <profile>
+            <id>regression</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <!-- excludedGroups=none: Hebt die Exclusion auf, alles wird ausgeführt -->
+                            <excludedGroups>none</excludedGroups>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 
-
+    <!-- ============================================ -->
+    <!-- BUILD-KONFIGURATION (Compiler, Plugins)      -->
+    <!-- ============================================ -->
     <build>
         <plugins>
+
+            <!-- ========================================== -->
+            <!-- MAVEN COMPILER PLUGIN                     -->
+            <!-- ========================================== -->
+            <!-- Konfiguriert Java Compiler Version & Annotation Processing -->
+            <!-- Wichtig für Lombok & MapStruct Code-Generierung -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.8.1</version>
                 <configuration>
+                    <!-- Source: Java 17 (Input Code) -->
                     <source>17</source>
+                    <!-- Target: Java 17 (Compiled Bytecode) -->
                     <target>17</target>
+
+                    <!-- ========================================== -->
+                    <!-- ANNOTATION PROCESSOR PATHS                 -->
+                    <!-- ========================================== -->
+                    <!-- Verweist auf Libraries, die Annotations verarbeiten -->
+                    <!-- Lombok & MapStruct werden zur COMPILE-TIME ausgeführt -->
+                    <!-- Generieren dann Getter, Setter, Mapper automatisch -->
                     <annotationProcessorPaths>
-                        <!-- Lombok -->
+                        <!-- Lombok Annotation Processor -->
+                        <!-- Verarbeitet @Data, @Getter, @Setter, @Builder, etc. -->
                         <path>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
                             <version>1.18.30</version>
                         </path>
+                        <!-- MapStruct Annotation Processor -->
+                        <!-- Generiert Mapper-Implementierungen aus Interface-Definitionen -->
+                        <!-- Beispiel: @Mapper interface TaskMapper { TaskDTO toDTO(Task); } -->
                     </annotationProcessorPaths>
                 </configuration>
             </plugin>
+
+            <!-- ========================================== -->
+            <!-- MAVEN SUREFIRE PLUGIN                     -->
+            <!-- ========================================== -->
+            <!-- Führt Unit- und Integration-Tests aus (JUnit 4/5) -->
+            <!-- Standardmäßig: sucht alle Klassen mit Test*, *Test, *Tests, *TestCase -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.2.5</version>
                 <configuration>
-                    <!-- Ignoriert alle Tests mit diesem Tag beim normalen Build -->
+                    <!-- Standardmäßig Regression-Tests AUSSCHLIESSEN -->
+                    <!-- Tests mit @Tag("regression") werden übersprungen -->
+                    <!-- Grund: Regression-Tests sind zeitaufwändig, nur bei Bedarf laufen -->
+                    <!-- Aktivieren: mvn test -P regression (hebt Exclusion auf) -->
                     <excludedGroups>regression</excludedGroups>
                 </configuration>
             </plugin>
+
+            <!-- ========================================== -->
+            <!-- SPRING BOOT MAVEN PLUGIN                  -->
+            <!-- ========================================== -->
+            <!-- Erzeugt executable JAR mit allen Dependencies -->
+            <!-- mvn spring-boot:run oder java -jar app.jar -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <layers>
-                        <enabled>true</enabled>
+                    <!-- ========================================== -->
+                    <!-- LAYER SUPPORT: Docker Optimierung          -->
+                    <!-- ========================================== -->
+                    <!-- Strukturiert JAR in Schichten (layers) -->
+                    <!-- dependencies, spring-boot-loader, snapshot-dependencies, application -->
+                    <!-- Ermöglicht: Multi-Stage Docker Builds mit Caching Optimierung -->
+                    <!-- Resultat: Kleinere Docker Images, schnellere Builds -->
+                    <layers><enabled>true</enabled>
                     </layers>
+
+                    <!-- ========================================== -->
+                    <!-- EXCLUDES: Was wird NICHT verpackt?        -->
+                    <!-- ========================================== -->
+                    <!-- Lombok: Nicht erforderlich zur Laufzeit -->
+                    <!-- Lombok ist nur zur Compile-Time nötig, erzeugte Code bleibt -->
+                    <!-- Spart ~1-2 MB in der finalen JAR Größe -->
                     <excludes>
                         <exclude>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
                         </exclude>
                     </excludes>
+                </configuration>
+            </plugin>
+
+            <!-- ========================================== -->
+            <!-- MAVEN SUREFIRE REPORT PLUGIN              -->
+            <!-- ========================================== -->
+            <!-- Generiert HTML Test-Reports nach Test-Ausführung -->
+            <!-- Verfügbar unter: target/site/surefire-report.html -->
+            <!-- mvn surefire-report:report oder mvn site -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-report-plugin</artifactId>
+                <version>3.2.5</version>
+                <configuration>
+                    <!-- showSuccess=true: Zeigt auch erfolgreiche Tests (nicht nur Fehler) -->
+                    <showSuccess>true</showSuccess>
+
+                    <!-- outputName: Dateiname des Reports (parametrisierbar) -->
+                    <!-- Standard: surefire-report -->
+                    <!-- Custom: mvn surefire-report:report -DoutputName=my-test-results -->
+                    <outputName>${outputName}</outputName>
                 </configuration>
             </plugin>
         </plugins>

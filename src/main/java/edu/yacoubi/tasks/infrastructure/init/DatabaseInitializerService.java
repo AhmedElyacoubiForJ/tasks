@@ -14,10 +14,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
-//@Service
+@Service
 @RequiredArgsConstructor
 @Slf4j
-//@Profile("local-dev")
+@Profile("local-demo")
 //@Profile("compose-dev")
 public class DatabaseInitializerService {
 

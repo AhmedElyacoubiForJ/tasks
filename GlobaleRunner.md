@@ -1,0 +1,162 @@
+# ✅ **Root‑Runner (mit Debug‑Ausgabe + Farben + usage)**
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+
+###############################################################################
+# Root Runner – einfacher Profil-Router
+#
+# Profile:
+#   local-demo         → App + H2 (ein Prozess)
+#   local-postgres     → App lokal + PostgreSQL lokal
+#   local-docker-db    → App lokal + PostgreSQL in Docker (WSL)
+#   compose-dev        → TODO: App + DB in Docker Compose
+#   docker             → TODO: App + DB in Docker (ohne Compose)
+###############################################################################
+
+# Basisverzeichnisse bestimmen
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+echo "🚀 Starte Root Runner: $0"
+echo "📁 Skriptverzeichnis: $SCRIPT_DIR"
+
+ROOT_DIR="$(cd "$SCRIPT_DIR" && pwd)"
+echo "📁 Root-Verzeichnis: $ROOT_DIR"
+
+###############################################################################
+# Farben laden (Fallback)
+###############################################################################
+if [ -f "$ROOT_DIR/scripts/utils/colors.sh" ]; then
+    source "$ROOT_DIR/scripts/utils/colors.sh"
+else
+    # Standardfarben
+    RED='' GREEN='' YELLOW='' BLUE='' CYAN='' PURPLE='' NC=''
+
+    # Bold
+    BOLD_RED='' BOLD_GREEN='' BOLD_YELLOW='' BOLD_CYAN=''
+
+    # Background
+    BG_RED='' BG_GREEN=''
+fi
+
+###############################################################################
+# Globale Hilfe
+###############################################################################
+usage() {
+  echo "Usage: ./run <profile> <args...>"
+  echo
+  echo -e "${YELLOW}Aktive Profile:${NC}"
+  echo "  local-demo         → App + H2 (ein Prozess)"
+  echo "  local-postgres     → App lokal + PostgreSQL lokal"
+  echo "  local-docker-db    → App lokal + PostgreSQL in Docker (WSL)"
+  echo
+  echo -e "${YELLOW}Geplante Profile (TODO):${NC}"
+  echo "  compose-dev        → App + DB in Docker Compose"
+  echo "  docker             → App + DB in Docker (ohne Compose)"
+  echo
+  echo "Beispiel:"
+  echo "  ./run local-docker-db db up"
+  exit 1
+}
+
+# Globales --help
+if [[ "${1:-}" == "--help" ]]; then
+    usage
+fi
+
+###############################################################################
+# Argumentprüfung
+###############################################################################
+if [[ $# -lt 1 ]]; then
+  echo -e "${RED}❌ Kein Profil angegeben.${NC}"
+  echo -e "${YELLOW}ℹ️  Hilfe:${NC} ./run --help"
+  exit 1
+fi
+
+PROFILE="$1"
+shift || true
+
+###############################################################################
+# Routing auf Profile
+###############################################################################
+case "$PROFILE" in
+
+  local-demo)
+    exec "$ROOT_DIR/scripts/local-demo/run" "$@"
+    ;;
+
+  local-postgres)
+    exec "$ROOT_DIR/scripts/local-postgres/run" "$@"
+    ;;
+
+  local-docker-db)
+    exec "$ROOT_DIR/scripts/local-docker-db/run" "$@"
+    ;;
+
+  compose-dev)
+    echo -e "${YELLOW}TODO:${NC} Profil 'compose-dev' ist noch nicht implementiert."
+    echo "Geplant: App + DB in Docker Compose."
+    exit 1
+    ;;
+
+  docker)
+    echo -e "${YELLOW}TODO:${NC} Profil 'docker' ist noch nicht implementiert."
+    echo "Geplant: App + DB in Docker (ohne Compose)."
+    exit 1
+    ;;
+
+  *)
+    echo -e "${RED}❌ Unbekanntes Profil: $PROFILE${NC}"
+    echo -e "${YELLOW}ℹ️  Hilfe:${NC} ./run --help"
+    exit 1
+    ;;
+esac
+```
+
+---
+
+# 🟩 Was jetzt perfekt ist
+
+### ✔ Debug‑Ausgabe beim Start
+Du siehst sofort:
+
+- welches Script läuft
+- wo es liegt
+- was das Root‑Verzeichnis ist
+
+### ✔ Farben sauber geladen (mit Fallback)
+Keine unbound variables, keine Fehler.
+
+### ✔ usage() integriert
+Mit deinen Profil‑Beschreibungen.
+
+### ✔ Routing bleibt minimal
+Nur Profile → kein Over‑Routing, keine Kategorien, kein CI‑Overhead.
+
+### ✔ 1:1 einsetzbar
+Du kannst es sofort committen.
+
+---
+
+Wenn du willst, erweitern wir jetzt:
+
+### ➤ `local-demo/run`
+### ➤ `local-postgres/run`
+### ➤ `compose-dev/run` (Skeleton)
+### ➤ `docker/run` (Skeleton)
+
+Sag einfach, welches Profil wir als Nächstes bauen.
+
+---
+
+
+[//]: # (den Root‑Runner erweitern &#40;globaler Router&#41;)
+
+[//]: # ()
+[//]: # (die Help‑System‑Integration vereinheitlichen)
+
+[//]: # ()
+[//]: # (die Regression‑Test‑Suite modernisieren)
+
+[//]: # ()
+[//]: # (oder die Profile‑Architektur weiter harmonisieren)

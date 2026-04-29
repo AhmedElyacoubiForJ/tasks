@@ -1,0 +1,134 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+###############################################################################
+# scripts/local-demo/run
+#
+# UNIVERSAL ENTRYPOINT FÜR DAS PROFIL "local-demo"
+# ------------------------------------------------
+# Dieses Profil startet die Anwendung mit:
+#   • Spring Boot
+#   • H2 embedded
+#   • KEINE externe DB
+#   • KEINE Docker-Komponenten
+#
+# Kategorien:
+#   app <jar|mvn>
+#
+# Beispiele:
+#   ./run local-demo app jar
+#   ./run local-demo app mvn
+###############################################################################
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
+
+# Umgebung erkennen (WSL, GitBash, Linux, macOS)
+source "$ROOT_DIR/scripts/lib/detect-env.sh"
+
+# Farben laden (Fallback)
+if [ -f "$ROOT_DIR/scripts/utils/colors.sh" ]; then
+    source "$ROOT_DIR/scripts/utils/colors.sh"
+else
+    RED='' GREEN='' YELLOW='' BLUE='' CYAN='' PURPLE='' NC=''
+    BOLD_RED='' BOLD_GREEN='' BOLD_YELLOW='' BOLD_CYAN=''
+    BG_RED='' BG_GREEN=''
+fi
+
+###############################################################################
+# Hilfe
+###############################################################################
+APP_HELP_TEXT="
+App-Kommandos:
+  run app jar
+  run app mvn        (unter WSL deaktiviert)
+"
+
+usage() {
+  echo "Usage: ./scripts/local-demo/run <app> <command>"
+  echo -e "${YELLOW}${APP_HELP_TEXT}${NC}"
+  exit 1
+}
+
+app_help() {
+  echo -e "${YELLOW}${APP_HELP_TEXT}${NC}"
+  exit 0
+}
+
+###############################################################################
+# GLOBAL --help
+###############################################################################
+if [[ "${1:-}" == "--help" ]]; then
+    usage
+fi
+
+###############################################################################
+# Argumentprüfung
+###############################################################################
+if [[ $# -lt 2 ]]; then
+  case "${1:-}" in
+    app)
+      echo -e "${RED}❌ Kein Command für Kategorie: app${NC}"
+      echo -e "${YELLOW}ℹ️  Hilfe:${NC} ./scripts/local-demo/run app --help"
+      ;;
+    *)
+      echo -e "${RED}❌ Unbekannte Kategorie: ${1:-<none>}${NC}"
+      echo -e "${YELLOW}ℹ️  Hilfe:${NC} ./scripts/local-demo/run --help"
+      ;;
+  esac
+  exit 1
+fi
+
+CATEGORY="$1"
+COMMAND="$2"
+shift 2
+
+###############################################################################
+# Routing
+###############################################################################
+case "$CATEGORY" in
+
+  ###########################################################################
+  # APP
+  ###########################################################################
+  app)
+
+    if [[ "$COMMAND" == "--help" ]]; then
+        app_help
+    fi
+
+    case "$COMMAND" in
+
+      jar)
+        echo -e "${GREEN}▶ Starte local-demo (JAR, H2)...${NC}"
+        exec "$SCRIPT_DIR/app-run-universal.sh" jar "$@"
+        ;;
+
+      mvn)
+        if [[ "$IS_WSL" == "true" ]]; then
+          echo -e "${RED}❌ mvn-Modus unter WSL nicht unterstützt.${NC}"
+          echo "Bitte JAR-Modus verwenden."
+          exit 1
+        fi
+
+        echo -e "${GREEN}▶ Starte local-demo (mvn, H2)...${NC}"
+        exec "$SCRIPT_DIR/app-run-universal.sh" mvn "$@"
+        ;;
+
+      *)
+        echo -e "${RED}❌ Unbekannter Command: $COMMAND (Kategorie: app)${NC}"
+        echo -e "${YELLOW}ℹ️  Hilfe:${NC} ./scripts/local-demo/run app --help"
+        exit 1
+        ;;
+    esac
+    ;;
+
+  ###########################################################################
+  # Unbekannte Kategorie
+  ###########################################################################
+  *)
+    echo -e "${RED}❌ Unbekannte Kategorie: $CATEGORY${NC}"
+    echo -e "${YELLOW}ℹ️  Hilfe:${NC} ./scripts/local-demo/run --help"
+    exit 1
+    ;;
+esac

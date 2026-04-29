@@ -85,16 +85,9 @@ print_usage() {
 
 # Ausführliche Hilfe (wird bei --help aufgerufen)
 print_help() {
-  #echo -e "${BOLD_YELLOW}"
-  #center_text "----------------------------------------"
-  #center_text "        REGRESSION TEST RUNNER HELP      "
-  #center_text "----------------------------------------"
-  #echo -e "${NC}"
   print_usage
-  #echo -e "\n${YELLOW}Verfügbare Suites:${NC}"
   echo -e "${YELLOW}Verfügbare Suites:${NC}"
   for s in "${VALID_SUITES[@]}"; do echo "  • $s"; done
-  #echo -e "\n${YELLOW}Beispiele:${NC}"
   echo -e "${YELLOW}Beispiele:${NC}"
   echo "  ./scripts/regression/run --wait 15 --suite TaskListsCrudTestSuite"
 }
@@ -107,30 +100,6 @@ print_header_box() {
   center_text "----------------------------------------"
   echo -e "${NC}"
 }
-
-#print_success_box() {
-#  echo -e "${BOLD_GREEN}" # Nutzt jetzt fett-grün
-#  center_text "----------------------------------------"
-#  center_text "[ OK ]  API ist erreichbar und gesund"
-#  center_text "----------------------------------------"
-#  echo -e "${NC}"
-#}
-#
-#print_error_box() {
-#  echo -e "${RED}";
-#  center_text "----------------------------------------"
-#  center_text "[ FAIL ]  API NICHT erreichbar!"
-#  center_text "----------------------------------------";
-#  echo -e "${NC}"
-#}
-#
-#print_footer_box_done() {
-#  echo -e "${YELLOW}";
-#  center_text "----------------------------------------"
-#  center_text "          ALL TESTS EXECUTED            "
-#  center_text "----------------------------------------";
-#  echo -e "${NC}"
-#}
 
 ###############################################################################
 # 4. ARGUMENT PARSING (LOGIK FÜR OPTIONEN)
@@ -231,9 +200,9 @@ echo -e "\n${GREEN}[ OK ] API ist bereit. Starte Tests...${NC}"
 # Maven Aufruf (Cross-Platform)
 if [[ "${IS_WSL:-false}" == "true" ]]; then
     WIN_MVNW=$(wslpath -w "$ROOT_DIR/mvnw.cmd")
-    cmd.exe /C "$WIN_MVNW -Dtest=${SUITE} test"
+    cmd.exe /C "$WIN_MVNW -Dtest=${SUITE} -Pregression test"
 else
-    bash "$ROOT_DIR/mvnw" -Dtest=${SUITE} test
+    bash "$ROOT_DIR/mvnw" -Dtest=${SUITE} -Pregression test
 fi
 
 echo -e "\n${GREEN}✅ Fertig!${NC}"
@@ -246,10 +215,32 @@ echo -e "\n${GREEN}✅ Fertig!${NC}"
 
 ##einen Backoff‑Algorithmus einbauen (1s → 2s → 4s …)
 ##
-##den gesamten Runner modularisieren und in Module aufteilen (lib/health.sh, lib/output.sh, lib/env.sh)
+##den gesamten Runner modularisieren und in Module aufteilen
+# (lib/health.sh, lib/output.sh, lib/env.sh)
 #
 # den README‑Abschnitt automatisch synchronisieren
+
+#print_success_box() {
+#  echo -e "${BOLD_GREEN}" # Nutzt jetzt fett-grün
+#  center_text "----------------------------------------"
+#  center_text "[ OK ]  API ist erreichbar und gesund"
+#  center_text "----------------------------------------"
+#  echo -e "${NC}"
+#}
 #
-#die Optionen‑Hilfe (--help) ins Script einbauen
+#print_error_box() {
+#  echo -e "${RED}";
+#  center_text "----------------------------------------"
+#  center_text "[ FAIL ]  API NICHT erreichbar!"
+#  center_text "----------------------------------------";
+#  echo -e "${NC}"
+#}
 #
-#oder scripts/local-docker-db/run erweitern (wie du geplant hast)
+#print_footer_box_done() {
+#  echo -e "${YELLOW}";
+#  center_text "----------------------------------------"
+#  center_text "          ALL TESTS EXECUTED            "
+#  center_text "----------------------------------------";
+#  echo -e "${NC}"
+#}
+

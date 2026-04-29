@@ -7,8 +7,8 @@ spring:
     ansi:
       enabled: ALWAYS
   profiles:
-    default: local-dev # container-dev, local-dev
-    #active: dev  # Optionen: dev, test oder prod
+    default: local-demo # Prototype zum schnellen Testen, z.B. mit H2-Datenbank & das Ganze in einem einzigen Prozess, damit es einfach zu starten ist. Für die Entwicklung & Produktion können dann spezifische Profile mit z.B. PostgreSQL, docker, etc. erstellt werden.
+    #active: #####
 
 # 🧾 Versioning
 application:

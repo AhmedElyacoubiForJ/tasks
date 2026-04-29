@@ -1,4 +1,0 @@
-CREATE TABLE IF NOT EXISTS demo_table (
-  id SERIAL PRIMARY KEY,
-  name TEXT NOT NULL
-);
