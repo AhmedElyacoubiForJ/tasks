@@ -2,55 +2,17 @@
 set -euo pipefail
 
 ###############################################################################
-# scripts/regression/run
-#
-# Regression-Test Runner
-# ----------------------
-# Führt die vollständige Regression-Test-Suite aus.
-#
-# Features:
-#   • Erkennt automatisch die Umgebung (WSL, Git Bash, Linux, macOS)
-#   • Ermittelt automatisch die korrekte API-URL
-#       - Windows / Git Bash: http://localhost:8080
-#       - WSL: http://<Windows-IP>:8080
-#   • Wartet, bis die API erreichbar ist
-#       - Retry-Mechanismus (alle 2s)
-#       - curl-timeout (WSL-sicher)
-#       - konfigurierbares Timeout via --wait <Sekunden>
-#         Default: 60 Sekunden
-#   • Führt die gewünschte Test-Suite aus
-#       - via --suite <Name>
-#       - Default: TaskApiFullTestSuite
-#       - Verfügbare Suites:
-#           • TaskApiFullTestSuite
-#           • TaskListsCrudTestSuite
-#           • TaskListsTasksCrudTestSuite
-#           • TaskListsUseCaseTestSuite
-#   • Zeigt farbige Header-, Status- und Fehlerboxen (ASCII-safe)
-#   • Vollständig kompatibel mit WSL, Git Bash, IntelliJ, Linux, macOS
-###############################################################################
-
-###############################################################################
 # 1. PFADE UND IMPORTS
 ###############################################################################
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE}")" && pwd)"
 ROOT_DIR="$(dirname "$(dirname "$SCRIPT_DIR")")"
 
-# Farben laden (Fallback falls Datei fehlt, um 'unbound variable' zu vermeiden)
 if [ -f "$ROOT_DIR/scripts/utils/colors.sh" ]; then
     source "$ROOT_DIR/scripts/utils/colors.sh"
 else
-    # Standardfarben
-    RED='' GREEN='' YELLOW='' BLUE='' CYAN='' PURPLE='' NC=''
-
-    # Bold
-    BOLD_RED='' BOLD_GREEN='' BOLD_YELLOW='' BOLD_CYAN=''
-
-    # Background
-    BG_RED='' BG_GREEN=''
+    RED='' GREEN='' YELLOW='' BLUE='' CYAN='' NC='' BOLD_YELLOW=''
 fi
 
-# Umgebungs-Erkennung (IS_WSL Variable)
 if [ -f "$ROOT_DIR/scripts/lib/detect-env.sh" ]; then
     source "$ROOT_DIR/scripts/lib/detect-env.sh"
 fi
@@ -63,12 +25,11 @@ VALID_SUITES=("TaskApiFullTestSuite" "TaskListsCrudTestSuite" "TaskListsTasksCru
 
 WAIT_SECONDS=60
 SUITE="$DEFAULT_SUITE"
+REPORT_NAME="${SUITE}" # Der Report wird nach der Suite benannt
 
 ###############################################################################
 # 3. HILFSFUNKTIONEN
 ###############################################################################
-
-# Zentriert Text basierend auf der Terminal-Breite
 center_text() {
   local text="$1"
   local width=$(tput cols 2>/dev/null || echo 80)
@@ -77,22 +38,22 @@ center_text() {
   printf "%*s%s\n" "$padding" "" "$text"
 }
 
-# Kurzer Hinweis bei Syntax-Fehlern (User-Friendly)
 print_usage() {
   echo -e "${YELLOW}Verwendung:${NC} ./scripts/regression/run [--wait <Sekunden>] [--suite <Name>]"
   echo -e "Tipp: Nutze ${CYAN}--help${NC} für die vollständige Liste der Suites."
 }
 
-# Ausführliche Hilfe (wird bei --help aufgerufen)
 print_help() {
+  echo -e "${BOLD_YELLOW}"
+  center_text "        REGRESSION TEST RUNNER HELP      "
+  echo -e "${NC}"
   print_usage
-  echo -e "${YELLOW}Verfügbare Suites:${NC}"
+  echo -e "\n${YELLOW}Verfügbare Suites:${NC}"
   for s in "${VALID_SUITES[@]}"; do echo "  • $s"; done
-  echo -e "${YELLOW}Beispiele:${NC}"
+  echo -e "\n${YELLOW}Beispiele:${NC}"
   echo "  ./scripts/regression/run --wait 15 --suite TaskListsCrudTestSuite"
 }
 
-# Header-Box für den Start
 print_header_box() {
   echo -e "${BOLD_YELLOW}"
   center_text "----------------------------------------"
@@ -102,145 +63,95 @@ print_header_box() {
 }
 
 ###############################################################################
-# 4. ARGUMENT PARSING (LOGIK FÜR OPTIONEN)
+# 4. ARGUMENT PARSING
 ###############################################################################
 NEXT_IS_WAIT=false
 NEXT_IS_SUITE=false
 
 for arg in "$@"; do
-  # Falls das vorherige Argument --wait war, ist dieses hier der Wert
   if [ "$NEXT_IS_WAIT" = true ]; then
-    if [[ "$arg" =~ ^[0-9]+$ ]]; then WAIT_SECONDS="$arg"; else
-      echo -e "${RED}❌ Fehler: --wait benötigt eine Zahl, erhalten: $arg${NC}"; exit 1
-    fi
+    [[ "$arg" =~ ^[0-9]+$ ]] && WAIT_SECONDS="$arg" || { echo "❌ Zahl erwartet"; exit 1; }
     NEXT_IS_WAIT=false; continue
   fi
-
-  # Falls das vorherige Argument --suite war, ist dieses hier der Name
   if [ "$NEXT_IS_SUITE" = true ]; then
-    SUITE="$arg"; NEXT_IS_SUITE=false; continue
+    SUITE="$arg"
+    REPORT_NAME="${SUITE}" # Report-Name aktualisieren, falls Suite gewählt wurde
+    NEXT_IS_SUITE=false; continue
   fi
 
   case $arg in
-    --help)
-      print_help
-      exit 0 # Expliziter Erfolgsausstieg
-      ;;
-    --wait)
-      NEXT_IS_WAIT=true
-      ;;
-    --suite)
-      NEXT_IS_SUITE=true
-      ;;
-    *)
-      # Wenn etwas Unbekanntes kommt: Kurze Info + Fehler-Exit
-      echo -e "${RED}❌ Unbekannte Option: $arg${NC}"
-      print_usage
-      exit 1 # Fehler-Exit (wichtig für Automatisierung)
-      ;;
+    --help) print_help; exit 0 ;;
+    --wait) NEXT_IS_WAIT=true ;;
+    --suite) NEXT_IS_SUITE=true ;;
+    *) echo -e "${RED}❌ Unbekannt: $arg${NC}"; print_usage; exit 1 ;;
   esac
 done
 
-# Validierung der Suite (Vergleich mit Array)
 if [[ ! " ${VALID_SUITES[*]} " =~ " ${SUITE} " ]]; then
-  echo -e "${RED}❌ Ungültige Test-Suite: ${SUITE}${NC}"
-  echo -e "\n${YELLOW}Erlaubte Suites:${NC}"
-  for s in "${VALID_SUITES[@]}"; do echo "  • $s"; done
-  exit 1
+  echo -e "${RED}❌ Ungültige Suite: ${SUITE}${NC}"; exit 1
 fi
 
 ###############################################################################
-# 5. EXECUTION (HAUPT-ABLAUF)
+# 5. EXECUTION (MAVEN TESTLAUF)
 ###############################################################################
 echo "🧪 Starte Regression Tests..."
 print_header_box
 
-# API-URL Bestimmung (WSL vs. Native)
-# --- ROBUSTER IP-CHECK FÜR WSL ---
-# Standardmäßig gehen wir von localhost aus (Git Bash / Linux Native)
+# API-URL Bestimmung
 API_URL="http://localhost:8080/actuator/health"
-
 if [[ "${IS_WSL:-false}" == "true" ]]; then
-    echo "🌍 WSL erkannt – ermittle Host-IP..."
-
-    # SCHRITT A: Wir fragen die Routing-Tabelle von WSL.
-    # 'default' zeigt auf das Gateway, welches immer die Windows-Host-IP ist.
-    # Das ist viel sicherer als ipconfig.exe, da es VPNs/falsche Adapter ignoriert.
     WIN_IP=$(ip route show | grep default | awk '{print $3}' | head -n 1)
-
-    # SCHRITT B: FALLBACK (Nur wenn A fehlschlägt)
-    # Falls ip route leer ist, fragen wir Windows per PowerShell nach dem Hostnamen
-    if [[ -z "$WIN_IP" ]]; then
-        WIN_IP=$(hostname.exe | xargs -I{} powershell.exe -Command "Resolve-DnsName -Name {} -Type A | Select-Object -ExpandProperty IPAddress" | tr -d '\r' | head -n 1)
-    fi
-
     API_URL="http://$WIN_IP:8080/actuator/health"
 fi
 
-echo -e "➡ Verwende API-URL: ${CYAN:-}$API_URL${NC}"
-echo -e "➡ Verwende Test-Suite: ${YELLOW}$SUITE${NC}"
+echo -e "➡ Ziel-API: ${CYAN}$API_URL${NC}"
+echo -e "➡ Test-Suite: ${YELLOW}$SUITE${NC}"
 
-# Health-Check Warteschleife
+# Health-Check
 MAX_RETRIES=$(( WAIT_SECONDS / 2 ))
 RETRY_COUNT=0
-echo -e "${YELLOW}⏳ Warte auf API – Timeout: ${WAIT_SECONDS}s ...${NC}"
-
 while ! curl -s --max-time 2 --connect-timeout 2 "$API_URL" | grep -q '"UP"'; do
   RETRY_COUNT=$((RETRY_COUNT + 1))
   printf "."
-  if [[ "$RETRY_COUNT" -ge "$MAX_RETRIES" ]]; then
-      echo -e "\n${RED}❌ API nicht erreichbar. Läuft der Service auf Windows?${NC}"
-      exit 1
-  fi
+  [[ "$RETRY_COUNT" -ge "$MAX_RETRIES" ]] && { echo -e "\n${RED}❌ API Timeout${NC}"; exit 1; }
   sleep 2
 done
 
-echo -e "\n${GREEN}[ OK ] API ist bereit. Starte Tests...${NC}"
+echo -e "\n${GREEN}[ OK ] API bereit. Starte Maven...${NC}"
 
-# Maven Aufruf (Cross-Platform)
+# Maven Aufruf: Führt Tests aus UND generiert den HTML-Report mit individuellem Namen
 if [[ "${IS_WSL:-false}" == "true" ]]; then
     WIN_MVNW=$(wslpath -w "$ROOT_DIR/mvnw.cmd")
-    cmd.exe /C "$WIN_MVNW -Dtest=${SUITE} -Pregression test"
+    cmd.exe /C "$WIN_MVNW -Dtest=${SUITE} -Pregression test surefire-report:report-only -DoutputName=${REPORT_NAME}"
 else
-    bash "$ROOT_DIR/mvnw" -Dtest=${SUITE} -Pregression test
+    bash "$ROOT_DIR/mvnw" -Dtest=${SUITE} -Pregression test surefire-report:report-only -DoutputName=${REPORT_NAME}
 fi
 
-echo -e "\n${GREEN}✅ Fertig!${NC}"
+echo -e "\n${GREEN}✅ Testlauf beendet.${NC}"
 
-## TODO
-## --endpoint <URL> → mehrere Health‑Checks
-## mehrere Endpoints prüfen (/health, /info, /ready) Multi‑Endpoint‑Health‑Check‑Box
-##
-##--verbose → Debug‑Modus
+###############################################################################
+# 6. OPTIONALER REPORT-ÖFFNER
+###############################################################################
+REPORT_FILE="$ROOT_DIR/target/site/${REPORT_NAME}.html"
 
-##einen Backoff‑Algorithmus einbauen (1s → 2s → 4s …)
-##
-##den gesamten Runner modularisieren und in Module aufteilen
-# (lib/health.sh, lib/output.sh, lib/env.sh)
+#if [ -f "$REPORT_FILE" ]; then
+#    echo -e "\n${CYAN}📊 Report generiert: ${YELLOW}${REPORT_NAME}.html${NC}"
 #
-# den README‑Abschnitt automatisch synchronisieren
-
-#print_success_box() {
-#  echo -e "${BOLD_GREEN}" # Nutzt jetzt fett-grün
-#  center_text "----------------------------------------"
-#  center_text "[ OK ]  API ist erreichbar und gesund"
-#  center_text "----------------------------------------"
-#  echo -e "${NC}"
-#}
+#    # Kurz warten, um Puffer-Probleme unter WSL zu vermeiden
+#    sleep 1
 #
-#print_error_box() {
-#  echo -e "${RED}";
-#  center_text "----------------------------------------"
-#  center_text "[ FAIL ]  API NICHT erreichbar!"
-#  center_text "----------------------------------------";
-#  echo -e "${NC}"
-#}
+#    echo -e "${CYAN}Möchtest du den HTML-Report im Browser öffnen? (y/n)${NC}"
+#    read -r REPLY
 #
-#print_footer_box_done() {
-#  echo -e "${YELLOW}";
-#  center_text "----------------------------------------"
-#  center_text "          ALL TESTS EXECUTED            "
-#  center_text "----------------------------------------";
-#  echo -e "${NC}"
-#}
-
+#    if [[ $REPLY =~ ^[Yy]$ ]]; then
+#        if [[ "${IS_WSL:-false}" == "true" ]]; then
+#            explorer.exe "$(wslpath -w "$REPORT_FILE")"
+#        elif [[ "$OSTYPE" == "darwin"* ]]; then
+#            open "$REPORT_FILE"
+#        else
+#            xdg-open "$REPORT_FILE" 2>/dev/null || echo "Pfad: $REPORT_FILE"
+#        fi
+#    fi
+#else
+#    echo -e "${RED}⚠️ Report-Datei nicht gefunden: $REPORT_FILE${NC}"
+#fi
