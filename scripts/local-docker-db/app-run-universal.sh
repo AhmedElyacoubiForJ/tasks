@@ -1,16 +1,8 @@
 #!/usr/bin/env bash
 set -e
 
-###############################################################
-# UNIVERSAL SPRING BOOT RUN SCRIPT (local-demo)
-# -------------------------------------------------------------
-#  - JAR-Modus: überall stabil
-#  - mvn-Modus: unter WSL deaktiviert
-#  - KEINE .env-Datei nötig (H2 embedded)
-###############################################################
-
 ROOT_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
-PROFILE="local-demo"
+PROFILE="local-docker-db"
 
 ###############################################################
 # WSL-Erkennung
