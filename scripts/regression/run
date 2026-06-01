@@ -23,7 +23,7 @@ fi
 DEFAULT_SUITE="TaskApiFullTestSuite"
 VALID_SUITES=("TaskApiFullTestSuite" "TaskListsCrudTestSuite" "TaskListsTasksCrudTestSuite" "TaskListsUseCaseTestSuite")
 
-WAIT_SECONDS=60
+WAIT_SECONDS=30
 SUITE="$DEFAULT_SUITE"
 REPORT_NAME="${SUITE}" # Der Report wird nach der Suite benannt
 
